@@ -9,6 +9,25 @@ payee), `platform` (Kirim — holds the escrow fulfillment).
 
 ---
 
+## RLUSD trustlines — `npm run setup`
+
+`TrustSet` against the RLUSD testnet issuer
+[`rQhWct2fv4Vc4KRjRgMrxa8xPN9Zx9iLKV`](https://testnet.xrpl.org/accounts/rQhWct2fv4Vc4KRjRgMrxa8xPN9Zx9iLKV)
+(`RLUSD_XRPL_ISSUER_TESTNET` in t54-labs/rlusd-cli — it is not documented in the
+challenge materials or on the faucet page itself).
+
+| Role | Hash |
+|---|---|
+| buyer | [`A506DDB7BF2E63C070F8C4929BA1973573793D3A8C73A7D9D14D44FA52609738`](https://testnet.xrpl.org/transactions/A506DDB7BF2E63C070F8C4929BA1973573793D3A8C73A7D9D14D44FA52609738) |
+| supplier | [`07D74C5D6B8F081E73308667FECF6EB484A6AB6EDE0A5D6A952527E19E92C698`](https://testnet.xrpl.org/transactions/07D74C5D6B8F081E73308667FECF6EB484A6AB6EDE0A5D6A952527E19E92C698) |
+| inspector | [`9A01ED075A26193C9481425152D2A020C69990FF9950FE6A97F1D1CCBB247D30`](https://testnet.xrpl.org/transactions/9A01ED075A26193C9481425152D2A020C69990FF9950FE6A97F1D1CCBB247D30) |
+| platform | [`F103922043B6C2D8A77FF4189B344D5508760230F8E33B0F3DF68F3FD21FD886`](https://testnet.xrpl.org/transactions/F103922043B6C2D8A77FF4189B344D5508760230F8E33B0F3DF68F3FD21FD886) |
+
+The trade runs below used the XRP path; they will be re-run on `TokenEscrow`
+once the buyer holds RLUSD.
+
+---
+
 ## The gate — `npm run escrow:smoke`
 
 Escrow create, release against a crypto-condition, and cancel after timeout.
