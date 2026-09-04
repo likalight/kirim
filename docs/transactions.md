@@ -113,9 +113,17 @@ An OFAC SDN name match at 0.71. The agent declines and commits nothing.
 
 ## Settlement note
 
-These runs used the **XRP fallback path** (no `RLUSD_ISSUER` configured). The
-principal is divided by `XRP_FALLBACK_DIVISOR` because the testnet faucet caps a
-wallet at 100 XRP; every API response carries that note. Operating spend maps
-1:1, so the amount each provider verified on-ledger is exactly the price it
-quoted. With `RLUSD_ISSUER` set, escrow uses `TokenEscrow` and the principal
-settles at par.
+The trade runs above used the **XRP path**, before the buyer held RLUSD. The
+issuer and trustlines are now in place (top of this file), so re-running with
+`SETTLEMENT=RLUSD` produces the same flow on `TokenEscrow`.
+
+Either way the principal is divided by `SETTLEMENT_DIVISOR` (default 1000)
+before it touches the ledger: the RLUSD faucet allows 10 RLUSD per account per
+24 hours and the XRP faucet caps a wallet at 100 XRP, so a US$4,000 trade cannot
+settle at par on testnet in either currency. **Every API response carrying a
+scaled amount says so** — a US$4,000 credit settles as 4 RLUSD and reports that
+fact, rather than the demo quietly claiming to have moved four thousand of
+anything. `SETTLEMENT_DIVISOR=1` settles at par on a funded account.
+
+Operating spend (x402 calls, all sub-dollar) is never scaled, so the amount each
+provider verified on-ledger is exactly the price it quoted.
