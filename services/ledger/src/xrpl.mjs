@@ -141,23 +141,33 @@ export async function balances(address) {
 }
 
 /**
- * Principal scaling for the XRP fallback path.
+ * Principal scaling.
  *
- * In RLUSD mode a trade principal maps 1:1 — US$4,000 is 4,000 RLUSD. In the
- * XRP fallback the testnet faucet caps a wallet at 100 XRP, so a four-thousand
- * dollar credit cannot be funded at par. The principal is divided by
- * XRP_FALLBACK_DIVISOR and every response says so, rather than quietly
- * shrinking the trade. Operating spend (x402 calls, all sub-dollar) stays 1:1
- * so the on-ledger amount a provider verifies is exactly the price it quoted.
+ * The story is a US$4,000 trade; the testnet cannot fund one. The RLUSD faucet
+ * hands out 10 RLUSD per account per 24 hours, and the XRP faucet caps a wallet
+ * at 100 XRP. So the principal is divided by SETTLEMENT_DIVISOR before it
+ * touches the ledger, and every response carrying a scaled amount says so —
+ * the trade is never quietly shrunk, and the demo never claims to have moved
+ * four thousand of anything.
+ *
+ * Operating spend (x402 calls, all sub-dollar) is never scaled, so the amount a
+ * provider verifies on-ledger is exactly the price it quoted.
  */
 export function scalePrincipal(usd) {
+  const divisor = Number(
+    process.env.SETTLEMENT_DIVISOR || process.env.XRP_FALLBACK_DIVISOR || 1000,
+  );
   const asset = settlementAsset();
-  if (isIOU(asset)) return { value: String(usd), scaled: false, divisor: 1 };
-  const divisor = Number(process.env.XRP_FALLBACK_DIVISOR || 1000);
+  const unit = isIOU(asset) ? 'RLUSD' : 'XRP';
+  const cap = isIOU(asset)
+    ? 'the RLUSD faucet allows 10 RLUSD per account per 24 hours'
+    : 'the XRP faucet caps a wallet at 100 XRP';
+  if (divisor === 1) return { value: String(usd), scaled: false, divisor: 1 };
   return {
     value: String(Number(usd) / divisor),
     scaled: true,
     divisor,
-    note: `XRP fallback: principal divided by ${divisor} because the testnet faucet caps a wallet at 100 XRP. Set RLUSD_ISSUER to settle at par.`,
+    unit,
+    note: `Testnet scaling: US$${usd} settles as ${Number(usd) / divisor} ${unit} (divided by ${divisor}) because ${cap}. Set SETTLEMENT_DIVISOR=1 to settle at par.`,
   };
 }

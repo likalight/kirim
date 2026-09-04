@@ -107,17 +107,34 @@ Kirim settles in **RLUSD**. `.env` is already pointed at the RLUSD testnet issue
 places RLUSD trustlines on all four wallets.
 
 **One manual step remains:** claim testnet RLUSD for the buyer at
-[tryrlusd.com](https://tryrlusd.com). There is no API — the official RLUSD CLI's
-own `faucet fund` command says *"Open the official RLUSD faucet and claim testnet
-RLUSD there."* Paste the buyer address printed by `npm run setup`.
+[tryrlusd.com](https://tryrlusd.com) — sign in, pick **XRPL Testnet**, paste the
+buyer address from `npm run setup`. There is no API; the official RLUSD CLI's own
+`faucet fund` command says *"Open the official RLUSD faucet and claim testnet
+RLUSD there."*
 
-Until the buyer holds RLUSD, escrow creation fails with `tecUNFUNDED` — loudly,
-by design. To demo before claiming, set `SETTLEMENT=XRP` in `.env`: the flow runs
-identically on XRP, except that because the testnet faucet caps a wallet at 100
-XRP the *principal* is divided by `XRP_FALLBACK_DIVISOR` (default 1000) and every
-API response says so, rather than quietly shrinking the trade. Operating spend
-(all sub-dollar x402 calls) always maps 1:1, so the amount a provider verifies
-on-ledger is exactly the price it quoted.
+### Testnet scaling
+
+The faucet allows **10 RLUSD per account per 24 hours** (and the XRP faucet caps a
+wallet at 100 XRP), so a US$4,000 trade principal cannot settle at par on testnet.
+The principal is divided by `SETTLEMENT_DIVISOR` (default 1000) before it touches
+the ledger — US$4,000 settles as 4 RLUSD — and **every response carrying a scaled
+amount says so**. The trade is never quietly shrunk and the demo never claims to
+have moved four thousand of anything. Set `SETTLEMENT_DIVISOR=1` to settle at par
+on a funded account.
+
+Operating spend (x402 calls, all sub-dollar) is never scaled, so the amount each
+provider verifies on-ledger is exactly the price it quoted.
+
+### Amendment status, checked on testnet
+
+| Amendment | Status |
+|---|---|
+| `TokenEscrow` | **enabled** — RLUSD escrow works |
+| `Credentials` (XLS-70) | **enabled** — on-ledger KYB is available |
+| `PermissionedDomains` | **enabled** |
+| `PermissionedDEX` | **enabled** |
+| `MPTokensV1` (XLS-33) | **enabled** |
+| `Batch` | not present in the testnet feature list |
 
 With RLUSD funded, escrow uses **TokenEscrow** and the principal settles at par.
 
