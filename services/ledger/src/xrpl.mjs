@@ -1,0 +1,163 @@
+import { Client, xrpToDrops, dropsToXrp, convertStringToHex, isoTimeToRippleTime } from 'xrpl';
+import { makeCondition, finishFee } from './conditions.mjs';
+
+const ENDPOINT = process.env.XRPL_ENDPOINT || 'wss://s.altnet.rippletest.net:51233';
+export const EXPLORER = process.env.XRPL_EXPLORER || 'https://testnet.xrpl.org';
+export const explorerTx = (h) => `${EXPLORER}/transactions/${h}`;
+
+let client;
+export async function xrpl() {
+  if (client?.isConnected()) return client;
+  client = new Client(ENDPOINT);
+  await client.connect();
+  return client;
+}
+export async function disconnect() { if (client?.isConnected()) await client.disconnect(); }
+
+/** How Kirim settles. RLUSD when configured, XRP as the fallback path. */
+export function settlementAsset() {
+  const issuer = process.env.RLUSD_ISSUER;
+  if ((process.env.SETTLEMENT || 'RLUSD').toUpperCase() === 'RLUSD' && issuer) {
+    return { currency: process.env.RLUSD_CURRENCY || '524C555344000000000000000000000000000000', issuer };
+  }
+  return 'XRP';
+}
+export const isIOU = (a) => typeof a === 'object' && a !== null;
+
+export function amountField(asset, value) {
+  return isIOU(asset)
+    ? { currency: asset.currency, issuer: asset.issuer, value: String(value) }
+    : xrpToDrops(String(value));
+}
+
+export function memoField(text) {
+  return [{ Memo: { MemoType: convertStringToHex('kirim/trade'), MemoData: convertStringToHex(text) } }];
+}
+
+const tag = () => Number(process.env.AGENT_SOURCE_TAG || 880402);
+
+async function submit(wallet, tx) {
+  const c = await xrpl();
+  const prepared = await c.autofill(tx);
+  if (tx.Fee) prepared.Fee = tx.Fee;
+  const signed = wallet.sign(prepared);
+  const r = await c.submitAndWait(signed.tx_blob);
+  const result = r.result.meta?.TransactionResult;
+  if (result !== 'tesSUCCESS') {
+    const err = new Error(tx.TransactionType + ' failed: ' + result);
+    err.result = result; err.hash = r.result.hash;
+    throw err;
+  }
+  return { hash: r.result.hash, result, explorer: explorerTx(r.result.hash), raw: r.result };
+}
+
+export async function trustSet(wallet, asset, limit = '1000000') {
+  if (!isIOU(asset)) return { skipped: 'XRP needs no trustline' };
+  return submit(wallet, {
+    TransactionType: 'TrustSet',
+    Account: wallet.address,
+    LimitAmount: { currency: asset.currency, issuer: asset.issuer, value: limit },
+  });
+}
+
+export async function pay({ wallet, to, value, asset, memo }) {
+  return submit(wallet, {
+    TransactionType: 'Payment',
+    Account: wallet.address,
+    Destination: to,
+    Amount: amountField(asset, value),
+    SourceTag: tag(),
+    Memos: memoField(memo),
+  });
+}
+
+/**
+ * TokenEscrow when the asset is RLUSD, XRP escrow otherwise. The condition is
+ * the instrument: only the holder of the fulfillment can release, and
+ * CancelAfter returns the funds to the buyer with no dispute and no lawyer.
+ */
+export async function escrowCreate({ wallet, to, value, asset, memo, cancelAfterSeconds = 900, finishAfterSeconds = 2 }) {
+  const { condition, fulfillment } = makeCondition();
+  const now = Date.now();
+  const c = await xrpl();
+  const seq = (await c.request({ command: 'account_info', account: wallet.address })).result.account_data.Sequence;
+
+  const out = await submit(wallet, {
+    TransactionType: 'EscrowCreate',
+    Account: wallet.address,
+    Destination: to,
+    Amount: amountField(asset, value),
+    Condition: condition,
+    FinishAfter: isoTimeToRippleTime(new Date(now + finishAfterSeconds * 1000).toISOString()),
+    CancelAfter: isoTimeToRippleTime(new Date(now + cancelAfterSeconds * 1000).toISOString()),
+    SourceTag: tag(),
+    Memos: memoField(memo),
+  });
+  return { ...out, offerSequence: seq, condition, fulfillment };
+}
+
+export async function escrowFinish({ wallet, owner, offerSequence, condition, fulfillment }) {
+  return submit(wallet, {
+    TransactionType: 'EscrowFinish',
+    Account: wallet.address,
+    Owner: owner,
+    OfferSequence: offerSequence,
+    Condition: condition,
+    Fulfillment: fulfillment,
+    Fee: finishFee(fulfillment),
+  });
+}
+
+export async function escrowCancel({ wallet, owner, offerSequence }) {
+  return submit(wallet, {
+    TransactionType: 'EscrowCancel',
+    Account: wallet.address,
+    Owner: owner,
+    OfferSequence: offerSequence,
+  });
+}
+
+/** The shape the x402 gate verifies against. Never trust a client's claim. */
+export async function verifyTx(hash) {
+  const c = await xrpl();
+  const r = await c.request({ command: 'tx', transaction: hash });
+  const t = r.result.tx_json ?? r.result;
+  const amount = r.result.meta?.delivered_amount ?? t.Amount ?? r.result.DeliverMax;
+  const value = typeof amount === 'string' ? dropsToXrp(amount) : amount?.value;
+  return {
+    validated: !!r.result.validated,
+    result: r.result.meta?.TransactionResult,
+    destination: t.Destination,
+    account: t.Account,
+    amountValue: String(value ?? '0'),
+    currency: typeof amount === 'string' ? 'XRP' : amount?.currency,
+    explorer: explorerTx(hash),
+  };
+}
+
+export async function balances(address) {
+  const c = await xrpl();
+  return c.getBalances(address);
+}
+
+/**
+ * Principal scaling for the XRP fallback path.
+ *
+ * In RLUSD mode a trade principal maps 1:1 — US$4,000 is 4,000 RLUSD. In the
+ * XRP fallback the testnet faucet caps a wallet at 100 XRP, so a four-thousand
+ * dollar credit cannot be funded at par. The principal is divided by
+ * XRP_FALLBACK_DIVISOR and every response says so, rather than quietly
+ * shrinking the trade. Operating spend (x402 calls, all sub-dollar) stays 1:1
+ * so the on-ledger amount a provider verifies is exactly the price it quoted.
+ */
+export function scalePrincipal(usd) {
+  const asset = settlementAsset();
+  if (isIOU(asset)) return { value: String(usd), scaled: false, divisor: 1 };
+  const divisor = Number(process.env.XRP_FALLBACK_DIVISOR || 1000);
+  return {
+    value: String(Number(usd) / divisor),
+    scaled: true,
+    divisor,
+    note: `XRP fallback: principal divided by ${divisor} because the testnet faucet caps a wallet at 100 XRP. Set RLUSD_ISSUER to settle at par.`,
+  };
+}

@@ -1,0 +1,7 @@
+{
+  "name": "@kirim/market",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "src/index.mjs",
+  "dependencies": { "@kirim/x402": "1.0.0" }
+}

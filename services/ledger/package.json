@@ -1,0 +1,7 @@
+{
+  "name": "@kirim/ledger",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "src/index.mjs",
+  "dependencies": { "xrpl": "^4.1.0", "@kirim/trade": "1.0.0" }
+}

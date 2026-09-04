@@ -1,0 +1,6 @@
+{
+  "name": "@kirim/trade",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "src/index.mjs"
+}

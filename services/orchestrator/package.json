@@ -1,0 +1,7 @@
+{
+  "name": "@kirim/orchestrator",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "src/index.mjs",
+  "dependencies": { "@kirim/x402": "1.0.0", "@kirim/trade": "1.0.0" }
+}

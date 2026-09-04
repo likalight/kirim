@@ -1,0 +1,179 @@
+[
+  {
+    "id": "PO-2026-0418",
+    "label": "Clean trade — documents conform, escrow releases",
+    "po": {
+      "poNumber": "PO-2026-0418",
+      "buyer": "Sunway Marine Pte Ltd",
+      "supplier": "Da Nang Precision Fittings JSC",
+      "incoterm": "FOB",
+      "latestShipmentDate": "2026-09-14",
+      "portOfLoading": "VNDAD",
+      "portOfDischarge": "SGSIN",
+      "lines": [
+        {
+          "sku": "FLG-316-DN50",
+          "description": "316 stainless flange DN50",
+          "qty": 500,
+          "unitPriceCents": 640
+        },
+        {
+          "sku": "GSK-PTFE-50",
+          "description": "PTFE gasket 50mm",
+          "qty": 500,
+          "unitPriceCents": 160
+        }
+      ]
+    },
+    "bl": {
+      "blNumber": "COSU6812449310",
+      "poNumber": "PO-2026-0418",
+      "vessel": "MV Hai Phong Star",
+      "voyage": "072E",
+      "shippedOnBoardDate": "2026-09-11",
+      "portOfLoading": "VNDAD",
+      "portOfDischarge": "SGSIN",
+      "shipper": "Da Nang Precision Fittings JSC",
+      "consignee": "Sunway Marine Pte Ltd",
+      "lines": [
+        {
+          "sku": "FLG-316-DN50",
+          "qty": 500
+        },
+        {
+          "sku": "GSK-PTFE-50",
+          "qty": 500
+        }
+      ]
+    },
+    "packing": {
+      "poNumber": "PO-2026-0418",
+      "cartons": 42,
+      "grossWeightKg": 1180,
+      "lines": [
+        {
+          "sku": "FLG-316-DN50",
+          "qty": 500
+        },
+        {
+          "sku": "GSK-PTFE-50",
+          "qty": 500
+        }
+      ]
+    }
+  },
+  {
+    "id": "PO-2026-0419",
+    "label": "Short shipment — packing list disagrees with the PO, release refused",
+    "po": {
+      "poNumber": "PO-2026-0419",
+      "buyer": "Sunway Marine Pte Ltd",
+      "supplier": "Da Nang Precision Fittings JSC",
+      "incoterm": "FOB",
+      "latestShipmentDate": "2026-09-16",
+      "portOfLoading": "VNDAD",
+      "portOfDischarge": "SGSIN",
+      "lines": [
+        {
+          "sku": "VLV-BALL-DN25",
+          "description": "Ball valve DN25",
+          "qty": 500,
+          "unitPriceCents": 640
+        }
+      ]
+    },
+    "bl": {
+      "blNumber": "COSU6812449310",
+      "poNumber": "PO-2026-0419",
+      "vessel": "MV Hai Phong Star",
+      "voyage": "072E",
+      "shippedOnBoardDate": "2026-09-13",
+      "portOfLoading": "VNDAD",
+      "portOfDischarge": "SGSIN",
+      "shipper": "Da Nang Precision Fittings JSC",
+      "consignee": "Sunway Marine Pte Ltd",
+      "lines": [
+        {
+          "sku": "VLV-BALL-DN25",
+          "qty": 400
+        }
+      ]
+    },
+    "packing": {
+      "poNumber": "PO-2026-0419",
+      "cartons": 20,
+      "grossWeightKg": 610,
+      "lines": [
+        {
+          "sku": "VLV-BALL-DN25",
+          "qty": 400
+        }
+      ]
+    }
+  },
+  {
+    "id": "PO-2026-0420",
+    "label": "No-show — supplier never ships, escrow times out and funds return",
+    "noDocuments": true,
+    "cancelAfterSeconds": 30,
+    "po": {
+      "poNumber": "PO-2026-0420",
+      "buyer": "Sunway Marine Pte Ltd",
+      "supplier": "Haiphong Marine Supply Co",
+      "incoterm": "FOB",
+      "latestShipmentDate": "2026-09-20",
+      "portOfLoading": "IDSUB",
+      "portOfDischarge": "SGSIN",
+      "lines": [
+        {
+          "sku": "PMP-CENT-4IN",
+          "description": "Centrifugal pump 4in",
+          "qty": 12,
+          "unitPriceCents": 24500
+        }
+      ]
+    }
+  },
+  {
+    "id": "PO-2026-0421",
+    "label": "Above the ceiling — agent stops and asks a human",
+    "po": {
+      "poNumber": "PO-2026-0421",
+      "buyer": "Sunway Marine Pte Ltd",
+      "supplier": "Da Nang Precision Fittings JSC",
+      "incoterm": "CIF",
+      "latestShipmentDate": "2026-10-02",
+      "portOfLoading": "VNDAD",
+      "portOfDischarge": "SGSIN",
+      "lines": [
+        {
+          "sku": "GEN-MAR-250K",
+          "description": "Marine generator set 250kVA",
+          "qty": 4,
+          "unitPriceCents": 1000000
+        }
+      ]
+    }
+  },
+  {
+    "id": "PO-2026-0422",
+    "label": "Screening hit — declined before a cent is committed",
+    "po": {
+      "poNumber": "PO-2026-0422",
+      "buyer": "Sunway Marine Pte Ltd",
+      "supplier": "Pelabuhan Sentosa Trading",
+      "incoterm": "FOB",
+      "latestShipmentDate": "2026-09-28",
+      "portOfLoading": "IDSUB",
+      "portOfDischarge": "SGSIN",
+      "lines": [
+        {
+          "sku": "PMP-CENT-4IN",
+          "description": "Centrifugal pump 4in",
+          "qty": 8,
+          "unitPriceCents": 24500
+        }
+      ]
+    }
+  }
+]

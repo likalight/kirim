@@ -1,0 +1,25 @@
+{
+  "name": "kirim",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "workspaces": [
+    "packages/*",
+    "services/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "setup": "node --env-file-if-exists=.env scripts/setup-wallets.mjs",
+    "escrow:smoke": "node --env-file-if-exists=.env scripts/escrow-smoke.mjs",
+    "ledger": "node --env-file-if-exists=.env services/ledger/src/index.mjs",
+    "market": "node --env-file-if-exists=.env services/market/src/index.mjs",
+    "orchestrator": "node --env-file-if-exists=.env services/orchestrator/src/index.mjs",
+    "trade": "node --env-file-if-exists=.env services/orchestrator/src/cli.mjs",
+    "dev": "node --env-file-if-exists=.env scripts/dev.mjs"
+  },
+  "dependencies": {
+    "xrpl": "^4.1.0"
+  }
+}

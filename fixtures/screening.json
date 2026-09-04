@@ -1,0 +1,12 @@
+{
+  "Da Nang Precision Fittings JSC": {
+    "matches": [],
+    "listsChecked": ["UN", "OFAC", "EU", "MAS", "HMT"]
+  },
+  "Pelabuhan Sentosa Trading": {
+    "matches": [
+      { "list": "OFAC SDN", "name": "PELABUHAN SENTOSA TRADING", "score": 0.71, "note": "weak match on name only, no address or DOB corroboration" }
+    ],
+    "listsChecked": ["UN", "OFAC", "EU", "MAS", "HMT"]
+  }
+}
