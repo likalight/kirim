@@ -101,9 +101,42 @@ The line matters: simulated supply is normal; a simulated payment would not be.
 
 ## Settlement currency
 
-Kirim settles in **RLUSD**. Set `RLUSD_ISSUER` in `.env` from [tryrlusd.com](https://tryrlusd.com) and `npm run setup` will place trustlines on all four wallets; escrow then uses `TokenEscrow` at par.
+Kirim settles in **RLUSD**. `.env` is already pointed at the RLUSD testnet issuer
+`rQhWct2fv4Vc4KRjRgMrxa8xPN9Zx9iLKV` (`RLUSD_XRPL_ISSUER_TESTNET` in
+[t54-labs/rlusd-cli](https://github.com/t54-labs/rlusd-cli)), and `npm run setup`
+places RLUSD trustlines on all four wallets.
 
-Without an issuer configured it falls back to XRP, and because the testnet faucet caps a wallet at 100 XRP, the *principal* is divided by `XRP_FALLBACK_DIVISOR` (default 1000) — every response says so explicitly rather than quietly shrinking the trade. Operating spend (all sub-dollar x402 calls) always maps 1:1, so the amount a provider verifies on-ledger is exactly the price it quoted.
+**One manual step remains:** claim testnet RLUSD for the buyer at
+[tryrlusd.com](https://tryrlusd.com). There is no API — the official RLUSD CLI's
+own `faucet fund` command says *"Open the official RLUSD faucet and claim testnet
+RLUSD there."* Paste the buyer address printed by `npm run setup`.
+
+Until the buyer holds RLUSD, escrow creation fails with `tecUNFUNDED` — loudly,
+by design. To demo before claiming, set `SETTLEMENT=XRP` in `.env`: the flow runs
+identically on XRP, except that because the testnet faucet caps a wallet at 100
+XRP the *principal* is divided by `XRP_FALLBACK_DIVISOR` (default 1000) and every
+API response says so, rather than quietly shrinking the trade. Operating spend
+(all sub-dollar x402 calls) always maps 1:1, so the amount a provider verifies
+on-ledger is exactly the price it quoted.
+
+With RLUSD funded, escrow uses **TokenEscrow** and the principal settles at par.
+
+## Builder feedback hook
+
+Installed and registered project-scoped in `.claude/settings.json`, pointing at
+`hook/agents/claude-code/stop-hook.mjs` (copied from the challenge repo). Verified
+injecting — `stop-hook.mjs` exits 2 with the reflection instruction.
+
+It fires on ~20% of turns by default. Raise it with `"sample": 1` in
+`~/.xrpl-feedback-hook.json`, which also needs your team name and real name:
+
+```bash
+TEAM_NAME="<team>" HACKER_NAME="<your name>" node hook/setup.mjs --non-interactive
+```
+
+Builder feedback is 10% of the score and is graded on the stream, not a single
+end-of-event recollection. Also submit the Google form near the end — both,
+not either.
 
 ## The model's role
 
