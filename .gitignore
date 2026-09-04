@@ -3,5 +3,5 @@ node_modules/
 .env.local
 wallets.json
 *.log
+docs/demo-run.raw
 .DS_Store
-docs/transactions.local.md

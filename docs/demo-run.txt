@@ -1,0 +1,421 @@
+
+> milestone
+> node --env-file-if-exists=.env services/orchestrator/src/cli-works.mjs all
+
+
+==============================================================================
+  Sarah's Home Renovation  —  Sarah Lim / ABC Renovation Pte Ltd
+  site: Blk 219 Bedok Central, Singapore
+==============================================================================
+  track record before: 1 milestones on-ledger  (rhayr2jygcxFKDMN4ahdxkVHD4rwZXLvv3)
+==============================================================================
+
+------------------------------------------------------------------------------
+  M1  Demolition and disposal
+  scenario: Evidence conforms — releases autonomously, credential issued
+------------------------------------------------------------------------------
+
+MILESTONE     opened
+              Demolition and disposal — US$10000.00 of Sarah's Home
+              Renovation. Agreed 2026-09-01 to 2026-09-08, site Blk 219 Bedok
+              Central, Singapore, 3 photographs required, HDB renovation
+              permit required.
+
+ESCROW        funded
+              US$10000.00 committed by Sarah Lim and locked to ABC Renovation
+              Pte Ltd. Released only against conforming evidence; returns to
+              Sarah Lim automatically if nothing is presented before the
+              cancel time.
+              https://testnet.xrpl.org/transactions/3954D4FD802CB6320D37DD8F7659554BEBC861B32517D50FE01675C6FD9F249D
+
+ESCROW        note
+              Testnet scaling: US$10000.00 settles as 2 XRP (divided by 5000)
+              because the XRP faucet caps a wallet at 100 XRP. Set
+              SETTLEMENT_DIVISOR=1 to settle at par.
+
+SUBMISSION    received
+              ABC Renovation Pte Ltd submitted 3 photograph(s), 1 delivery
+              note(s), permit HDB/RN/2026/44219. "Wet areas and kitchen
+              stripped to structure. Two skips removed Friday."
+
+DISCOVERY     surveyed
+              Evidence checks available: Independent site inspection US$0.30,
+              Photo forensics US$0.08, Materials delivery verification
+              US$0.10, Full commercial credit report US$4.50.
+
+PURCHASE      bought
+              Photo forensics — US$0.08. Confirming the photographs are
+              original captures before their timestamps and GPS are relied on.
+              https://testnet.xrpl.org/transactions/EDA2C04409AA41618376126C460A0DE0B161934C6424176A0497082979ECC16B
+
+PURCHASE      bought
+              Materials delivery verification — US$0.10. Checking the delivery
+              notes exist in the suppliers’ own records.
+              https://testnet.xrpl.org/transactions/EC4AEE5477D3096D77B8B0046A7AD4492ED93D54FAC69076A5FA0FA615F3E5EA
+
+PURCHASE      bought
+              Independent site inspection — US$0.30. An independent inspection
+              costs thirty cents here; a scheduled site visit costs a day.
+              https://testnet.xrpl.org/transactions/F94443312C498FC683044BBF76A24BF9AC186B99A129C1D0C9C3A05D3E43F7EE
+
+PURCHASE      declined
+              Full commercial credit report quoted US$4.50. Single call
+              US$4.50 exceeds the per-call ceiling of US$1.00. Proceeding
+              without it.
+
+EXAMINATION   ready
+              Ready for approval. Evidence is consistent with the agreed scope
+              of Demolition and disposal. Release authorised. Nothing
+              inconsistent found.
+
+SETTLEMENT    released
+              Evidence conforms. US$10000.00 released to ABC Renovation Pte
+              Ltd — paid on evidence, not on a promise and not in ninety days.
+              https://testnet.xrpl.org/transactions/C7C034D6C740452B353246A67FDA069C29EE9173C482198E266A72E750CC0288
+
+RECORD        already recorded
+              This milestone is already on ABC Renovation Pte Ltd's ledger
+              record from an earlier run. A milestone credential is unique by
+              construction, so it cannot be double-counted.
+
+  → released
+
+------------------------------------------------------------------------------
+  M2  Plumbing first fix
+  scenario: A photo taken 2.3km off site and an unverifiable delivery note — flagged
+------------------------------------------------------------------------------
+
+MILESTONE     opened
+              Plumbing first fix — US$10000.00 of Sarah's Home Renovation.
+              Agreed 2026-09-08 to 2026-09-16, site Blk 219 Bedok Central,
+              Singapore, 3 photographs required.
+
+ESCROW        funded
+              US$10000.00 committed by Sarah Lim and locked to ABC Renovation
+              Pte Ltd. Released only against conforming evidence; returns to
+              Sarah Lim automatically if nothing is presented before the
+              cancel time.
+              https://testnet.xrpl.org/transactions/7A0E4EC247749F4F37C5304F8DB9FC6FE5F2EA5FF8883C79520782CDF8CECC39
+
+ESCROW        note
+              Testnet scaling: US$10000.00 settles as 2 XRP (divided by 5000)
+              because the XRP faucet caps a wallet at 100 XRP. Set
+              SETTLEMENT_DIVISOR=1 to settle at par.
+
+SUBMISSION    received
+              ABC Renovation Pte Ltd submitted 3 photograph(s), 2 delivery
+              note(s), no permit reference. "First fix complete throughout.
+              Pressure tested."
+
+DISCOVERY     surveyed
+              Evidence checks available: Independent site inspection US$0.30,
+              Photo forensics US$0.08, Materials delivery verification
+              US$0.10, Full commercial credit report US$4.50.
+
+PURCHASE      bought
+              Photo forensics — US$0.08. Confirming the photographs are
+              original captures before their timestamps and GPS are relied on.
+              https://testnet.xrpl.org/transactions/1C50BE1B0EE322848B19BB11704A5F0A1B7E7087BFF33BEF45BCBA242F96A8D6
+
+PURCHASE      bought
+              Materials delivery verification — US$0.10. Checking the delivery
+              notes exist in the suppliers’ own records.
+              https://testnet.xrpl.org/transactions/382A46CD8291BDCDF91555B85653198A72DEFE618585403DE88583BE53F1577B
+
+PURCHASE      bought
+              Independent site inspection — US$0.30. An independent inspection
+              costs thirty cents here; a scheduled site visit costs a day.
+              https://testnet.xrpl.org/transactions/D653986E129CD93724EEFEEFE3FB67453AD89360D51C40452ADE23EEEAF721BD
+
+PURCHASE      declined
+              Full commercial credit report quoted US$4.50. Single call
+              US$4.50 exceeds the per-call ceiling of US$1.00. Proceeding
+              without it.
+
+EXAMINATION   flagged
+              Flagged for review. Flagged for review: 2 inconsistencies
+              between the evidence and the agreed scope of Plumbing first fix.
+              Funds retained. PHOTO-GEO (blocking): plumb-kitchen-02.jpg was
+              taken 2.3km from the site, outside the 150m boundary.
+              DELIVERY-UNVERIFIED (blocking): Delivery note INV-77999 does not
+              appear in Hoe Seng Hardware's records.
+
+SETTLEMENT    withheld
+              US$10000.00 stays in escrow pending Sarah Lim's review. The
+              contractor may present corrected evidence, or the funds return
+              automatically.
+
+  → flagged for review
+
+------------------------------------------------------------------------------
+  M3  Electrical first fix
+  scenario: One photo, no delivery notes, no inspection — more information needed, not a rejection
+------------------------------------------------------------------------------
+
+MILESTONE     opened
+              Electrical first fix — US$10000.00 of Sarah's Home Renovation.
+              Agreed 2026-09-16 to 2026-09-24, site Blk 219 Bedok Central,
+              Singapore, 3 photographs required, Licensed electrical worker
+              permit required.
+
+ESCROW        funded
+              US$10000.00 committed by Sarah Lim and locked to ABC Renovation
+              Pte Ltd. Released only against conforming evidence; returns to
+              Sarah Lim automatically if nothing is presented before the
+              cancel time.
+              https://testnet.xrpl.org/transactions/A4041F4B0BD6BBE67A99EAD06C823200A4A2915180D45F453474825FAFC33869
+
+ESCROW        note
+              Testnet scaling: US$10000.00 settles as 2 XRP (divided by 5000)
+              because the XRP faucet caps a wallet at 100 XRP. Set
+              SETTLEMENT_DIVISOR=1 to settle at par.
+
+SUBMISSION    received
+              ABC Renovation Pte Ltd submitted 1 photograph(s), 0 delivery
+              note(s), permit LEW/2026/55831. "Wiring done, will send the rest
+              tomorrow."
+
+DISCOVERY     surveyed
+              Evidence checks available: Independent site inspection US$0.30,
+              Photo forensics US$0.08, Materials delivery verification
+              US$0.10, Full commercial credit report US$4.50.
+
+PURCHASE      bought
+              Photo forensics — US$0.08. Confirming the photographs are
+              original captures before their timestamps and GPS are relied on.
+              https://testnet.xrpl.org/transactions/0F01C6205EF50C334DC858C4BF6D7EBC91F45132DA5CF676260F42352866A739
+
+PURCHASE      bought
+              Independent site inspection — US$0.30. An independent inspection
+              costs thirty cents here; a scheduled site visit costs a day.
+              https://testnet.xrpl.org/transactions/16BB29B1B7558EC5B22B9C28CC7AAFF1DC8D648705318234093EB49D609652A7
+
+PURCHASE      declined
+              Full commercial credit report quoted US$4.50. Single call
+              US$4.50 exceeds the per-call ceiling of US$1.00. Proceeding
+              without it.
+
+EXAMINATION   more info
+              More information needed. More information needed: the submission
+              for Electrical first fix is incomplete. Nothing submitted
+              contradicts the scope. Funds retained pending the outstanding
+              evidence. EVIDENCE-THIN (missing): 1 photograph(s) submitted; 3
+              are required for Electrical first fix. MATERIALS-NONE (missing):
+              No delivery notes submitted for the materials scheduled in this
+              milestone. INSPECTION-NORESULT (missing): The independent
+              inspection returned no completion figure for this milestone.
+
+SETTLEMENT    held
+              US$10000.00 stays in escrow. Nothing submitted contradicts the
+              scope — the submission is simply incomplete, and ABC Renovation
+              Pte Ltd can complete it before the cancel time. No mark is
+              recorded against their track record.
+
+  → more information needed
+
+------------------------------------------------------------------------------
+  M4  Tiling and finishing
+  scenario: Inspection finds 72% complete with a critical defect, and a recycled photo — flagged
+------------------------------------------------------------------------------
+
+MILESTONE     opened
+              Tiling and finishing — US$10000.00 of Sarah's Home Renovation.
+              Agreed 2026-09-24 to 2026-10-06, site Blk 219 Bedok Central,
+              Singapore, 3 photographs required.
+
+ESCROW        funded
+              US$10000.00 committed by Sarah Lim and locked to ABC Renovation
+              Pte Ltd. Released only against conforming evidence; returns to
+              Sarah Lim automatically if nothing is presented before the
+              cancel time.
+              https://testnet.xrpl.org/transactions/2482B049AC3679F543D32CFD4C16B63D9F3A9B938B94A56B7EA80C5E4EBCEBF1
+
+ESCROW        note
+              Testnet scaling: US$10000.00 settles as 2 XRP (divided by 5000)
+              because the XRP faucet caps a wallet at 100 XRP. Set
+              SETTLEMENT_DIVISOR=1 to settle at par.
+
+SUBMISSION    received
+              ABC Renovation Pte Ltd submitted 3 photograph(s), 1 delivery
+              note(s), no permit reference. "Finishing complete."
+
+DISCOVERY     surveyed
+              Evidence checks available: Independent site inspection US$0.30,
+              Photo forensics US$0.08, Materials delivery verification
+              US$0.10, Full commercial credit report US$4.50.
+
+PURCHASE      bought
+              Photo forensics — US$0.08. Confirming the photographs are
+              original captures before their timestamps and GPS are relied on.
+              https://testnet.xrpl.org/transactions/F8A97EDB0589C2A9B9108C20FFF8132024F47940564B355B2EDE6CD1FEC67446
+
+PURCHASE      bought
+              Materials delivery verification — US$0.10. Checking the delivery
+              notes exist in the suppliers’ own records.
+              https://testnet.xrpl.org/transactions/C5582695B36E7D57308A37216D51A5CC246740214D2138676F40169F881D4931
+
+PURCHASE      bought
+              Independent site inspection — US$0.30. An independent inspection
+              costs thirty cents here; a scheduled site visit costs a day.
+              https://testnet.xrpl.org/transactions/C7EA460930FFD40B13DDD6EE084D4EC993B5BC82FA798CFEA7DB1FE03F0ABD4D
+
+PURCHASE      declined
+              Full commercial credit report quoted US$4.50. Single call
+              US$4.50 exceeds the per-call ceiling of US$1.00. Proceeding
+              without it.
+
+EXAMINATION   flagged
+              Flagged for review. Flagged for review: 4 inconsistencies
+              between the evidence and the agreed scope of Tiling and
+              finishing. Funds retained. PHOTO-REUSED (blocking):
+              tile-bath-02.jpg is byte-identical to a photograph already
+              submitted against an earlier milestone. PHOTO-TAMPERED
+              (blocking): tile-kitchen-03.jpg: EXIF software tag shows
+              re-encoding by an image editor after capture; original capture
+              data absent. INSPECT-INCOMPLETE (blocking): Independent
+              inspection assessed 72% complete against a 95% threshold for
+              release. DEFECT-CRITICAL (blocking): Critical defect: Bathroom
+              floor falls away from the drain; ponding observed across roughly
+              2 sqm. DEFECT-MINOR (advisory): Minor defect noted: Two skirting
+              joints require sealant. LATE (advisory): Submitted 2026-10-08,
+              after the agreed date of 2026-10-06. Recorded against the track
+              record; it does not block release.
+
+SETTLEMENT    withheld
+              US$10000.00 stays in escrow pending Sarah Lim's review. The
+              contractor may present corrected evidence, or the funds return
+              automatically.
+
+  → flagged for review
+
+------------------------------------------------------------------------------
+  M5  Variation order — structural wall opening
+  scenario: Evidence conforms, but the amount is above the autonomous ceiling — Sarah is asked
+------------------------------------------------------------------------------
+
+MILESTONE     opened
+              Variation order — structural wall opening — US$18000.00 of
+              Sarah's Home Renovation. Agreed 2026-10-06 to 2026-10-20, site
+              Blk 219 Bedok Central, Singapore, 3 photographs required, HDB
+              structural permit required.
+
+ESCROW        funded
+              US$18000.00 committed by Sarah Lim and locked to ABC Renovation
+              Pte Ltd. Released only against conforming evidence; returns to
+              Sarah Lim automatically if nothing is presented before the
+              cancel time.
+              https://testnet.xrpl.org/transactions/1E62FFB6BF361F777695ED8C2A830DA9EDD5913050B773809A2639061D214AD5
+
+ESCROW        note
+              Testnet scaling: US$18000.00 settles as 3.6 XRP (divided by
+              5000) because the XRP faucet caps a wallet at 100 XRP. Set
+              SETTLEMENT_DIVISOR=1 to settle at par.
+
+SUBMISSION    received
+              ABC Renovation Pte Ltd submitted 3 photograph(s), 1 delivery
+              note(s), permit HDB/ST/2026/10877. "Opening formed, lintel
+              installed and certified by the PE."
+
+DISCOVERY     surveyed
+              Evidence checks available: Independent site inspection US$0.30,
+              Photo forensics US$0.08, Materials delivery verification
+              US$0.10, Full commercial credit report US$4.50.
+
+PURCHASE      bought
+              Photo forensics — US$0.08. Confirming the photographs are
+              original captures before their timestamps and GPS are relied on.
+              https://testnet.xrpl.org/transactions/0B9E865A1EC8375AC393F160CFD61B18C608F1E5A8C17A851177E114BA840738
+
+PURCHASE      bought
+              Materials delivery verification — US$0.10. Checking the delivery
+              notes exist in the suppliers’ own records.
+              https://testnet.xrpl.org/transactions/C3E45BEA79FD5034AAEEE02B328475C6EE9BA369CB1CDBC2CB476460D1F10942
+
+PURCHASE      bought
+              Independent site inspection — US$0.30. An independent inspection
+              costs thirty cents here; a scheduled site visit costs a day.
+              https://testnet.xrpl.org/transactions/7051A881390EF1C215ECEED7EAAA5FD0BEB7466A8A72F6874CE1C2D1C1A54B18
+
+PURCHASE      declined
+              Full commercial credit report quoted US$4.50. Single call
+              US$4.50 exceeds the per-call ceiling of US$1.00. Proceeding
+              without it.
+
+EXAMINATION   ready
+              Ready for approval. Evidence is consistent with the agreed scope
+              of Variation order — structural wall opening. Release
+              authorised. Nothing inconsistent found.
+
+SETTLEMENT    awaiting client
+              Release of 18000.00 exceeds the autonomous ceiling. The evidence
+              is in order; the client must authorise the payment.
+
+  → awaiting client authorisation
+
+------------------------------------------------------------------------------
+  M6  Final completion and handover
+  scenario: Contractor never submits — escrow times out and Sarah's money returns
+------------------------------------------------------------------------------
+
+MILESTONE     opened
+              Final completion and handover — US$10000.00 of Sarah's Home
+              Renovation. Agreed 2026-10-20 to 2026-10-28, site Blk 219 Bedok
+              Central, Singapore, 4 photographs required.
+
+ESCROW        funded
+              US$10000.00 committed by Sarah Lim and locked to ABC Renovation
+              Pte Ltd. Released only against conforming evidence; returns to
+              Sarah Lim automatically if nothing is presented before the
+              cancel time.
+              https://testnet.xrpl.org/transactions/92C2D9FB9CF2469BE6EE8609251A97B5D0213EF777B3EB4413D735BF84F20782
+
+ESCROW        note
+              Testnet scaling: US$10000.00 settles as 2 XRP (divided by 5000)
+              because the XRP faucet caps a wallet at 100 XRP. Set
+              SETTLEMENT_DIVISOR=1 to settle at par.
+
+SUBMISSION    none
+              Nothing presented against Final completion and handover. Waiting
+              out the cancel window before returning the funds.
+
+SETTLEMENT    returned
+              Escrow cancelled. US$10000.00 returned to Sarah Lim. No dispute,
+              no lawyer, no chasing.
+              https://testnet.xrpl.org/transactions/2CE81FFA49F7C09034274043499C32BA44AFB06ADD676CB3567077D6C1A6BE51
+
+  → timed out and returned
+
+==============================================================================
+  M1  Demolition and disposal               released
+  M2  Plumbing first fix                    flagged for review
+  M3  Electrical first fix                  more information needed
+  M4  Tiling and finishing                  flagged for review
+  M5  Variation order — structural wall openingawaiting client authorisation
+  M6  Final completion and handover         timed out and returned
+------------------------------------------------------------------------------
+  track record: 1 → 1 milestones on-ledger, 100% on time
+  22 XRPL transactions this run
+==============================================================================
+
+| M1 | escrow | 3954D4FD802CB6320D37DD8F7659554BEBC861B32517D50FE01675C6FD9F249D |
+| M1 | purchase | EDA2C04409AA41618376126C460A0DE0B161934C6424176A0497082979ECC16B |
+| M1 | purchase | EC4AEE5477D3096D77B8B0046A7AD4492ED93D54FAC69076A5FA0FA615F3E5EA |
+| M1 | purchase | F94443312C498FC683044BBF76A24BF9AC186B99A129C1D0C9C3A05D3E43F7EE |
+| M1 | settlement | C7C034D6C740452B353246A67FDA069C29EE9173C482198E266A72E750CC0288 |
+| M2 | escrow | 7A0E4EC247749F4F37C5304F8DB9FC6FE5F2EA5FF8883C79520782CDF8CECC39 |
+| M2 | purchase | 1C50BE1B0EE322848B19BB11704A5F0A1B7E7087BFF33BEF45BCBA242F96A8D6 |
+| M2 | purchase | 382A46CD8291BDCDF91555B85653198A72DEFE618585403DE88583BE53F1577B |
+| M2 | purchase | D653986E129CD93724EEFEEFE3FB67453AD89360D51C40452ADE23EEEAF721BD |
+| M3 | escrow | A4041F4B0BD6BBE67A99EAD06C823200A4A2915180D45F453474825FAFC33869 |
+| M3 | purchase | 0F01C6205EF50C334DC858C4BF6D7EBC91F45132DA5CF676260F42352866A739 |
+| M3 | purchase | 16BB29B1B7558EC5B22B9C28CC7AAFF1DC8D648705318234093EB49D609652A7 |
+| M4 | escrow | 2482B049AC3679F543D32CFD4C16B63D9F3A9B938B94A56B7EA80C5E4EBCEBF1 |
+| M4 | purchase | F8A97EDB0589C2A9B9108C20FFF8132024F47940564B355B2EDE6CD1FEC67446 |
+| M4 | purchase | C5582695B36E7D57308A37216D51A5CC246740214D2138676F40169F881D4931 |
+| M4 | purchase | C7EA460930FFD40B13DDD6EE084D4EC993B5BC82FA798CFEA7DB1FE03F0ABD4D |
+| M5 | escrow | 1E62FFB6BF361F777695ED8C2A830DA9EDD5913050B773809A2639061D214AD5 |
+| M5 | purchase | 0B9E865A1EC8375AC393F160CFD61B18C608F1E5A8C17A851177E114BA840738 |
+| M5 | purchase | C3E45BEA79FD5034AAEEE02B328475C6EE9BA369CB1CDBC2CB476460D1F10942 |
+| M5 | purchase | 7051A881390EF1C215ECEED7EAAA5FD0BEB7466A8A72F6874CE1C2D1C1A54B18 |
+| M6 | escrow | 92C2D9FB9CF2469BE6EE8609251A97B5D0213EF777B3EB4413D735BF84F20782 |
+| M6 | settlement | 2CE81FFA49F7C09034274043499C32BA44AFB06ADD676CB3567077D6C1A6BE51 |

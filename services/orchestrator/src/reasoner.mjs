@@ -98,3 +98,38 @@ export async function explainDiscrepancies({ po, bl, result }) {
     `If rejected, state that the supplier may present corrected documents before the escrow cancel time.`,
     fallback);
 }
+
+const MS_SYSTEM = [
+  'You write milestone review notes for a construction payment platform.',
+  'Two to four sentences. No preamble, no bullets, no markdown.',
+  'Plain English a homeowner and a contractor both understand.',
+  'State the recommendation and the specific reason. Never invent findings.',
+  'Never claim to have verified the construction itself — you reconcile submitted',
+  'evidence against an agreed scope and report where they disagree.',
+].join(' ');
+
+export async function explainMilestone({ project, ms, sub, result }) {
+  const listed = result.all.length
+    ? result.all.map((f) => `${f.code} (${f.severity}): ${f.text}`).join(' ')
+    : 'Nothing inconsistent found.';
+
+  const headline = {
+    ready: 'Ready for approval',
+    more_info: 'More information needed',
+    flagged: 'Flagged for review',
+  }[result.state];
+
+  const fallback = `${headline}. ${result.verdict} ${listed}`;
+
+  return ask(MS_SYSTEM,
+    `Write the milestone review note.\n` +
+    `Recommendation: ${headline}\n` +
+    `Project: ${project.name} (${project.client} / ${project.contractor})\n` +
+    `Milestone: ${ms.name}, agreed ${ms.startsOn} to ${ms.dueOn}\n` +
+    `Submitted: ${sub.submittedAt} with ${sub.photos.length} photograph(s)\n` +
+    `Contractor's note: "${sub.note}"\n` +
+    `Findings: ${listed}\n` +
+    `If flagged, say what the contractor should do next. If more information is ` +
+    `needed, be clear that nothing is wrong yet and name what is outstanding.`,
+    fallback);
+}

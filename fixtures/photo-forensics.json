@@ -1,0 +1,4 @@
+{
+  "note": "Findings the forensics provider reports per file. Anything not listed comes back clean.",
+  "tile-kitchen-03.jpg": { "reason": "EXIF software tag shows re-encoding by an image editor after capture; original capture data absent." }
+}

@@ -35,12 +35,11 @@ console.log('settlement asset: ' + label + '\n');
 console.log('1. create escrow  ' + AMOUNT + ' ' + label);
 const created = await escrowCreate({
   wallet: buyer, to: supplier.address, value: AMOUNT, asset,
-  memo: 'SMOKE-1', cancelAfterSeconds: 600, finishAfterSeconds: 2,
+  memo: 'SMOKE-1', cancelAfterSeconds: 600,
 });
 record('EscrowCreate', created);
 
 console.log('\n2. finish escrow (platform holds the fulfillment)');
-await new Promise((r) => setTimeout(r, 5000)); // FinishAfter must have passed
 const finished = await escrowFinish({
   wallet: platform, owner: buyer.address,
   offerSequence: created.offerSequence,
@@ -52,7 +51,7 @@ record('EscrowFinish', finished);
 console.log('\n3. create a second escrow with a 25s CancelAfter');
 const doomed = await escrowCreate({
   wallet: buyer, to: supplier.address, value: AMOUNT, asset,
-  memo: 'SMOKE-2-TIMEOUT', cancelAfterSeconds: 25, finishAfterSeconds: 2,
+  memo: 'SMOKE-2-TIMEOUT', cancelAfterSeconds: 25,
 });
 record('EscrowCreate (to expire)', doomed);
 

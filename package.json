@@ -17,7 +17,10 @@
     "market": "node --env-file-if-exists=.env services/market/src/index.mjs",
     "orchestrator": "node --env-file-if-exists=.env services/orchestrator/src/index.mjs",
     "trade": "node --env-file-if-exists=.env services/orchestrator/src/cli.mjs",
-    "dev": "node --env-file-if-exists=.env scripts/dev.mjs"
+    "dev": "node --env-file-if-exists=.env scripts/dev.mjs",
+    "milestone": "node --env-file-if-exists=.env services/orchestrator/src/cli-works.mjs",
+    "credential:smoke": "node --env-file-if-exists=.env scripts/credential-smoke.mjs",
+    "topup": "node --env-file-if-exists=.env scripts/topup.mjs"
   },
   "dependencies": {
     "xrpl": "^4.1.0"

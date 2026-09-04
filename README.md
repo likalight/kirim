@@ -1,166 +1,221 @@
-# Kirim
+<div align="center">
 
-**A letter of credit small enough for a S$4,000 order — because an agent reads the documents and the ledger holds the money.**
+![KIRIM](.github/banner.png)
 
-SingHacks 2026 · Ripple challenge: *AI-Native Business on XRPL*
+<br>
+
+**Trust before you build.**
+
+Milestone payments for construction, released by an agent that examines the evidence, settled on the XRP Ledger.
+
+<br>
+
+[![XRPL](https://img.shields.io/badge/XRP_Ledger-testnet-2C5A4E?style=flat-square&labelColor=0F0D09)](https://testnet.xrpl.org)
+[![x402](https://img.shields.io/badge/x402-both_sides-5E9B79?style=flat-square&labelColor=0F0D09)](https://xrpl-x402.t54.ai/docs)
+[![XLS-70](https://img.shields.io/badge/XLS--70-credentials-5E9B79?style=flat-square&labelColor=0F0D09)](https://github.com/XRPLF/XRPL-Standards)
+[![Escrow](https://img.shields.io/badge/escrow-crypto--conditions-2C5A4E?style=flat-square&labelColor=0F0D09)](https://xrpl.org/docs/concepts/payment-types/escrow)
+[![RLUSD](https://img.shields.io/badge/RLUSD-wired-B07A22?style=flat-square&labelColor=0F0D09)](https://tryrlusd.com)
+<br>
+[![Node](https://img.shields.io/badge/node-%E2%89%A520-8C8467?style=flat-square&labelColor=0F0D09)](https://nodejs.org)
+[![Build step](https://img.shields.io/badge/build_step-none-8C8467?style=flat-square&labelColor=0F0D09)](#run-it)
+[![Transactions](https://img.shields.io/badge/testnet_transactions-verified-2C5A4E?style=flat-square&labelColor=0F0D09)](docs/transactions.md)
+[![SingHacks](https://img.shields.io/badge/SingHacks_2026-Ripple-7A2E2E?style=flat-square&labelColor=0F0D09)](https://github.com/Singhacks-2026/ripple)
+
+<br>
+
+[Problem](#the-problem) · [How it works](#how-it-works) · [Run it](#run-it) · [Architecture](#architecture) · [What the agent checks](#what-the-agent-actually-checks) · [Proof](docs/transactions.md)
+
+</div>
+
+<br>
 
 ---
 
 ## The problem
 
-A Singapore SME orders S$4,000 of goods from a supplier in Da Nang. Three options, all bad:
+A homeowner pays a large deposit before meaningful work exists. From that moment the contractor holds the money and the client holds the risk.
 
-| Option | Cost | Time | Protection |
-|---|---|---|---|
-| Telegraphic transfer | US$20–50 + 1–3% FX spread | 1–3 days | None |
-| Letter of credit | % of value + fixed fees | Days of document handling | Full — but uneconomic below ~US$50,000 |
-| Pay 100% upfront | "free" | Instant | None. This is what most SMEs actually do. |
+The reliable contractor has the mirror problem. They finish the work, then wait — for a client who is slow, unhappy, or gone. Singapore has a Security of Payment Act precisely because this is endemic.
 
-A letter of credit is expensive for exactly one reason: **a human being reads the documents.** A trade finance officer checks that the bill of lading matches the purchase order, that quantities agree, that dates are consistent. That labour is why the instrument has a floor, and why every trade beneath it goes unprotected.
+| | Today | With Kirim |
+|---|---|---|
+| Money at the start | 30–50% deposit, unsecured | Escrowed per milestone, nobody can spend it |
+| Basis for payment | A promise, then an invoice | Evidence reconciled against the agreed scope |
+| Time to payment | 30–60 days | ~4 seconds |
+| If nothing is delivered | Dispute, lawyer, or write-off | `CancelAfter` returns the funds automatically |
+| Contractor's reputation | A folder of photos and hearsay | Credentials on their own XRPL account |
 
-## What Kirim does
-
-Replaces the officer with an agent and the issuing bank with an escrow.
+## How it works
 
 ```
-need → discovery → decision → transaction → outcome
+milestone agreed → client funds escrow → contractor submits evidence
+      → agent buys its checks over x402 → evidence examined
+      → released in ~4s, or held with the discrepancy named
+      → credential written to the contractor's ledger account
 ```
 
-1. A buyer's agent takes the purchase order.
-2. It **discovers** providers and buys only the underwriting inputs worth their price — screening, bill-of-lading verification, an FX quote — each one over **x402**, each payment settled on XRPL.
-3. It **underwrites**, and either commits or declines with a reason.
-4. Funds lock in **XRPL escrow under a crypto-condition**. Not a timer: only the holder of the fulfillment can release, and `CancelAfter` returns the money to the buyer if nothing is presented.
-5. Documents are **examined** against the PO — quantities, ports, dates, references — and a discrepancy blocks release. That is the instrument.
-6. Conforming documents release the escrow. The supplier is paid in about four seconds, not on 60-day terms.
+The money for each milestone is locked on the XRP Ledger under a **PREIMAGE-SHA-256 crypto-condition** before work starts. Only the holder of the fulfillment can release it, and Kirim holds it until the evidence conforms. If nothing is ever presented, `CancelAfter` returns the money to the client with no dispute process.
 
-**Remove the AI** and you need a trade finance officer, which is why this instrument does not exist below US$50k. **Remove autonomous payments** and the escrow becomes an invoice and a lawyer.
+**Remove the agent** and you need a site visit for every payment, which is why milestone escrow does not exist at renovation scale today. **Remove autonomous payment** and the escrow is just an invoice again.
 
 ## Run it
 
 ```bash
 npm install
 cp .env.example .env
-npm run setup          # funds four XRPL testnet wallets, writes wallets.json
-npm run escrow:smoke   # THE GATE: escrow create, finish, and cancel-on-timeout
-npm run dev            # ledger + market + console
-npm run trade PO-2026-0418   # or open http://localhost:4000
+
+npm run setup             # four funded XRPL testnet wallets → wallets.json
+npm run escrow:smoke      # THE GATE — escrow create, finish, cancel-on-timeout
+npm run credential:smoke  # XLS-70 CredentialCreate + CredentialAccept
+
+npm run dev               # ledger + market + console  →  http://localhost:4000
+npm run milestone all     # or: npm run milestone M2
 ```
 
-`npm run escrow:smoke` is the load-bearing check. If it does not pass, nothing above it can be trusted.
+`npm run escrow:smoke` is load-bearing. If it does not pass, nothing above it can be trusted.
 
-### Demo scenarios
+### The six scenarios
 
-| Trade | Principal | What it shows |
+| Milestone | Amount | What it demonstrates |
 |---|---|---|
-| `PO-2026-0418` | US$4,000 | Documents conform. Escrow releases; supplier paid on presentation. |
-| `PO-2026-0419` | US$3,200 | Packing list shows 400 against a PO for 500. **Release refused, funds retained.** |
-| `PO-2026-0420` | US$2,940 | Supplier never ships. Escrow times out; **funds return automatically.** |
-| `PO-2026-0421` | US$40,000 | Above the autonomous ceiling. Agent **stops and asks a human.** |
-| `PO-2026-0422` | US$1,960 | Screening hit. **Declined before a cent is committed.** |
+| `M1` Demolition | US$10,000 | Evidence conforms → **released autonomously**, credential issued |
+| `M2` Plumbing | US$10,000 | A photo taken **2.3 km off site** and an unverifiable delivery note → **flagged** |
+| `M3` Electrical | US$10,000 | One photo, no delivery notes, no inspection result → **more information needed** |
+| `M4` Tiling | US$10,000 | Inspection at 72% with a critical defect, plus a **recycled photograph** → **flagged** |
+| `M5` Variation order | US$18,000 | Evidence conforms but the amount is **above the ceiling** → the client is asked |
+| `M6` Final completion | US$10,000 | Nothing ever submitted → escrow **times out and the money returns** |
 
-Most demos show the happy path. `0419`, `0420` and `0422` are the ones worth watching: a payment that correctly does *not* happen is what makes an autonomous payment system credible.
+The interesting ones are `M2`, `M3` and `M6`. A payment that correctly does *not* happen is what makes an autonomous payment system credible.
+
+`M3` matters for a different reason: *"you did not send enough"* and *"what you sent does not add up"* are different messages, and only the second should ever mark a contractor's record.
+
+A full transcript of one run is in [docs/demo-run.txt](docs/demo-run.txt).
 
 ## Architecture
 
-See [docs/architecture.md](docs/architecture.md). In short — four processes, one rule:
+Full diagram in [docs/architecture.md](docs/architecture.md). One rule holds the design together:
 
 > **The agent may request a payment. Only the ledger service may send one.**
 
 ```
-apps/console            static page, server-sent events, live decision log
-services/orchestrator   the agent: discover, underwrite, examine, decide
-services/ledger         the ONLY process holding a seed. xrpl.js, spend ceilings
-services/market         x402-gated providers (simulated supply, real payments)
+apps/console            live decision log over server-sent events
+services/orchestrator   the agent — discover, buy, examine, decide  (holds NO seed)
+services/ledger         THE ONLY SEED HOLDER — escrow, credentials, spend ceilings
+services/market         x402-gated evidence providers (simulated supply, real payments)
+packages/works          milestone schema, discrepancy rules, track record
+packages/trade          the cross-border trade vertical, on the same engine
 packages/x402           client + server middleware, one implementation
-packages/trade          PO/BL/packing schemas, discrepancy rules, decision log
 ```
 
-The orchestrator has no wallet and never imports `xrpl`. It asks; the ledger service decides, enforces per-call / per-trade / per-run ceilings from `.env`, signs, and returns a hash. A refusal comes back as a logged decision with a reason, never a silent no-op.
+The orchestrator has no wallet and never imports `xrpl`. It asks; the ledger service enforces ceilings from `.env`, signs, and returns a hash. A refusal comes back as a logged decision with a reason, never a silent no-op.
+
+**The same engine runs a second vertical.** `npm run trade PO-2026-0418` settles a cross-border trade document credit — same escrow, same x402 layer, different evidence rules. Two markets, one machine. See [docs/README-trade-vertical.md](docs/README-trade-vertical.md).
+
+## What the agent actually checks
+
+A photograph on its own cannot be examined. A photograph with an EXIF timestamp and a GPS fix can. Kirim does not claim to verify construction — it reconciles submitted evidence against the agreed scope and says plainly where the two disagree.
+
+| Code | Severity | Check |
+|---|---|---|
+| `PHOTO-GEO` | blocking | Photograph taken outside the site boundary |
+| `PHOTO-TIME` | blocking | Timestamp precedes the milestone start, or postdates the submission |
+| `PHOTO-REUSED` | blocking | Byte-identical to a photograph from an earlier milestone |
+| `PHOTO-TAMPERED` | blocking | Forensics found re-encoding after capture |
+| `MATERIALS-SHORT` | blocking | Delivered quantity below the bill of quantities |
+| `DELIVERY-UNVERIFIED` | blocking | Delivery note absent from the supplier's own records |
+| `INSPECT-INCOMPLETE` | blocking | Independent inspection below the release threshold |
+| `DEFECT-CRITICAL` | blocking | Critical defect open at inspection |
+| `PERMIT-MISSING` | blocking | Required permit reference not provided |
+| `SEQ-INCOMPLETE` | blocking | A milestone this one depends on has not been released |
+| `EVIDENCE-THIN` | missing | Fewer photographs than the milestone requires |
+| `INSPECTION-NORESULT` | missing | The inspection returned no completion figure |
+| `LATE` | advisory | Submitted after the agreed date — recorded, not blocking |
+
+The rules are deterministic and live in [`packages/works/src/examine.mjs`](packages/works/src/examine.mjs). A model writes the advice a client and contractor read; it never overturns a finding.
 
 ## Trust, governance and controls
 
-The challenge brief lists seven considerations. Kirim answers them structurally, not with a settings page:
-
-| Consideration | How |
+| Consideration | How Kirim answers it |
 |---|---|
-| Transparency | Every step appends to a decision log with a reason string; the console renders it live |
-| Authorisation | Autonomous below `HUMAN_APPROVAL_ABOVE_USD`, stops and asks above it — a threshold, not per-action approval |
-| Spending controls | Per-call, per-trade and per-run ceilings enforced server-side in the only process that can sign |
-| Security | The agent never holds a seed. `wallets.json` is gitignored. Testnet only. |
-| Traceability | Every ledger write carries a `Memo` bound to the trade and a `SourceTag` identifying the agent |
-| Failure handling | Discrepancy → funds retained. No presentation → escrow cancels itself. Ledger error → the run stops loudly rather than narrating a settlement that never happened. |
-| Safeguards | Providers verify payment **on-ledger** before serving a byte; the escrow condition means Kirim cannot pay for goods that were never shipped |
+| **Transparency** | Every step appends to a decision log with a reason; the console renders it live |
+| **Authorisation** | Autonomous below `HUMAN_APPROVAL_ABOVE_USD`, asks above it — a threshold, not an approval queue |
+| **Spending controls** | Per-call, per-milestone and per-run ceilings, enforced in the only process that can sign |
+| **Security** | The agent never holds a seed. `wallets.json` is gitignored. Testnet only. |
+| **Traceability** | Every ledger write carries a `Memo` bound to the milestone and a `SourceTag` for the agent |
+| **Failure handling** | Discrepancy → funds held. Nothing presented → escrow cancels itself. Ledger error → the run stops loudly rather than narrating a settlement that never happened. |
+| **Safeguards** | Providers verify payment **on-ledger** before serving a byte; the escrow condition means Kirim cannot pay for work that was never evidenced |
+
+The challenge brief names "requiring humans to approve each agent action" as an anti-pattern. A value ceiling is a safeguard, not an approval queue: small milestones settle themselves, large ones ask.
+
+## The track record
+
+Every released milestone issues an **XLS-70 Credential** to the contractor's own XRPL account, which they accept. It is keyed `KIRIM:<project>:<milestone>`, so it cannot be double-counted, and any future client can verify it without asking Kirim anything.
+
+```
+type      KIRIM:PRJ-2026-014:M1
+subject   rhayr2jygcxFKDMN4ahdxkVHD4rwZXLvv3
+uri       kirim:milestone/PRJ-2026-014/M1/demolition-and-disposal?onTime=1
+accepted  true
+```
+
+We do not claim a credential makes a contractor trustworthy. It makes their history visible.
 
 ## What is real and what is simulated
 
-**Real:** every XRPL transaction. Escrow create, escrow finish against a crypto-condition, escrow cancel on timeout, and every x402 payment. Hashes are in [docs/transactions.md](docs/transactions.md) and link to the testnet explorer.
+**Real:** every XRPL transaction. Escrow create, finish against a crypto-condition, cancel on timeout, every x402 payment, and every credential. Hashes are in [docs/transactions.md](docs/transactions.md) and link to the testnet explorer.
 
-**Simulated:** the supplier, the shipping documents, the carrier registry and the screening lists are fixtures under `fixtures/`. No Da Nang exporter has an x402 endpoint this weekend.
+**Simulated:** the contractor, the photographs, the carrier and supplier registries, and the site inspector — all fixtures under `fixtures/`. No Singapore renovation firm has an x402 endpoint this weekend.
 
-The line matters: simulated supply is normal; a simulated payment would not be.
+The line matters: simulated supply is normal, a simulated payment would not be.
+
+## Commercial model
+
+Kirim takes **0.8% of each released milestone**, charged at the moment of release. A licensed escrow agent charges 3–5% and takes days; a lawyer's stakeholder account costs more than the milestone is worth.
+
+| | Cost | Time |
+|---|---|---|
+| Escrow agent today | 3–5% | days |
+| Kirim | 0.8% | ~4 seconds |
+| Evidence checks bought per milestone | US$0.48 | seconds |
+| On a S$50,000 renovation | ~S$400 total | per milestone |
+
+The evidence checks are the part that could not exist before: an independent inspection at thirty cents, priced per milestone, against a site visit that costs a day.
 
 ## Settlement currency
 
-Kirim settles in **RLUSD**. `.env` is already pointed at the RLUSD testnet issuer
-`rQhWct2fv4Vc4KRjRgMrxa8xPN9Zx9iLKV` (`RLUSD_XRPL_ISSUER_TESTNET` in
-[t54-labs/rlusd-cli](https://github.com/t54-labs/rlusd-cli)), and `npm run setup`
-places RLUSD trustlines on all four wallets.
+Kirim settles in **RLUSD**. `.env` points at the testnet issuer `rQhWct2fv4Vc4KRjRgMrxa8xPN9Zx9iLKV` (`RLUSD_XRPL_ISSUER_TESTNET` in [t54-labs/rlusd-cli](https://github.com/t54-labs/rlusd-cli) — it is not documented in the challenge materials or on the faucet page), and `npm run setup` places trustlines on all four wallets.
 
-**One manual step remains:** claim testnet RLUSD for the buyer at
-[tryrlusd.com](https://tryrlusd.com) — sign in, pick **XRPL Testnet**, paste the
-buyer address from `npm run setup`. There is no API; the official RLUSD CLI's own
-`faucet fund` command says *"Open the official RLUSD faucet and claim testnet
-RLUSD there."*
+Claiming the RLUSD itself is a browser step at [tryrlusd.com](https://tryrlusd.com) — there is no API, and the official RLUSD CLI defers to the same page. Until the client wallet holds RLUSD, set `SETTLEMENT=XRP` and the whole flow runs identically.
 
-### Testnet scaling
+**Testnet scaling.** The RLUSD faucet allows 10 RLUSD per account per 24 hours and the XRP faucet caps a wallet at 100 XRP, so a US$10,000 milestone cannot settle at par. The principal is divided by `SETTLEMENT_DIVISOR` (default 5000) before it touches the ledger, and **every response carrying a scaled amount says so**. Operating spend — the x402 calls, all sub-dollar — is never scaled, so the amount each provider verifies on-ledger is exactly the price it quoted. `SETTLEMENT_DIVISOR=1` settles at par on a funded account.
 
-The faucet allows **10 RLUSD per account per 24 hours** (and the XRP faucet caps a
-wallet at 100 XRP), so a US$4,000 trade principal cannot settle at par on testnet.
-The principal is divided by `SETTLEMENT_DIVISOR` (default 1000) before it touches
-the ledger — US$4,000 settles as 4 RLUSD — and **every response carrying a scaled
-amount says so**. The trade is never quietly shrunk and the demo never claims to
-have moved four thousand of anything. Set `SETTLEMENT_DIVISOR=1` to settle at par
-on a funded account.
+## Amendment status, checked on testnet
 
-Operating spend (x402 calls, all sub-dollar) is never scaled, so the amount each
-provider verifies on-ledger is exactly the price it quoted.
-
-### Amendment status, checked on testnet
-
-| Amendment | Status |
-|---|---|
-| `TokenEscrow` | **enabled** — RLUSD escrow works |
-| `Credentials` (XLS-70) | **enabled** — on-ledger KYB is available |
-| `PermissionedDomains` | **enabled** |
-| `PermissionedDEX` | **enabled** |
-| `MPTokensV1` (XLS-33) | **enabled** |
-| `Batch` | not present in the testnet feature list |
-
-With RLUSD funded, escrow uses **TokenEscrow** and the principal settles at par.
-
-## Builder feedback hook
-
-Installed and registered project-scoped in `.claude/settings.json`, pointing at
-`hook/agents/claude-code/stop-hook.mjs` (copied from the challenge repo). Verified
-injecting — `stop-hook.mjs` exits 2 with the reflection instruction.
-
-It fires on ~20% of turns by default. Raise it with `"sample": 1` in
-`~/.xrpl-feedback-hook.json`, which also needs your team name and real name:
-
-```bash
-TEAM_NAME="<team>" HACKER_NAME="<your name>" node hook/setup.mjs --non-interactive
-```
-
-Builder feedback is 10% of the score and is graded on the stream, not a single
-end-of-event recollection. Also submit the Google form near the end — both,
-not either.
+| Amendment | Status | Used by Kirim |
+|---|---|---|
+| `Credentials` (XLS-70) | enabled | the track record |
+| `TokenEscrow` | enabled | RLUSD escrow |
+| `PermissionedDomains` | enabled | — |
+| `PermissionedDEX` | enabled | — |
+| `MPTokensV1` (XLS-33) | enabled | — |
+| `Batch` | not in the testnet feature list | — |
 
 ## The model's role
 
-Deliberately narrow. The discrepancy rules in `packages/trade/src/examine.mjs` decide whether money moves; a model never gets a vote on that. What the model writes is the *advice* — the underwriting rationale and the discrepancy notice, in the language a trade finance desk uses.
+Deliberately narrow. The rules in `packages/works` decide whether money moves; a model never gets a vote. What it writes is the *advice* — the milestone review note, in language a homeowner and a contractor both understand.
 
 Set `ANTHROPIC_API_KEY` to enable it. Without a key, composed text is used and the product still runs end to end — a demo must never depend on a key at venue wifi.
+
+## Builder feedback
+
+The challenge feedback hook is installed in `hook/` and registered project-scoped in `.claude/settings.json`. Findings submitted from this build include the undocumented RLUSD testnet issuer, the faucet's lack of an HTTP endpoint, and `EscrowCreate` returning `tecNO_PERMISSION` when `FinishAfter` is only seconds ahead of the next ledger close.
 
 ## Ports
 
 `4000` console · `4010` ledger · `4020` market. If `npm run dev` reports `EADDRINUSE`, a previous run's children survived — kill whatever is listening on those ports first.
+
+---
+
+<div align="center">
+<sub><b>KIRIM</b> · Less blind trust. More visible proof.</sub>
+</div>

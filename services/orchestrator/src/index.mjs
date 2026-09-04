@@ -1,7 +1,9 @@
 import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
+import { runMilestone } from './works.mjs';
 import { runTrade } from './agent.mjs';
+import { summarise } from '@kirim/works';
 
 /**
  * Orchestrator + console host.
@@ -11,6 +13,8 @@ import { runTrade } from './agent.mjs';
  * so what the judges watch is the log itself, not a replay of it.
  */
 const PORT = Number(process.env.ORCHESTRATOR_PORT || 4000);
+const LEDGER = 'http://localhost:' + (process.env.LEDGER_PORT || 4010);
+const PROJECT = JSON.parse(fs.readFileSync('fixtures/project.json', 'utf8'));
 const TRADES = JSON.parse(fs.readFileSync('fixtures/trades.json', 'utf8'));
 const CONSOLE_DIR = path.resolve('apps/console/public');
 
@@ -19,6 +23,12 @@ const broadcast = (event) => {
   const line = 'data: ' + JSON.stringify(event) + '\n\n';
   for (const res of clients) res.write(line);
 };
+
+// Milestones run in order within a session so the sequence rule and the
+// recycled-photograph check have the state they need.
+const seenPhotoHashes = new Set();
+const priorReleased = [];
+let busy = false;
 
 const MIME = { '.html': 'text/html', '.css': 'text/css', '.js': 'text/javascript', '.svg': 'image/svg+xml' };
 
@@ -37,28 +47,58 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
-  if (url.pathname === '/api/trades') {
-    return json(res, 200, TRADES.map((t) => ({ id: t.id, label: t.label, supplier: t.po.supplier })));
+  if (url.pathname === '/api/project') {
+    return json(res, 200, {
+      id: PROJECT.id, name: PROJECT.name, client: PROJECT.client,
+      contractor: PROJECT.contractor, site: PROJECT.site,
+      totalCents: PROJECT.totalCents,
+      milestones: PROJECT.milestones.map((m) => ({
+        id: m.id, name: m.name, amountCents: m.amountCents,
+        dueOn: m.dueOn, scenario: m.scenario,
+        released: priorReleased.includes(m.id),
+      })),
+      trades: TRADES.map((t) => ({ id: t.id, label: t.label })),
+    });
+  }
+
+  if (url.pathname === '/api/record') {
+    const r = await fetch(LEDGER + '/credentials?role=supplier').then((x) => x.json());
+    return json(res, 200, { address: r.address, ...summarise(r.credentials) });
   }
 
   if (url.pathname === '/api/run' && req.method === 'POST') {
+    if (busy) return json(res, 409, { error: 'a milestone is already running' });
     const id = url.searchParams.get('id');
+    const ms = PROJECT.milestones.find((m) => m.id === id);
     const trade = TRADES.find((t) => t.id === id);
-    if (!trade) return json(res, 404, { error: 'no_such_trade' });
+    if (!ms && !trade) return json(res, 404, { error: 'no_such_item' });
 
-    json(res, 202, { started: trade.id });
-    broadcast({ type: 'run_started', tradeId: trade.id, label: trade.label });
+    busy = true;
+    json(res, 202, { started: id });
+    broadcast({ type: 'run_started', id, label: ms ? ms.name : trade.label });
     try {
-      const { outcome } = await runTrade(trade, { emit: (e) => broadcast({ type: 'decision', ...e }) });
-      broadcast({ type: 'run_finished', tradeId: trade.id, outcome });
+      if (ms) {
+        const { outcome } = await runMilestone(PROJECT, ms, {
+          seenPhotoHashes, priorReleased,
+          emit: (e) => broadcast({ type: 'decision', ...e }),
+        });
+        if (outcome === 'released' && !priorReleased.includes(ms.id)) priorReleased.push(ms.id);
+        broadcast({ type: 'run_finished', id, outcome });
+      } else {
+        const { outcome } = await runTrade(trade, {
+          emit: (e) => broadcast({ type: 'decision', ...e }),
+        });
+        broadcast({ type: 'run_finished', id, outcome });
+      }
     } catch (e) {
-      console.error('[orchestrator]', e);
-      broadcast({ type: 'run_failed', tradeId: trade.id, error: e.message });
+      console.error('[orchestrator]', e.message);
+      broadcast({ type: 'run_failed', id, error: e.message });
+    } finally {
+      busy = false;
     }
     return;
   }
 
-  // static console
   const rel = url.pathname === '/' ? '/index.html' : url.pathname;
   const file = path.join(CONSOLE_DIR, rel);
   if (!file.startsWith(CONSOLE_DIR) || !fs.existsSync(file)) return json(res, 404, { error: 'not_found' });
@@ -72,6 +112,7 @@ function json(res, code, body) {
 }
 
 server.listen(PORT, () => {
-  console.log('[orchestrator] console on http://localhost:' + PORT);
-  for (const t of TRADES) console.log('              ' + t.id + '  ' + t.label);
+  console.log('[console] on http://localhost:' + PORT);
+  console.log('          ' + PROJECT.name + ' — ' + PROJECT.client + ' / ' + PROJECT.contractor);
+  for (const m of PROJECT.milestones) console.log('          ' + m.id + '  ' + m.name);
 });

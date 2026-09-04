@@ -1,0 +1,26 @@
+[
+  {
+    "label": "M1 escrow funded",
+    "hash": "3954D4FD802CB6320D37DD8F7659554BEBC861B32517D50FE01675C6FD9F249D"
+  },
+  {
+    "label": "x402 \u2014 evidence check paid",
+    "hash": "EDA2C04409AA41618376126C460A0DE0B161934C6424176A0497082979ECC16B"
+  },
+  {
+    "label": "M1 released to contractor",
+    "hash": "C7C034D6C740452B353246A67FDA069C29EE9173C482198E266A72E750CC0288"
+  },
+  {
+    "label": "M2 escrow funded (later flagged)",
+    "hash": "7A0E4EC247749F4F37C5304F8DB9FC6FE5F2EA5FF8883C79520782CDF8CECC39"
+  },
+  {
+    "label": "M6 returned to client on timeout",
+    "hash": "2CE81FFA49F7C09034274043499C32BA44AFB06ADD676CB3567077D6C1A6BE51"
+  },
+  {
+    "label": "XLS-70 credential issued",
+    "hash": "015A393AAE9EA17806D81D1BBEE3D3F698E952942918F566A9148253A3877641"
+  }
+]

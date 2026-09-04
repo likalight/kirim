@@ -3,154 +3,205 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Kirim — documentary credit desk</title>
+<title>KIRIM — milestone desk</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
+  /* Retia Labs design system — cream and ink, hairlines, sharp corners. */
   :root{
-    --paper:#F1F3F2;--card:#FBFCFB;--ink:#141A17;--ink-2:#3E4A44;--muted:#6C7C74;
-    --rule:#D4DBD7;--rule-soft:#E4E9E6;--accent:#0B6B4F;--accent-soft:#DBEAE3;
-    --warn:#93601A;--warn-soft:#F2E8D4;--stop:#8D322B;--stop-soft:#F3DEDC;
-  }
-  @media (prefers-color-scheme: dark){
-    :root{
-      --paper:#0C1210;--card:#131A17;--ink:#E7EDE9;--ink-2:#B3C2BA;--muted:#7C9089;
-      --rule:#243130;--rule-soft:#1C2624;--accent:#4FC49A;--accent-soft:#12302A;
-      --warn:#D6A05E;--warn-soft:#2A2317;--stop:#E0898A;--stop-soft:#2C1A19;
-    }
+    --paper-0:#FAF6EE; --paper-1:#F1ECE1; --paper-2:#E8E2D4; --paper-3:#DED7C6;
+    --ink-0:#17130D; --ink-2:#514A3C; --ink-3:#6A6356; --ink-4:#8C8467;
+    --panel-0:#0F0D09; --panel-1:#1A1712; --panel-2:#262119;
+    --panel-ink:#D9D3C5; --panel-muted:#9B9483; --panel-faint:#7D766A;
+    --trusted:#2C5A4E; --candidate:#4E7A5B; --contested:#B07A22;
+    --quarantined:#A23B2C; --restricted:#7A2E2E; --sage:#5E9B79;
+    --trusted-tint:#DCE6E0; --contested-tint:#EFE4CB; --quarantined-tint:#EFDAD2;
+    --font-display:'Newsreader',Georgia,serif;
+    --font-sans:'Archivo',system-ui,sans-serif;
+    --font-mono:'IBM Plex Mono',ui-monospace,monospace;
   }
   *{box-sizing:border-box}
-  body{margin:0;background:var(--paper);color:var(--ink);
-    font-family:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;font-size:15px;line-height:1.55}
-  header{border-bottom:2px solid var(--ink);padding:18px 26px;display:flex;flex-wrap:wrap;
-    gap:16px;align-items:baseline;justify-content:space-between}
-  h1{font-family:"IBM Plex Sans Condensed",sans-serif;font-size:26px;margin:0;letter-spacing:-.01em}
-  h1 span{color:var(--accent)}
-  .sub{color:var(--muted);font-size:13px;font-family:"IBM Plex Mono",monospace}
-  main{display:grid;grid-template-columns:minmax(320px,1fr) minmax(380px,1.15fr);gap:0;min-height:calc(100vh - 66px)}
-  @media (max-width:900px){main{grid-template-columns:1fr}}
+  body{margin:0;background:var(--paper-1);color:var(--ink-0);
+    font-family:var(--font-sans);font-size:15px;line-height:1.55}
+
+  header{border-bottom:1px solid var(--ink-0);padding:16px 26px;display:flex;
+    flex-wrap:wrap;gap:18px;align-items:baseline;justify-content:space-between}
+  h1{font-family:var(--font-display);font-size:27px;margin:0;font-weight:400;letter-spacing:-.01em}
+  .sub{color:var(--ink-4);font-size:12px;font-family:var(--font-mono);letter-spacing:.08em}
+  .live{display:inline-block;width:7px;height:7px;background:var(--ink-4);margin-right:7px}
+  .live.on{background:var(--trusted)}
+
+  main{display:grid;grid-template-columns:minmax(330px,1fr) minmax(420px,1.25fr);
+    min-height:calc(100vh - 62px)}
+  @media (max-width:960px){main{grid-template-columns:1fr}}
   .pane{padding:22px 26px}
-  .pane + .pane{border-left:1px solid var(--rule)}
-  @media (max-width:900px){.pane + .pane{border-left:none;border-top:1px solid var(--rule)}}
-  h2{font-family:"IBM Plex Sans Condensed",sans-serif;font-size:12px;letter-spacing:.14em;
-    text-transform:uppercase;color:var(--muted);margin:0 0 12px;font-weight:600}
+  .pane+.pane{border-left:1px solid var(--paper-3)}
+  @media (max-width:960px){.pane+.pane{border-left:none;border-top:1px solid var(--paper-3)}}
 
-  .trade{border:1px solid var(--rule);background:var(--card);padding:14px 16px;margin-bottom:10px;
-    display:flex;gap:14px;align-items:flex-start;cursor:pointer;text-align:left;width:100%;
-    font:inherit;color:inherit}
-  .trade:hover{border-color:var(--accent)}
-  .trade:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-  .trade[disabled]{opacity:.5;cursor:default}
-  .trade .id{font-family:"IBM Plex Mono",monospace;font-size:12.5px;color:var(--accent);white-space:nowrap}
-  .trade .lbl{font-size:14px;color:var(--ink-2)}
+  h2{font-family:var(--font-mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--ink-4);margin:0 0 12px;font-weight:400}
 
-  .verdict{border:1px solid var(--rule);border-left:3px solid var(--muted);background:var(--card);
-    padding:16px 18px;margin-top:18px}
-  .verdict.good{border-left-color:var(--accent)}
-  .verdict.bad{border-left-color:var(--stop)}
-  .verdict.wait{border-left-color:var(--warn)}
-  .verdict h3{margin:0 0 6px;font-family:"IBM Plex Sans Condensed",sans-serif;font-size:17px}
-  .verdict p{margin:0;color:var(--ink-2);font-size:14px}
+  .project{border:1px solid var(--paper-3);background:var(--paper-0);padding:14px 16px;margin-bottom:18px}
+  .project .name{font-family:var(--font-display);font-size:19px}
+  .project .meta{font-size:12.5px;color:var(--ink-3);margin-top:3px}
 
-  .totals{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:1px;
-    background:var(--rule);border:1px solid var(--rule);margin-top:18px}
-  .totals div{background:var(--card);padding:12px 14px}
-  .totals dt{font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.1em;
-    text-transform:uppercase;color:var(--muted)}
-  .totals dd{margin:5px 0 0;font-family:"IBM Plex Sans Condensed",sans-serif;font-size:21px;
-    font-weight:700;font-variant-numeric:tabular-nums}
+  .ms{border:1px solid var(--paper-3);background:var(--paper-0);padding:0;margin-bottom:8px;
+    display:grid;grid-template-columns:6px 1fr auto;align-items:stretch;width:100%;
+    font:inherit;color:inherit;text-align:left;cursor:pointer}
+  .ms:hover{border-color:var(--trusted)}
+  .ms:focus-visible{outline:2px solid var(--trusted);outline-offset:2px}
+  .ms[disabled]{opacity:.45;cursor:default}
+  .ms .bar{background:var(--paper-3)}
+  .ms.done .bar{background:var(--trusted)}
+  .ms .body{padding:11px 14px}
+  .ms .id{font-family:var(--font-mono);font-size:11px;color:var(--ink-4);letter-spacing:.1em}
+  .ms .nm{font-weight:600;font-size:14px;margin-top:1px}
+  .ms .sc{font-size:12px;color:var(--ink-3);margin-top:2px}
+  .ms .amt{font-family:var(--font-mono);font-size:12.5px;color:var(--ink-2);padding:11px 14px;
+    white-space:nowrap;align-self:center}
 
-  .feed{display:flex;flex-direction:column;gap:0;border:1px solid var(--rule);background:var(--card)}
-  .row{display:grid;grid-template-columns:104px 1fr;gap:0 16px;padding:12px 15px;
-    border-bottom:1px solid var(--rule-soft)}
-  .row:last-child{border-bottom:none}
-  .row .stage{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.1em;
-    text-transform:uppercase;color:var(--muted);padding-top:3px}
-  .row .decision{font-weight:600;font-size:14px}
-  .row .reason{color:var(--ink-2);font-size:13.5px;margin-top:2px}
-  .row a{color:var(--accent);font-family:"IBM Plex Mono",monospace;font-size:12px;
-    display:inline-block;margin-top:5px;word-break:break-all}
-  .row .cost{float:right;font-family:"IBM Plex Mono",monospace;font-size:12.5px;color:var(--accent);
+  .verdict{border:1px solid var(--paper-3);border-left:3px solid var(--ink-4);
+    background:var(--paper-0);padding:14px 16px;margin-top:16px}
+  .verdict.good{border-left-color:var(--trusted);background:var(--trusted-tint)}
+  .verdict.wait{border-left-color:var(--contested);background:var(--contested-tint)}
+  .verdict.bad{border-left-color:var(--quarantined);background:var(--quarantined-tint)}
+  .verdict h3{margin:0 0 4px;font-family:var(--font-display);font-size:18px;font-weight:400}
+  .verdict p{margin:0;font-size:13.5px;color:var(--ink-2)}
+
+  .record{border:1px solid var(--paper-3);background:var(--panel-0);padding:14px 16px;margin-top:16px}
+  .record h4{margin:0 0 10px;font-family:var(--font-mono);font-size:10px;letter-spacing:.18em;
+    color:var(--sage);text-transform:uppercase;font-weight:400}
+  .record .row{display:flex;justify-content:space-between;font-family:var(--font-mono);
+    font-size:12px;color:var(--panel-ink);padding:3px 0}
+  .record .row span:first-child{color:var(--panel-faint)}
+  .record .addr{font-family:var(--font-mono);font-size:10.5px;color:var(--panel-faint);
+    margin-top:8px;word-break:break-all}
+
+  .totals{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--paper-3);
+    border:1px solid var(--paper-3);margin-top:16px}
+  .totals div{background:var(--paper-0);padding:11px 13px}
+  .totals dt{font-family:var(--font-mono);font-size:9.5px;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--ink-4)}
+  .totals dd{margin:4px 0 0;font-family:var(--font-display);font-size:20px;
     font-variant-numeric:tabular-nums}
-  .row.settlement{background:var(--accent-soft)}
-  .row.declined .decision,.row.rejected .decision,.row.refused .decision{color:var(--stop)}
-  .row.awaiting_human .decision{color:var(--warn)}
 
-  .empty{color:var(--muted);font-size:14px;padding:26px 15px;text-align:center}
-  .live{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--muted);
-    margin-right:7px;vertical-align:1px}
-  .live.on{background:var(--accent)}
-  .note{color:var(--muted);font-size:12.5px;margin-top:14px;line-height:1.5}
+  .feed{border:1px solid var(--paper-3);background:var(--paper-0)}
+  .row{display:grid;grid-template-columns:106px 1fr;gap:0 16px;padding:11px 15px;
+    border-bottom:1px solid var(--paper-2)}
+  .row:last-child{border-bottom:none}
+  .row .stage{font-family:var(--font-mono);font-size:10px;letter-spacing:.12em;
+    text-transform:uppercase;color:var(--ink-4);padding-top:3px}
+  .row .decision{font-weight:600;font-size:13.5px}
+  .row .reason{color:var(--ink-2);font-size:13px;margin-top:2px}
+  .row a{color:var(--trusted);font-family:var(--font-mono);font-size:11px;
+    display:inline-block;margin-top:5px;word-break:break-all}
+  .row .cost{float:right;font-family:var(--font-mono);font-size:12px;color:var(--trusted);
+    font-variant-numeric:tabular-nums}
+  .row.settlement.released{background:var(--trusted-tint)}
+  .row.settlement.returned{background:var(--quarantined-tint)}
+  .row .decision.flagged,.row .decision.withheld{color:var(--quarantined)}
+  .row .decision.more_info,.row .decision.held,.row .decision.awaiting_client{color:var(--contested)}
+  .row .decision.declined{color:var(--restricted)}
+  .row .decision.ready,.row .decision.released,.row .decision.credentialed{color:var(--trusted)}
+
+  .empty{color:var(--ink-4);font-size:13.5px;padding:26px 15px;text-align:center}
+  .note{color:var(--ink-4);font-size:12px;margin-top:14px;line-height:1.5}
 </style>
 </head>
 <body>
 
 <header>
   <div>
-    <h1>Kirim<span>.</span></h1>
-    <div class="sub">documentary credit desk · XRPL testnet</div>
+    <h1>KIRIM</h1>
+    <div class="sub">MILESTONE DESK · XRPL TESTNET</div>
   </div>
   <div class="sub"><span class="live" id="live"></span><span id="livetext">connecting</span></div>
 </header>
 
 <main>
   <section class="pane">
-    <h2>Open a credit</h2>
-    <div id="trades"></div>
+    <h2>Project</h2>
+    <div class="project" id="project"></div>
+
+    <h2>Milestones</h2>
+    <div id="milestones"></div>
     <div id="verdict"></div>
-    <dl class="totals" id="totals" hidden>
-      <div><dt>Principal</dt><dd id="t-principal">—</dd></div>
+
+    <dl class="totals" id="totals">
+      <div><dt>Escrowed</dt><dd id="t-amount">—</dd></div>
       <div><dt>Agent spend</dt><dd id="t-spend">—</dd></div>
-      <div><dt>XRPL writes</dt><dd id="t-tx">0</dd></div>
+      <div><dt>Ledger writes</dt><dd id="t-tx">0</dd></div>
     </dl>
+
+    <div class="record" id="record"></div>
+
     <p class="note">
-      Supply is simulated — the supplier, the shipping documents and the inspector are fixtures.
-      Every payment, escrow and cancellation on the right is a real transaction on the XRP Ledger
-      testnet, and every hash links to the explorer.
+      Supply is simulated — the contractor, the photographs, the supplier registry and the
+      inspector are fixtures. Every payment, escrow and credential on the right is a real
+      transaction on the XRP Ledger testnet, and every hash links to the explorer.
     </p>
   </section>
 
   <section class="pane">
     <h2>Decision log</h2>
-    <div class="feed" id="feed"><div class="empty">Open a credit to begin.</div></div>
+    <div class="feed" id="feed"><div class="empty">Open a milestone to begin.</div></div>
   </section>
 </main>
 
 <script>
 const feed = document.getElementById('feed');
-const tradesEl = document.getElementById('trades');
 const verdictEl = document.getElementById('verdict');
-const totals = document.getElementById('totals');
-let principal = 0, spend = 0, txCount = 0, running = false;
+let amount = 0, spend = 0, txCount = 0, running = false;
 
-const money = (c) => 'US$' + (c / 100).toFixed(2);
+const money = (c) => 'US$' + (c / 100).toLocaleString('en-SG', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-fetch('/api/trades').then(r => r.json()).then(list => {
-  tradesEl.innerHTML = '';
-  for (const t of list) {
+async function loadProject() {
+  const p = await fetch('/api/project').then((r) => r.json());
+  document.getElementById('project').innerHTML =
+    '<div class="name">' + esc(p.name) + '</div>' +
+    '<div class="meta">' + esc(p.client) + ' &nbsp;·&nbsp; ' + esc(p.contractor) + '</div>' +
+    '<div class="meta">' + esc(p.site.address) + ' &nbsp;·&nbsp; ' + money(p.totalCents) + ' contract</div>';
+
+  const box = document.getElementById('milestones');
+  box.innerHTML = '';
+  for (const m of p.milestones) {
     const b = document.createElement('button');
-    b.className = 'trade';
-    b.innerHTML = '<span class="id">' + t.id + '</span><span class="lbl">' + t.label + '</span>';
-    b.onclick = () => start(t.id);
-    tradesEl.appendChild(b);
+    b.className = 'ms' + (m.released ? ' done' : '');
+    b.innerHTML =
+      '<span class="bar"></span>' +
+      '<span class="body"><span class="id">' + m.id + '</span>' +
+      '<div class="nm">' + esc(m.name) + '</div>' +
+      '<div class="sc">' + esc(m.scenario || '') + '</div></span>' +
+      '<span class="amt">' + money(m.amountCents) + '</span>';
+    b.onclick = () => start(m.id, m.amountCents);
+    box.appendChild(b);
   }
-});
+}
 
-function start(id) {
+async function loadRecord() {
+  const r = await fetch('/api/record').then((x) => x.json());
+  document.getElementById('record').innerHTML =
+    '<h4>Contractor track record · on-ledger</h4>' +
+    '<div class="row"><span>milestones completed</span><span>' + r.milestonesCompleted + '</span></div>' +
+    '<div class="row"><span>projects completed</span><span>' + r.projectsCompleted + '</span></div>' +
+    '<div class="row"><span>on time</span><span>' + (r.onTimeRate == null ? '—' : r.onTimeRate + '%') + '</span></div>' +
+    '<div class="addr">' + esc(r.address || '') + '</div>';
+}
+
+function start(id, amt) {
   if (running) return;
   running = true;
-  principal = spend = txCount = 0;
+  amount = amt; spend = 0; txCount = 0;
   feed.innerHTML = '';
   verdictEl.innerHTML = '';
-  totals.hidden = false;
   paint();
-  document.querySelectorAll('.trade').forEach(b => b.disabled = true);
+  document.querySelectorAll('.ms').forEach((b) => (b.disabled = true));
   fetch('/api/run?id=' + encodeURIComponent(id), { method: 'POST' });
 }
 
 function paint() {
-  document.getElementById('t-principal').textContent = principal ? money(principal) : '—';
+  document.getElementById('t-amount').textContent = amount ? money(amount) : '—';
   document.getElementById('t-spend').textContent = money(spend);
   document.getElementById('t-tx').textContent = txCount;
 }
@@ -165,18 +216,19 @@ es.onerror = () => {
   document.getElementById('livetext').textContent = 'reconnecting';
 };
 
-es.onmessage = (ev) => {
+es.onmessage = async (ev) => {
   const e = JSON.parse(ev.data);
 
   if (e.type === 'run_finished' || e.type === 'run_failed') {
     running = false;
-    document.querySelectorAll('.trade').forEach(b => b.disabled = false);
     showVerdict(e);
+    await loadProject();
+    await loadRecord();
     return;
   }
   if (e.type !== 'decision') return;
 
-  if (e.principalCents) principal = e.principalCents;
+  if (e.amountCents) amount = e.amountCents;
   if (e.costCents) spend += e.costCents;
   if (e.txHash) txCount++;
   paint();
@@ -190,8 +242,8 @@ es.onmessage = (ev) => {
   row.innerHTML =
     '<div class="stage">' + e.stage + '</div>' +
     '<div>' + cost +
-      '<div class="decision">' + e.decision.replace(/_/g, ' ') + '</div>' +
-      '<div class="reason">' + escapeHtml(e.reason) + '</div>' + link +
+      '<div class="decision ' + e.decision + '">' + e.decision.replace(/_/g, ' ') + '</div>' +
+      '<div class="reason">' + esc(e.reason) + '</div>' + link +
     '</div>';
   feed.appendChild(row);
   row.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
@@ -199,20 +251,22 @@ es.onmessage = (ev) => {
 
 function showVerdict(e) {
   const map = {
-    settled: ['good', 'Settled', 'Documents conformed. The supplier was paid on presentation.'],
-    documents_rejected: ['bad', 'Documents rejected', 'A discrepancy was found. The funds stayed in escrow.'],
-    timed_out_and_returned: ['bad', 'Returned to buyer', 'Nothing was presented. The escrow cancelled itself and the money went home.'],
-    declined_before_funding: ['bad', 'Declined', 'The counterparty failed screening. No funds were ever committed.'],
-    awaiting_human_authorisation: ['wait', 'Awaiting authorisation', 'The principal is above the autonomous ceiling. A human must approve it.'],
-    refused: ['wait', 'Refused by policy', 'The ledger service declined to move the money.'],
+    released: ['good', 'Released', 'Evidence conformed. The contractor was paid on presentation, and the milestone is on their ledger record.'],
+    more_information_needed: ['wait', 'More information needed', 'Nothing contradicts the agreed scope — the submission is incomplete. Funds held, no mark on the record.'],
+    flagged_for_review: ['bad', 'Flagged for review', 'The evidence contradicts the agreed scope. Funds stay in escrow until it is resolved.'],
+    awaiting_client_authorisation: ['wait', 'Awaiting authorisation', 'The evidence is in order, but the amount is above the autonomous ceiling. The client must authorise it.'],
+    timed_out_and_returned: ['bad', 'Returned to the client', 'Nothing was ever presented. The escrow cancelled itself and the money went home.'],
   };
   const [cls, title, text] = map[e.outcome] || ['', e.outcome || 'Failed', e.error || ''];
-  verdictEl.innerHTML = '<div class="verdict ' + cls + '"><h3>' + title + '</h3><p>' + text + '</p></div>';
+  verdictEl.innerHTML = '<div class="verdict ' + cls + '"><h3>' + title + '</h3><p>' + esc(text) + '</p></div>';
 }
 
-function escapeHtml(s) {
-  return String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+function esc(s) {
+  return String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 }
+
+loadProject();
+loadRecord();
 </script>
 </body>
 </html>

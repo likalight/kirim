@@ -5,6 +5,7 @@ import { toCents } from '@kirim/trade';
 import {
   xrpl, settlementAsset, pay, escrowCreate, escrowFinish, escrowCancel,
   verifyTx, balances, trustSet, explorerTx, scalePrincipal,
+  credentialCreate, credentialAccept, readCredentials,
 } from './xrpl.mjs';
 
 /**
@@ -49,10 +50,9 @@ const routes = {
   },
 
   // The trade principal. Bounded by the approval threshold, not the per-call cap.
+  // Funding only moves money into protection, so no approval ceiling applies
+  // here. The ceiling lives on /escrow/finish, where the act is irreversible.
   'POST /escrow/create': async (b) => {
-    const cents = toCents(b.amount);
-    const verdict = policy.check({ amountCents: cents, tradeId: b.tradeId, kind: 'escrow' });
-    if (!verdict.ok) return { refused: true, ...verdict };
     const wallet = wallets[b.from ?? 'buyer'];
     const principal = scalePrincipal(b.amount);
     const out = await escrowCreate({
@@ -71,12 +71,24 @@ const routes = {
     };
   },
 
+  // Release is where the human ceiling applies: funding an escrow only moves
+  // money into protection, releasing it is the irreversible act.
   'POST /escrow/finish': async (b) => {
+    if (b.amount !== undefined) {
+      const cents = toCents(b.amount);
+      if (cents > policy.approvalAbove && !b.authorisedBy) {
+        return {
+          refused: true, needsApproval: true,
+          reason: `Release of ${b.amount} exceeds the autonomous ceiling. `
+            + `The evidence is in order; the client must authorise the payment.`,
+        };
+      }
+    }
     const out = await escrowFinish({
       wallet: wallets[b.by ?? 'platform'], owner: b.owner,
       offerSequence: b.offerSequence, condition: b.condition, fulfillment: b.fulfillment,
     });
-    return { txHash: out.hash, explorer: out.explorer };
+    return { refused: false, txHash: out.hash, explorer: out.explorer };
   },
 
   'POST /escrow/cancel': async (b) => {
@@ -84,6 +96,55 @@ const routes = {
       wallet: wallets[b.by ?? 'platform'], owner: b.owner, offerSequence: b.offerSequence,
     });
     return { txHash: out.hash, explorer: out.explorer };
+  },
+
+  // --- XLS-70 credentials: the contractor's track record, on the ledger ----
+  'POST /credential/issue': async (b) => {
+    const issuer = wallets[b.by ?? 'platform'];
+    const subjectAddr = wallets[b.subject]?.address ?? b.subject;
+
+    // A credential is keyed by (issuer, subject, type) and the type carries the
+    // milestone, so issuing is idempotent by construction. tecDUPLICATE means
+    // this milestone is already on the contractor's record — the right outcome,
+    // not a failure. Re-running the demo must never break on it.
+    let created;
+    try {
+      created = await credentialCreate({
+        wallet: issuer, subject: subjectAddr,
+        credentialType: b.credentialType, uri: b.uri,
+      });
+    } catch (e) {
+      if (e.result === 'tecDUPLICATE') {
+        return {
+          alreadyIssued: true, issuer: issuer.address, subject: subjectAddr,
+          note: 'This milestone is already recorded on the contractor account.',
+        };
+      }
+      throw e;
+    }
+    // The subject must accept, or the credential sits unaccepted and proves
+    // nothing. In production that is the contractor's own wallet doing it.
+    let accepted = null;
+    if (wallets[b.subject]) {
+      try {
+        accepted = await credentialAccept({
+          wallet: wallets[b.subject], issuer: issuer.address, credentialType: b.credentialType,
+        });
+      } catch (e) {
+        if (e.result !== 'tecDUPLICATE') throw e;
+      }
+    }
+    return {
+      issueTxHash: created.hash, issueExplorer: created.explorer,
+      acceptTxHash: accepted?.hash, acceptExplorer: accepted?.explorer,
+      issuer: issuer.address, subject: subjectAddr,
+    };
+  },
+
+  'GET /credentials': async (_b, url) => {
+    const role = url.searchParams.get('role');
+    const address = wallets[role]?.address ?? url.searchParams.get('address');
+    return { address, credentials: await readCredentials(address) };
   },
 
   'GET /tx': async (_b, url) => verifyTx(url.searchParams.get('hash')),

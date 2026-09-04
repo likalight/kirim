@@ -76,7 +76,7 @@ export async function pay({ wallet, to, value, asset, memo }) {
  * the instrument: only the holder of the fulfillment can release, and
  * CancelAfter returns the funds to the buyer with no dispute and no lawyer.
  */
-export async function escrowCreate({ wallet, to, value, asset, memo, cancelAfterSeconds = 900, finishAfterSeconds = 2 }) {
+export async function escrowCreate({ wallet, to, value, asset, memo, cancelAfterSeconds = 900, finishAfterSeconds = 0 }) {
   const { condition, fulfillment } = makeCondition();
   const now = Date.now();
   const c = await xrpl();
@@ -88,7 +88,14 @@ export async function escrowCreate({ wallet, to, value, asset, memo, cancelAfter
     Destination: to,
     Amount: amountField(asset, value),
     Condition: condition,
-    FinishAfter: isoTimeToRippleTime(new Date(now + finishAfterSeconds * 1000).toISOString()),
+    // No FinishAfter. The crypto-condition is the gate — a time gate adds
+    // nothing, and a FinishAfter only seconds ahead is racy: the ledger can
+    // close past it before the transaction is validated, and rippled reports
+    // that as tecNO_PERMISSION rather than anything about timing. Measured:
+    // FinishAfter +2s fails, +60s succeeds, omitted succeeds.
+    ...(finishAfterSeconds > 0
+      ? { FinishAfter: isoTimeToRippleTime(new Date(now + finishAfterSeconds * 1000).toISOString()) }
+      : {}),
     CancelAfter: isoTimeToRippleTime(new Date(now + cancelAfterSeconds * 1000).toISOString()),
     SourceTag: tag(),
     Memos: memoField(memo),
@@ -170,4 +177,53 @@ export function scalePrincipal(usd) {
     unit,
     note: `Testnet scaling: US$${usd} settles as ${Number(usd) / divisor} ${unit} (divided by ${divisor}) because ${cap}. Set SETTLEMENT_DIVISOR=1 to settle at par.`,
   };
+}
+
+/**
+ * XLS-70 Credentials — the contractor's track record.
+ *
+ * Kirim issues; the contractor accepts; anyone can read it back from the
+ * contractor's own account. The record is portable and outlives us, which is
+ * the honest answer to "why does this need a ledger at all".
+ */
+export async function credentialCreate({ wallet, subject, credentialType, uri, expirationSeconds }) {
+  const tx = {
+    TransactionType: 'CredentialCreate',
+    Account: wallet.address,
+    Subject: subject,
+    CredentialType: convertStringToHex(credentialType),
+    URI: convertStringToHex(uri),
+  };
+  if (expirationSeconds) {
+    tx.Expiration = isoTimeToRippleTime(new Date(Date.now() + expirationSeconds * 1000).toISOString());
+  }
+  return submit(wallet, tx);
+}
+
+export async function credentialAccept({ wallet, issuer, credentialType }) {
+  return submit(wallet, {
+    TransactionType: 'CredentialAccept',
+    Account: wallet.address,
+    Issuer: issuer,
+    CredentialType: convertStringToHex(credentialType),
+  });
+}
+
+const ACCEPTED = 0x00010000;
+
+export async function readCredentials(address) {
+  const c = await xrpl();
+  const r = await c.request({ command: 'account_objects', account: address, type: 'credential' });
+  return r.result.account_objects.map((o) => {
+    const uri = o.URI ? Buffer.from(o.URI, 'hex').toString() : '';
+    const [path, query] = uri.split('?');
+    const [, projectId, milestoneId, slug] = path.split('/');
+    return {
+      type: Buffer.from(o.CredentialType, 'hex').toString(),
+      uri, projectId, milestoneId, slug,
+      onTime: new URLSearchParams(query || '').get('onTime') === '1',
+      accepted: Boolean(o.Flags & ACCEPTED),
+      issuer: o.Issuer,
+    };
+  });
 }

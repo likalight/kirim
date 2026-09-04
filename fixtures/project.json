@@ -1,0 +1,317 @@
+{
+  "id": "PRJ-2026-014",
+  "name": "Sarah's Home Renovation",
+  "client": "Sarah Lim",
+  "contractor": "ABC Renovation Pte Ltd",
+  "contractorUEN": "201411238K",
+  "totalCents": 6800000,
+  "site": {
+    "address": "Blk 219 Bedok Central, Singapore",
+    "lat": 1.3236,
+    "lng": 103.9273,
+    "radiusM": 150
+  },
+  "milestones": [
+    {
+      "id": "M1",
+      "name": "Demolition and disposal",
+      "amountCents": 1000000,
+      "startsOn": "2026-09-01",
+      "dueOn": "2026-09-08",
+      "requiredPhotos": 3,
+      "minInspectionPercent": 95,
+      "requiresPermit": "HDB renovation",
+      "boq": [
+        {
+          "sku": "SKIP-6YD",
+          "description": "Waste skip, 6 cubic yard",
+          "qty": 2
+        }
+      ],
+      "scenario": "Evidence conforms \u2014 releases autonomously, credential issued",
+      "submission": {
+        "submittedAt": "2026-09-07T16:20:00+08:00",
+        "note": "Wet areas and kitchen stripped to structure. Two skips removed Friday.",
+        "permitRef": "HDB/RN/2026/44219",
+        "photos": [
+          {
+            "file": "demo-kitchen-01.jpg",
+            "takenAt": "2026-09-05T10:12:00+08:00",
+            "lat": 1.32358,
+            "lng": 103.92742,
+            "sha256": "9f2a1c44e8b7d3016a5c9e2f7b41d8a3c06e5f9b2d4a7c1e83f60b5d2a9c4e17"
+          },
+          {
+            "file": "demo-bath-02.jpg",
+            "takenAt": "2026-09-05T10:31:00+08:00",
+            "lat": 1.32363,
+            "lng": 103.92718,
+            "sha256": "3d81f0b6c25e94a7d13b8f602ea45c9718d3b6a0f4c27e59b81d0a63f7e2c845"
+          },
+          {
+            "file": "demo-skip-03.jpg",
+            "takenAt": "2026-09-06T15:02:00+08:00",
+            "lat": 1.32341,
+            "lng": 103.92766,
+            "sha256": "b70e5a92d1f483c6027ba9e5d84c31f0a62d7b98e05c34a1f7d2b60e9a35c8d4"
+          }
+        ],
+        "deliveries": [
+          {
+            "ref": "SKP-88213",
+            "supplier": "Eastern Waste Services",
+            "sku": "SKIP-6YD",
+            "qty": 2,
+            "deliveredAt": "2026-09-04"
+          }
+        ]
+      },
+      "inspection": {
+        "percentComplete": 100,
+        "defects": []
+      }
+    },
+    {
+      "id": "M2",
+      "name": "Plumbing first fix",
+      "amountCents": 1000000,
+      "startsOn": "2026-09-08",
+      "dueOn": "2026-09-16",
+      "dependsOn": "M1",
+      "requiredPhotos": 3,
+      "minInspectionPercent": 95,
+      "boq": [
+        {
+          "sku": "PPR-20MM",
+          "description": "PPR pipe 20mm, metres",
+          "qty": 60
+        },
+        {
+          "sku": "VLV-ANG-15",
+          "description": "Angle valve 15mm",
+          "qty": 8
+        }
+      ],
+      "scenario": "A photo taken 2.3km off site and an unverifiable delivery note \u2014 flagged",
+      "submission": {
+        "submittedAt": "2026-09-15T18:05:00+08:00",
+        "note": "First fix complete throughout. Pressure tested.",
+        "photos": [
+          {
+            "file": "plumb-riser-01.jpg",
+            "takenAt": "2026-09-12T09:40:00+08:00",
+            "lat": 1.32352,
+            "lng": 103.92735,
+            "sha256": "1a4c7e90b3d582f61c9a0e47b28d5f3061e9c2a84b70d5f36a1e8c94d207b3f5"
+          },
+          {
+            "file": "plumb-kitchen-02.jpg",
+            "takenAt": "2026-09-12T09:55:00+08:00",
+            "lat": 1.3441,
+            "lng": 103.93005,
+            "sha256": "6e2b8d51f7a09c34e15d7b28a604f39c85b1e0d7a2c36f48b95d1c07e3a8624f"
+          },
+          {
+            "file": "plumb-test-03.jpg",
+            "takenAt": "2026-09-14T11:20:00+08:00",
+            "lat": 1.3237,
+            "lng": 103.92709,
+            "sha256": "c05f3a71e69b28d4f0a37c85b1e6d902a4f7c38b05e12d6a9c4b73f08e5d1a26"
+          }
+        ],
+        "deliveries": [
+          {
+            "ref": "INV-77120",
+            "supplier": "Hoe Seng Hardware",
+            "sku": "PPR-20MM",
+            "qty": 60,
+            "deliveredAt": "2026-09-10"
+          },
+          {
+            "ref": "INV-77999",
+            "supplier": "Hoe Seng Hardware",
+            "sku": "VLV-ANG-15",
+            "qty": 8,
+            "deliveredAt": "2026-09-11"
+          }
+        ]
+      },
+      "inspection": {
+        "percentComplete": 98,
+        "defects": []
+      }
+    },
+    {
+      "id": "M3",
+      "name": "Electrical first fix",
+      "amountCents": 1000000,
+      "startsOn": "2026-09-16",
+      "dueOn": "2026-09-24",
+      "requiredPhotos": 3,
+      "minInspectionPercent": 95,
+      "requiresPermit": "Licensed electrical worker",
+      "boq": [
+        {
+          "sku": "CBL-2C5-25",
+          "description": "2.5mm twin and earth, metres",
+          "qty": 120
+        }
+      ],
+      "scenario": "One photo, no delivery notes, no inspection \u2014 more information needed, not a rejection",
+      "submission": {
+        "submittedAt": "2026-09-23T20:11:00+08:00",
+        "note": "Wiring done, will send the rest tomorrow.",
+        "photos": [
+          {
+            "file": "elec-db-01.jpg",
+            "takenAt": "2026-09-22T14:02:00+08:00",
+            "lat": 1.32349,
+            "lng": 103.92751,
+            "sha256": "84b1d0c73e5a29f6018c4b7d2e0a6f5391c73b8d04e2a165f9c8b3d70a24e6f1"
+          }
+        ],
+        "deliveries": [],
+        "permitRef": "LEW/2026/55831"
+      },
+      "inspection": null
+    },
+    {
+      "id": "M4",
+      "name": "Tiling and finishing",
+      "amountCents": 1000000,
+      "startsOn": "2026-09-24",
+      "dueOn": "2026-10-06",
+      "requiredPhotos": 3,
+      "minInspectionPercent": 95,
+      "boq": [
+        {
+          "sku": "TIL-600X600",
+          "description": "Porcelain tile 600x600, sqm",
+          "qty": 48
+        }
+      ],
+      "scenario": "Inspection finds 72% complete with a critical defect, and a recycled photo \u2014 flagged",
+      "submission": {
+        "submittedAt": "2026-10-08T09:30:00+08:00",
+        "note": "Finishing complete.",
+        "photos": [
+          {
+            "file": "tile-living-01.jpg",
+            "takenAt": "2026-10-05T13:15:00+08:00",
+            "lat": 1.32355,
+            "lng": 103.9273,
+            "sha256": "2f7a91c05b8e3d6417a0c9b24e5f8d3160b7a4c92e1d05f83b6c7a0d94e12b58"
+          },
+          {
+            "file": "tile-bath-02.jpg",
+            "takenAt": "2026-10-05T13:41:00+08:00",
+            "lat": 1.32361,
+            "lng": 103.92722,
+            "sha256": "9f2a1c44e8b7d3016a5c9e2f7b41d8a3c06e5f9b2d4a7c1e83f60b5d2a9c4e17"
+          },
+          {
+            "file": "tile-kitchen-03.jpg",
+            "takenAt": "2026-10-06T10:05:00+08:00",
+            "lat": 1.32347,
+            "lng": 103.92759,
+            "sha256": "5c3e8b02a7f19d46e0b8c35a71d29f04b6e83c07a45d1f92b0e6c8a37d5941fb"
+          }
+        ],
+        "deliveries": [
+          {
+            "ref": "INV-80442",
+            "supplier": "Soon Lee Tiles",
+            "sku": "TIL-600X600",
+            "qty": 48,
+            "deliveredAt": "2026-09-28"
+          }
+        ]
+      },
+      "inspection": {
+        "percentComplete": 72,
+        "defects": [
+          {
+            "severity": "critical",
+            "note": "Bathroom floor falls away from the drain; ponding observed across roughly 2 sqm."
+          },
+          {
+            "severity": "minor",
+            "note": "Two skirting joints require sealant."
+          }
+        ]
+      }
+    },
+    {
+      "id": "M5",
+      "name": "Variation order \u2014 structural wall opening",
+      "amountCents": 1800000,
+      "startsOn": "2026-10-06",
+      "dueOn": "2026-10-20",
+      "requiredPhotos": 3,
+      "minInspectionPercent": 95,
+      "requiresPermit": "HDB structural",
+      "boq": [
+        {
+          "sku": "STL-LINTEL",
+          "description": "Steel lintel, 2.4m",
+          "qty": 1
+        }
+      ],
+      "scenario": "Evidence conforms, but the amount is above the autonomous ceiling \u2014 Sarah is asked",
+      "submission": {
+        "submittedAt": "2026-10-18T17:40:00+08:00",
+        "note": "Opening formed, lintel installed and certified by the PE.",
+        "permitRef": "HDB/ST/2026/10877",
+        "photos": [
+          {
+            "file": "vo-lintel-01.jpg",
+            "takenAt": "2026-10-16T11:00:00+08:00",
+            "lat": 1.3235,
+            "lng": 103.9274,
+            "sha256": "7b1e0d94c62a3f58019d7c4b30e6a2f85c91b7d04a3e26f19c58b0d7a3e14265"
+          },
+          {
+            "file": "vo-opening-02.jpg",
+            "takenAt": "2026-10-16T11:22:00+08:00",
+            "lat": 1.32359,
+            "lng": 103.92727,
+            "sha256": "0a6c3f81b9d47e25a3f08c61d95b2e740c8a37f16b0e5d29a74c1b83e60f5d92"
+          },
+          {
+            "file": "vo-pe-cert-03.jpg",
+            "takenAt": "2026-10-17T09:14:00+08:00",
+            "lat": 1.32344,
+            "lng": 103.92768,
+            "sha256": "e42b7c0951d68a3f07b2e9c14d80a6f35b17c0e92a48d6f01b93c7a05e28d461"
+          }
+        ],
+        "deliveries": [
+          {
+            "ref": "INV-81003",
+            "supplier": "Wah Lee Steel",
+            "sku": "STL-LINTEL",
+            "qty": 1,
+            "deliveredAt": "2026-10-14"
+          }
+        ]
+      },
+      "inspection": {
+        "percentComplete": 100,
+        "defects": []
+      }
+    },
+    {
+      "id": "M6",
+      "name": "Final completion and handover",
+      "amountCents": 1000000,
+      "startsOn": "2026-10-20",
+      "dueOn": "2026-10-28",
+      "requiredPhotos": 4,
+      "minInspectionPercent": 98,
+      "noSubmission": true,
+      "cancelAfterSeconds": 30,
+      "scenario": "Contractor never submits \u2014 escrow times out and Sarah's money returns",
+      "boq": []
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+{
+  "SKP-88213": { "supplier": "Eastern Waste Services", "sku": "SKIP-6YD", "qty": 2, "issuedOn": "2026-09-04" },
+  "INV-77120": { "supplier": "Hoe Seng Hardware", "sku": "PPR-20MM", "qty": 60, "issuedOn": "2026-09-10" },
+  "INV-80442": { "supplier": "Soon Lee Tiles", "sku": "TIL-600X600", "qty": 48, "issuedOn": "2026-09-28" },
+  "INV-81003": { "supplier": "Wah Lee Steel", "sku": "STL-LINTEL", "qty": 1, "issuedOn": "2026-10-14" }
+}
