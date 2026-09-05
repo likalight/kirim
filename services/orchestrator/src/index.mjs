@@ -1,7 +1,7 @@
 import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
-import { runMilestone } from './works.mjs';
+import { runMilestone, authoriseRelease, pendingReleases } from './works.mjs';
 import { runTrade } from './agent.mjs';
 import { summarise } from '@kirim/works';
 
@@ -59,6 +59,52 @@ const server = http.createServer(async (req, res) => {
       })),
       trades: TRADES.map((t) => ({ id: t.id, label: t.label })),
     });
+  }
+
+  // What the client's wallet must sign, if anything is waiting.
+  if (url.pathname === '/api/pending') {
+    const out = [];
+    for (const [key, p] of pendingReleases) {
+      out.push({
+        key, milestone: p.ms.id, name: p.ms.name, amountCents: p.ms.amountCents,
+        authorisation: {
+          from: p.escrow.owner,
+          to: null,          // filled by the ledger service below
+          amountXrp: '0.000001',
+          memo: key,
+        },
+      });
+    }
+    const health = await fetch(LEDGER + '/health').then((r) => r.json());
+    for (const o of out) o.authorisation.to = health.accounts.platform;
+    return json(res, 200, { pending: out, accounts: health.accounts });
+  }
+
+  // The client has signed. Verify it and finish the release.
+  if (url.pathname === '/api/authorise' && req.method === 'POST') {
+    const chunks = [];
+    for await (const c of req) chunks.push(c);
+    let body = {};
+    try { body = JSON.parse(Buffer.concat(chunks).toString() || '{}'); }
+    catch { return json(res, 400, { error: 'bad_json' }); }
+    const key = url.searchParams.get('key');
+    if (!key || !body.txHash) return json(res, 400, { error: 'key and txHash are required' });
+
+    json(res, 202, { authorising: key });
+    broadcast({ type: 'run_started', id: key, label: 'client authorisation' });
+    try {
+      const { outcome } = await authoriseRelease(key, body.txHash, {
+        emit: (e) => broadcast({ type: 'decision', ...e }),
+      });
+      if (outcome === 'released') {
+        const msId = key.split('/')[1];
+        if (!priorReleased.includes(msId)) priorReleased.push(msId);
+      }
+      broadcast({ type: 'run_finished', id: key, outcome });
+    } catch (e) {
+      broadcast({ type: 'run_failed', id: key, error: e.message });
+    }
+    return;
   }
 
   if (url.pathname === '/api/record') {

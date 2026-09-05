@@ -227,3 +227,54 @@ export async function readCredentials(address) {
     };
   });
 }
+
+/**
+ * Verify a client's release authorisation.
+ *
+ * The client authorises a release by sending a token payment from their own
+ * wallet to Kirim, carrying a memo that binds it to one milestone. Any XRPL
+ * wallet can produce that — Crossmark, GemWallet, Xaman, or a hand-built
+ * transaction — so the authorisation does not depend on one vendor's
+ * extension being installed on the day.
+ *
+ * We check the signature the only way that matters: the transaction is on the
+ * ledger, it succeeded, it came from the client's account, it went to ours,
+ * and its memo names this milestone and no other.
+ */
+export async function verifyAuthorisation({ hash, from, to, memo }) {
+  const c = await xrpl();
+  let r;
+  try {
+    r = await c.request({ command: 'tx', transaction: hash });
+  } catch (e) {
+    return { ok: false, reason: 'That transaction is not on the ledger.' };
+  }
+  const t = r.result.tx_json ?? r.result;
+
+  if (!r.result.validated) return { ok: false, reason: 'The authorisation is not yet validated.' };
+  if (r.result.meta?.TransactionResult !== 'tesSUCCESS') {
+    return { ok: false, reason: `The authorisation failed on the ledger (${r.result.meta?.TransactionResult}).` };
+  }
+  if (t.TransactionType !== 'Payment') {
+    return { ok: false, reason: 'The authorisation must be a Payment.' };
+  }
+  if (t.Account !== from) {
+    return { ok: false, reason: `The authorisation was signed by ${t.Account}, not by the client account ${from}.` };
+  }
+  if (t.Destination !== to) {
+    return { ok: false, reason: 'The authorisation was not addressed to Kirim.' };
+  }
+
+  const memos = (t.Memos ?? []).map((m) => {
+    try { return Buffer.from(m.Memo?.MemoData ?? '', 'hex').toString('utf8'); }
+    catch { return ''; }
+  });
+  if (!memos.includes(memo)) {
+    return {
+      ok: false,
+      reason: `The authorisation does not name this milestone. Expected a memo of "${memo}".`,
+    };
+  }
+
+  return { ok: true, payer: t.Account, hash, explorer: explorerTx(hash) };
+}

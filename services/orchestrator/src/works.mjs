@@ -19,6 +19,13 @@ async function ledgerPost(path, body) {
 }
 
 /**
+ * Releases waiting on a client signature, keyed by project/milestone. Above the
+ * ceiling the agent has done its work and stops; the money moves only once the
+ * client's own wallet has authorised it on the ledger.
+ */
+export const pendingReleases = new Map();
+
+/**
  * The milestone agent.
  *
  * Client funds an escrow at the start of each milestone. The contractor
@@ -158,15 +165,40 @@ export async function runMilestone(project, ms0, {
   }
 
   // --- release --------------------------------------------------------------
+  return release({ project, ms, sub, escrow, amountUsd, log });
+}
+
+/**
+ * Finish the escrow and write the track record. Split out because a release
+ * above the ceiling happens later, after the client has signed.
+ */
+async function release({ project, ms, sub, escrow, amountUsd, log, authorisationTxHash }) {
+  const memo = `${project.id}/${ms.id}`;
   const finished = await ledgerPost('/escrow/finish', {
     by: 'platform', owner: escrow.owner, offerSequence: escrow.offerSequence,
     condition: escrow.condition, fulfillment: escrow.fulfillment,
-    amount: amountUsd,
+    amount: amountUsd, memo, authorisationTxHash,
   });
 
   if (finished.refused) {
-    log.add('settlement', 'awaiting_client', finished.reason, { amountCents: ms.amountCents });
+    pendingReleases.set(memo, { project, ms, sub, escrow, amountUsd });
+    log.add('settlement', 'awaiting_client', finished.reason, {
+      amountCents: ms.amountCents,
+      authorisation: finished.authorisation
+        ? { ...finished.authorisation, memo }
+        : undefined,
+    });
     return { log, outcome: 'awaiting_client_authorisation', escrow };
+  }
+
+  pendingReleases.delete(memo);
+
+  if (authorisationTxHash) {
+    log.add('authorisation', 'verified',
+      `${project.client} authorised the release from their own wallet. The signature ` +
+      `is on the ledger, names this milestone, and was checked before a cent moved.`,
+      { txHash: authorisationTxHash,
+        explorer: `${process.env.XRPL_EXPLORER || 'https://testnet.xrpl.org'}/transactions/${authorisationTxHash}` });
   }
 
   log.add('settlement', 'released',
@@ -174,12 +206,9 @@ export async function runMilestone(project, ms0, {
     `evidence, not on a promise and not in ninety days.`,
     { txHash: finished.txHash, explorer: finished.explorer });
 
-  // --- the track record -----------------------------------------------------
   const onTime = sub.submittedAt.slice(0, 10) <= ms.dueOn;
   const cred = await ledgerPost('/credential/issue', {
     by: 'platform', subject: 'supplier',
-    // A credential is keyed by (issuer, subject, type), so the type carries the
-    // milestone. One ledger object per completed milestone, enumerable forever.
     credentialType: `KIRIM:${project.id}:${ms.id}`,
     uri: credentialUri({ projectId: project.id, milestoneId: ms.id, name: ms.name, onTime }),
   });
@@ -188,11 +217,20 @@ export async function runMilestone(project, ms0, {
     cred.alreadyIssued
       ? `This milestone is already on ${project.contractor}'s ledger record from an earlier run. ` +
         `A milestone credential is unique by construction, so it cannot be double-counted.`
-      :
-    `Milestone credential issued to ${project.contractor} and accepted by their account. ` +
-    `It lives on their XRPL account, not in Kirim's database — any future client can verify it ` +
-    `without asking us.`,
+      : `Milestone credential issued to ${project.contractor} and accepted by their account. ` +
+        `It lives on their XRPL account, not in Kirim's database — any future client can verify it ` +
+        `without asking us.`,
     { txHash: cred.issueTxHash, explorer: cred.issueExplorer, acceptTxHash: cred.acceptTxHash });
 
   return { log, outcome: 'released', escrow, credential: cred };
+}
+
+/**
+ * Complete a release the client has now signed for.
+ */
+export async function authoriseRelease(key, authorisationTxHash, { emit = () => {} } = {}) {
+  const p = pendingReleases.get(key);
+  if (!p) throw new Error(`No release is waiting on authorisation for ${key}`);
+  const log = new DecisionLog(key, emit);
+  return release({ ...p, log, authorisationTxHash });
 }

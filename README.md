@@ -147,6 +147,29 @@ The rules are deterministic and live in [`packages/works/src/examine.mjs`](packa
 
 The challenge brief names "requiring humans to approve each agent action" as an anti-pattern. A value ceiling is a safeguard, not an approval queue: small milestones settle themselves, large ones ask.
 
+## Client authorisation is a signature, not a flag
+
+Above `HUMAN_APPROVAL_ABOVE_USD` the agent finishes its work and stops. The
+release then needs the client, and "the client approved" means a signature on
+the ledger from their own wallet — not a boolean in a request body.
+
+The client sends an ordinary XRPL Payment to Kirim carrying a memo naming the
+milestone. **Crossmark** and **GemWallet** are wired into the console directly;
+any other wallet — Xaman, a hardware wallet, a hand-built transaction — produces
+the same authorisation, so the demo does not depend on one extension being
+installed. `npm run authorise M5` does it from the command line.
+
+Kirim then verifies it on-ledger before anything moves. Measured against a real
+authorisation:
+
+| Attempt | Result |
+|---|---|
+| The real authorisation | accepted |
+| Replayed against a different milestone | refused — *does not name this milestone* |
+| Claimed to come from the contractor | refused — *signed by the wrong account* |
+| Addressed to another account | refused — *not addressed to Kirim* |
+| A hash that does not exist | refused — *not on the ledger* |
+
 ## The track record
 
 Every released milestone issues an **XLS-70 Credential** to the contractor's own XRPL account, which they accept. It is keyed `KIRIM:<project>:<milestone>`, so it cannot be double-counted, and any future client can verify it without asking Kirim anything.

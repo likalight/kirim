@@ -6,7 +6,7 @@ import { MppClient } from '@kirim/mpp';
 import {
   xrpl, settlementAsset, pay, escrowCreate, escrowFinish, escrowCancel,
   verifyTx, balances, trustSet, explorerTx, scalePrincipal,
-  credentialCreate, credentialAccept, readCredentials,
+  credentialCreate, credentialAccept, readCredentials, verifyAuthorisation,
 } from './xrpl.mjs';
 
 /**
@@ -103,19 +103,46 @@ const routes = {
   'POST /escrow/finish': async (b) => {
     if (b.amount !== undefined) {
       const cents = toCents(b.amount);
-      if (cents > policy.approvalAbove && !b.authorisedBy) {
-        return {
-          refused: true, needsApproval: true,
-          reason: `Release of ${b.amount} exceeds the autonomous ceiling. `
-            + `The evidence is in order; the client must authorise the payment.`,
-        };
+      if (cents > policy.approvalAbove) {
+        // Above the ceiling the client must authorise, and "authorise" means a
+        // signature on the ledger from their own wallet — not a flag in a
+        // request body that anything could set.
+        if (!b.authorisationTxHash) {
+          return {
+            refused: true, needsApproval: true,
+            reason: `Release of ${b.amount} exceeds the autonomous ceiling. `
+              + `The evidence is in order; the client must authorise the payment `
+              + `from their own wallet.`,
+            authorisation: {
+              from: wallets.buyer.address,
+              to: wallets.platform.address,
+              amountXrp: '0.000001',
+              memo: b.memo,
+              note: 'Send this payment from the client wallet in any XRPL wallet, '
+                + 'then submit the transaction hash.',
+            },
+          };
+        }
+        const auth = await verifyAuthorisation({
+          hash: b.authorisationTxHash,
+          from: wallets.buyer.address,
+          to: wallets.platform.address,
+          memo: b.memo,
+        });
+        if (!auth.ok) {
+          return { refused: true, needsApproval: true, reason: auth.reason };
+        }
       }
     }
     const out = await escrowFinish({
       wallet: wallets[b.by ?? 'platform'], owner: b.owner,
       offerSequence: b.offerSequence, condition: b.condition, fulfillment: b.fulfillment,
     });
-    return { refused: false, txHash: out.hash, explorer: out.explorer };
+    return {
+      refused: false, txHash: out.hash, explorer: out.explorer,
+      authorisedBy: b.authorisationTxHash ? wallets.buyer.address : undefined,
+      authorisationTxHash: b.authorisationTxHash,
+    };
   },
 
   'POST /escrow/cancel': async (b) => {

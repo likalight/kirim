@@ -20,7 +20,8 @@
     "dev": "node --env-file-if-exists=.env scripts/dev.mjs",
     "milestone": "node --env-file-if-exists=.env services/orchestrator/src/cli-works.mjs",
     "credential:smoke": "node --env-file-if-exists=.env scripts/credential-smoke.mjs",
-    "topup": "node --env-file-if-exists=.env scripts/topup.mjs"
+    "topup": "node --env-file-if-exists=.env scripts/topup.mjs",
+    "authorise": "node --env-file-if-exists=.env scripts/authorise.mjs"
   },
   "dependencies": {
     "mppx": "^0.8.19",

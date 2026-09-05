@@ -106,6 +106,25 @@
   .row .decision.ready,.row .decision.released,.row .decision.credentialed{color:var(--trusted)}
 
   .empty{color:var(--ink-4);font-size:13.5px;padding:26px 15px;text-align:center}
+
+  .auth{border:1px solid var(--contested);background:var(--contested-tint);padding:16px 18px;margin-top:16px}
+  .auth h3{margin:0 0 4px;font-family:var(--font-display);font-size:18px;font-weight:400}
+  .auth p{margin:0 0 12px;font-size:13.5px;color:var(--ink-2)}
+  .auth dl{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;margin:0 0 14px;
+    font-family:var(--font-mono);font-size:11.5px}
+  .auth dt{color:var(--ink-4)}
+  .auth dd{margin:0;color:var(--ink-0);word-break:break-all}
+  .btn{font:inherit;font-size:13px;font-weight:600;padding:8px 14px;border:1px solid var(--ink-0);
+    background:var(--ink-0);color:var(--paper-1);cursor:pointer}
+  .btn:hover{background:var(--ink-2);border-color:var(--ink-2)}
+  .btn.ghost{background:transparent;color:var(--ink-0)}
+  .btn.ghost:hover{background:var(--paper-2)}
+  .btn[disabled]{opacity:.5;cursor:default}
+  .auth .row2{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .auth input{font-family:var(--font-mono);font-size:11.5px;padding:7px 9px;flex:1;min-width:220px;
+    border:1px solid var(--paper-3);background:var(--paper-0);color:var(--ink-0)}
+  .auth .err{color:var(--quarantined);font-size:12.5px;margin-top:8px}
+  .auth .ok{color:var(--trusted);font-size:12.5px;margin-top:8px}
   .note{color:var(--ink-4);font-size:12px;margin-top:14px;line-height:1.5}
 </style>
 </head>
@@ -127,6 +146,7 @@
     <h2>Milestones</h2>
     <div id="milestones"></div>
     <div id="verdict"></div>
+    <div id="auth"></div>
 
     <dl class="totals" id="totals">
       <div><dt>Escrowed</dt><dd id="t-amount">—</dd></div>
@@ -224,6 +244,7 @@ es.onmessage = async (ev) => {
     showVerdict(e);
     await loadProject();
     await loadRecord();
+    await refreshPending();
     return;
   }
   if (e.type !== 'decision') return;
@@ -261,12 +282,103 @@ function showVerdict(e) {
   verdictEl.innerHTML = '<div class="verdict ' + cls + '"><h3>' + title + '</h3><p>' + esc(text) + '</p></div>';
 }
 
+// --- client authorisation ---------------------------------------------------
+// Above the ceiling the agent stops and the client signs. The signature is an
+// ordinary XRPL Payment from their own wallet carrying a memo naming the
+// milestone, so any wallet can produce it — Crossmark and GemWallet are wired
+// directly, and anything else can send it by hand.
+
+async function refreshPending() {
+  const r = await fetch('/api/pending').then((x) => x.json());
+  const box = document.getElementById('auth');
+  if (!r.pending.length) { box.innerHTML = ''; return; }
+  const p = r.pending[0];
+  const a = p.authorisation;
+  const wallets = [];
+  if (window.crossmark) wallets.push('<button class="btn" id="w-crossmark">Sign with Crossmark</button>');
+  if (window.gemWallet || window.GemWalletApi) wallets.push('<button class="btn" id="w-gem">Sign with GemWallet</button>');
+
+  box.innerHTML =
+    '<div class="auth"><h3>' + esc(p.name) + ' needs your signature</h3>' +
+    '<p>' + money(p.amountCents) + ' is above the autonomous ceiling. The evidence is in order — ' +
+    'authorise the release from your own wallet and Kirim will verify the signature on the ledger ' +
+    'before anything moves.</p>' +
+    '<dl>' +
+    '<dt>from</dt><dd>' + esc(a.from) + '</dd>' +
+    '<dt>to</dt><dd>' + esc(a.to) + '</dd>' +
+    '<dt>amount</dt><dd>' + esc(a.amountXrp) + ' XRP</dd>' +
+    '<dt>memo</dt><dd>' + esc(a.memo) + '</dd>' +
+    '</dl>' +
+    (wallets.length ? '<div class="row2">' + wallets.join('') + '</div>' : '') +
+    '<div class="row2" style="margin-top:10px">' +
+    '<input id="auth-hash" placeholder="…or paste the transaction hash from any wallet">' +
+    '<button class="btn ghost" id="auth-submit">Submit</button></div>' +
+    '<div id="auth-msg"></div></div>';
+
+  const msg = (t, cls) => { document.getElementById('auth-msg').innerHTML = '<div class="' + cls + '">' + esc(t) + '</div>'; };
+
+  const submit = async (txHash) => {
+    msg('Verifying the signature on the ledger…', 'ok');
+    const res = await fetch('/api/authorise?key=' + encodeURIComponent(p.key), {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ txHash }),
+    });
+    if (!res.ok) msg((await res.json()).error || 'Could not authorise.', 'err');
+  };
+
+  const tx = {
+    TransactionType: 'Payment',
+    Destination: a.to,
+    Amount: String(Math.round(Number(a.amountXrp) * 1000000)),
+    Memos: [{ Memo: { MemoData: toHex(a.memo), MemoType: toHex('kirim/authorise') } }],
+  };
+
+  document.getElementById('auth-submit').onclick = () => {
+    const v = document.getElementById('auth-hash').value.trim();
+    if (!/^[0-9A-Fa-f]{64}$/.test(v)) return msg('That does not look like a transaction hash.', 'err');
+    submit(v.toUpperCase());
+  };
+
+  const cm = document.getElementById('w-crossmark');
+  if (cm) cm.onclick = async () => {
+    try {
+      msg('Confirm in Crossmark…', 'ok');
+      await window.crossmark.methods.signInAndWait();
+      const r2 = await window.crossmark.methods.signAndSubmitAndWait(tx);
+      const hash = r2?.response?.data?.resp?.result?.hash || r2?.data?.resp?.result?.hash;
+      if (!hash) return msg('Crossmark did not return a transaction hash.', 'err');
+      submit(hash);
+    } catch (e) { msg('Crossmark: ' + (e.message || e), 'err'); }
+  };
+
+  const gw = document.getElementById('w-gem');
+  if (gw) gw.onclick = async () => {
+    try {
+      msg('Confirm in GemWallet…', 'ok');
+      const api = window.gemWallet || window.GemWalletApi;
+      const r2 = await api.sendPayment({
+        amount: a.amountXrp, destination: a.to,
+        memos: [{ memo: { memoData: toHex(a.memo), memoType: toHex('kirim/authorise') } }],
+      });
+      const hash = r2?.result?.hash || r2?.hash;
+      if (!hash) return msg('GemWallet did not return a transaction hash.', 'err');
+      submit(hash);
+    } catch (e) { msg('GemWallet: ' + (e.message || e), 'err'); }
+  };
+}
+
+function toHex(s) {
+  return Array.from(new TextEncoder().encode(s))
+    .map((b) => b.toString(16).padStart(2, '0')).join('').toUpperCase();
+}
+
 function esc(s) {
   return String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 }
 
 loadProject();
 loadRecord();
+refreshPending();
 </script>
 </body>
 </html>
