@@ -103,15 +103,17 @@ Full diagram in [docs/architecture.md](docs/architecture.md). One rule holds the
 apps/console            live decision log over server-sent events
 services/orchestrator   the agent — discover, buy, examine, decide  (holds NO seed)
 services/ledger         THE ONLY SEED HOLDER — escrow, credentials, spend ceilings
-services/market         x402-gated evidence providers (simulated supply, real payments)
+services/market         MPP-gated evidence providers (simulated supply, real payments)
 packages/works          milestone schema, discrepancy rules, track record
 packages/trade          the cross-border trade vertical, on the same engine
-packages/x402           client + server middleware, one implementation
+packages/mpp            Machine Payments Protocol — seller gate, buyer, credit
 ```
 
 The orchestrator has no wallet and never imports `xrpl`. It asks; the ledger service enforces ceilings from `.env`, signs, and returns a hash. A refusal comes back as a logged decision with a reason, never a silent no-op.
 
-**The same engine runs a second vertical.** `npm run trade PO-2026-0418` settles a cross-border trade document credit — same escrow, same x402 layer, different evidence rules. Two markets, one machine. See [docs/README-trade-vertical.md](docs/README-trade-vertical.md).
+**The same engine runs a second vertical.** `npm run trade PO-2026-0418` settles a cross-border trade document credit — same escrow, same MPP payment path, different evidence rules. Two markets, one machine. See [docs/README-trade-vertical.md](docs/README-trade-vertical.md).
+
+**One payment implementation.** Kirim started with a hand-rolled HTTP 402 flow. It was replaced by `xrpl-mpp-sdk`, and the hand-rolled package was deleted rather than left beside it — a reviewer opening this repo finds one way payments happen, and it is the ecosystem's.
 
 ## What the agent actually checks
 

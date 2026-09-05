@@ -1,4 +1,3 @@
-import { fetchWithPayment } from '@kirim/x402';
 import { purchaseOrder, billOfLading, packingList, examine, DecisionLog, toCents, fmt } from '@kirim/trade';
 import { explainUnderwriting, explainDiscrepancies } from './reasoner.mjs';
 
@@ -45,21 +44,17 @@ export async function runTrade(trade, { emit = () => {} } = {}) {
     `${po.portOfLoading} to ${po.portOfDischarge}, latest shipment ${po.latestShipmentDate}.`,
     { principalCents: po.totalCents });
 
-  // --- pay(): the agent asks; the ledger service decides -------------------
-  const pay = async ({ payTo, amount, resource }) => {
-    const r = await ledgerPost('/pay', {
-      from: 'buyer', to: payTo, amount, tradeId: trade.id, memo: `${trade.id}/${resource}`,
-    });
-    if (r.refused) return { refused: true, reason: r.reason };
-    return { txHash: r.txHash, explorer: r.explorer };
-  };
-
+  // --- buying evidence -----------------------------------------------------
+  // Same path as the construction vertical: the agent asks the ledger service
+  // to buy a URL over MPP, and that service holds the seed and the ceilings.
   const buy = async (providerId, query, why) => {
     const cat = await fetch(MARKET() + '/v1/catalog').then((r) => r.json());
     const p = cat.providers.find((x) => x.id === providerId);
     const url = MARKET() + p.path + (query ? '?' + new URLSearchParams(query) : '');
 
-    const out = await fetchWithPayment(url, { pay, memo: trade.id });
+    const out = await ledgerPost('/buy', {
+      url, priceUsd: p.price, from: 'buyer', tradeId: trade.id, mode: 'push',
+    });
 
     if (out.refused) {
       log.add('purchase', 'declined',
@@ -67,9 +62,9 @@ export async function runTrade(trade, { emit = () => {} } = {}) {
         { provider: p.id, quotedUsd: p.price });
       return null;
     }
-    log.add('purchase', 'bought', `${p.name} — US$${p.price}. ${why}`, {
-      provider: p.id, costCents: toCents(p.price), txHash: out.txHash,
-      explorer: `${process.env.XRPL_EXPLORER || 'https://testnet.xrpl.org'}/transactions/${out.txHash}`,
+    log.add('purchase', 'bought', `${p.name} — US$${p.price} over MPP. ${why}`, {
+      provider: p.id, costCents: toCents(p.price),
+      txHash: out.txHash, explorer: out.explorer,
     });
     return out.data;
   };

@@ -1,8 +1,14 @@
 import http from 'node:http';
 import crypto from 'node:crypto';
 import fs from 'node:fs';
-import { send } from '@kirim/x402';
 import { MppServer } from '@kirim/mpp';
+
+/** Write a JSON response. The only thing left of our own HTTP layer. */
+function send(res, code, body) {
+  const s = JSON.stringify(body, null, 2);
+  res.writeHead(code, { 'content-type': 'application/json', 'content-length': Buffer.byteLength(s) });
+  res.end(s);
+}
 
 /**
  * The provider side of the market.
