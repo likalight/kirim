@@ -1,4 +1,5 @@
 import http from 'node:http';
+import { timingSafeEqual } from 'node:crypto';
 import { loadWallets } from './wallets.mjs';
 import { SpendPolicy } from './policy.mjs';
 import { toCents } from '@kirim/trade';
@@ -260,11 +261,48 @@ const routes = {
   'GET /tx': async (_b, url) => verifyTx(url.searchParams.get('hash')),
 };
 
+/**
+ * Anything that can move money needs to prove who it is.
+ *
+ * This service holds every seed in the system. Without this, any process that
+ * can reach the port — a stray script, a compromised dependency, a curl — can
+ * empty the escrow. Read-only routes stay open so the console and a reviewer
+ * can inspect state freely.
+ */
+const OPEN_ROUTES = new Set([
+  'GET /health', 'GET /balances', 'GET /tx', 'GET /credentials', 'GET /credit',
+]);
+const LEDGER_TOKEN = process.env.LEDGER_TOKEN;
+if (!LEDGER_TOKEN) {
+  console.error('[ledger] LEDGER_TOKEN is not set. Money-moving routes are disabled.');
+  console.error('[ledger] Set it in .env — see .env.example.');
+}
+
+function authorised(req, key) {
+  if (OPEN_ROUTES.has(key)) return true;
+  if (!LEDGER_TOKEN) return false;
+  const header = req.headers.authorization || '';
+  const presented = header.startsWith('Bearer ') ? header.slice(7) : null;
+  if (!presented || presented.length !== LEDGER_TOKEN.length) return false;
+  // Constant-time compare: a token check that leaks its own answer by timing
+  // is not a token check.
+  return timingSafeEqual(Buffer.from(presented), Buffer.from(LEDGER_TOKEN));
+}
+
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, 'http://localhost:' + PORT);
   const key = req.method + ' ' + url.pathname;
   const handler = routes[key];
   if (!handler) return json(res, 404, { error: 'not_found', key });
+
+  if (!authorised(req, key)) {
+    console.warn('[ledger] refused unauthenticated ' + key);
+    return json(res, 401, {
+      error: 'unauthorised',
+      detail: 'This route moves money and requires the ledger token. '
+        + 'Send Authorization: Bearer <LEDGER_TOKEN>.',
+    });
+  }
 
   let body = {};
   if (req.method === 'POST') {

@@ -12,7 +12,10 @@ const MARKET = () => 'http://localhost:' + (process.env.MARKET_PORT || 4020);
 async function ledgerPost(path, body) {
   const res = await fetch(LEDGER() + path, {
     method: 'POST',
-    headers: { 'content-type': 'application/json' },
+    headers: {
+      'content-type': 'application/json',
+      authorization: 'Bearer ' + (process.env.LEDGER_TOKEN ?? ''),
+    },
     body: JSON.stringify(body),
   });
   const out = await res.json();

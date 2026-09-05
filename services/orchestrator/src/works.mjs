@@ -1,15 +1,40 @@
 import { DecisionLog, toCents, fmt } from '@kirim/trade';
 import {
   milestone, submission, examineMilestone, credentialUri, requirements, validatePlan,
+  verifyAttestation,
 } from '@kirim/works';
 import { explainMilestone, planEvidence } from './reasoner.mjs';
+import fs from 'node:fs';
+import path from 'node:path';
+
+/**
+ * Persist the decision log. "Can agent decisions be inspected?" is only true
+ * if they outlive the process that made them — a run that scrolled past in a
+ * terminal is not an audit trail.
+ */
+function persist(log, key) {
+  try {
+    const dir = path.resolve('docs/runs');
+    fs.mkdirSync(dir, { recursive: true });
+    const file = path.join(dir, key.replace(/[^A-Za-z0-9._-]/g, '_') + '.jsonl');
+    fs.writeFileSync(file, log.entries.map((e) => JSON.stringify(e)).join('\n') + '\n');
+    return file;
+  } catch {
+    return null; // never let bookkeeping break a settlement
+  }
+}
 
 const LEDGER = () => 'http://localhost:' + (process.env.LEDGER_PORT || 4010);
 const MARKET = () => 'http://localhost:' + (process.env.MARKET_PORT || 4020);
 
 async function ledgerPost(path, body) {
   const res = await fetch(LEDGER() + path, {
-    method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body),
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      authorization: 'Bearer ' + (process.env.LEDGER_TOKEN ?? ''),
+    },
+    body: JSON.stringify(body),
   });
   const out = await res.json();
   if (!res.ok || out.error) {
@@ -60,7 +85,8 @@ export async function runMilestone(project, ms0, {
   });
   if (escrow.refused) {
     log.add('escrow', 'refused', escrow.reason, { amountCents: ms.amountCents });
-    return { log, outcome: 'refused' };
+    persist(log, log.tradeId);
+  return { log, outcome: 'refused' };
   }
 
   log.add('escrow', 'funded',
@@ -82,7 +108,8 @@ export async function runMilestone(project, ms0, {
     log.add('settlement', 'returned',
       `Escrow cancelled. ${fmt(ms.amountCents)} returned to ${project.client}. No dispute, no lawyer, no chasing.`,
       { txHash: cancelled.txHash, explorer: cancelled.explorer });
-    return { log, outcome: 'timed_out_and_returned' };
+    persist(log, log.tradeId);
+  return { log, outcome: 'timed_out_and_returned' };
   }
 
   const sub = submission({ ...ms0.submission, milestoneId: ms.id });
@@ -96,6 +123,8 @@ export async function runMilestone(project, ms0, {
   // The agent never signs. It asks the ledger service to buy a URL over MPP;
   // that service holds the seed, enforces the ceiling, and can refuse.
   const catalog = await fetch(MARKET() + '/v1/catalog').then((r) => r.json());
+  const providerKey = await fetch(MARKET() + '/v1/pubkey')
+    .then((r) => r.json()).then((k) => k.publicKey).catch(() => null);
 
   const buy = async (id, query, why) => {
     const p = catalog.providers.find((x) => x.id === id);
@@ -112,8 +141,19 @@ export async function runMilestone(project, ms0, {
         { provider: id, quotedUsd: p.price });
       return null;
     }
+    // Verify what was bought. The provider signs its attestation; a signature
+    // nobody checks is decoration, and the release decision rests on these.
+    const check = verifyAttestation(out.data, providerKey);
+    if (!check.ok) {
+      log.add('purchase', 'unverified',
+        `${p.name} was paid for, but its attestation failed verification: ${check.reason} ` +
+        `Treating it as not received — Kirim does not release against evidence it cannot check.`,
+        { provider: id, costCents: toCents(p.price), txHash: out.txHash, explorer: out.explorer });
+      return null;
+    }
+
     log.add('purchase', 'bought',
-      `${p.name} — US$${p.price} over MPP. ${why}`, {
+      `${p.name} — US$${p.price} over MPP, signature verified. ${why}`, {
         provider: id, costCents: toCents(p.price),
         txHash: out.txHash, explorer: out.explorer,
       });
@@ -210,14 +250,16 @@ export async function runMilestone(project, ms0, {
       `${fmt(ms.amountCents)} stays in escrow. Nothing submitted contradicts the scope — the ` +
       `submission is simply incomplete, and ${project.contractor} can complete it before the cancel time. ` +
       `No mark is recorded against their track record.`);
-    return { log, outcome: 'more_information_needed', escrow };
+    persist(log, log.tradeId);
+  return { log, outcome: 'more_information_needed', escrow };
   }
 
   if (result.state === 'flagged') {
     log.add('settlement', 'withheld',
       `${fmt(ms.amountCents)} stays in escrow pending ${project.client}'s review. ` +
       `The contractor may present corrected evidence, or the funds return automatically.`);
-    return { log, outcome: 'flagged_for_review', escrow };
+    persist(log, log.tradeId);
+  return { log, outcome: 'flagged_for_review', escrow };
   }
 
   // --- release --------------------------------------------------------------
@@ -245,7 +287,8 @@ async function release({ project, ms, sub, escrow, amountUsd, log, authorisation
         ? { ...finished.authorisation, memo }
         : undefined,
     });
-    return { log, outcome: 'awaiting_client_authorisation', escrow };
+    persist(log, log.tradeId);
+  return { log, outcome: 'awaiting_client_authorisation', escrow };
   }
 
   pendingReleases.delete(memo);
@@ -301,6 +344,7 @@ async function release({ project, ms, sub, escrow, amountUsd, log, authorisation
     { elapsedSeconds: Number(elapsedS), evidenceCents: spentCents,
       feeUsd: finished.fee?.amountUsd, principalCents: ms.amountCents });
 
+  persist(log, log.tradeId);
   return { log, outcome: 'released', escrow, credential: cred };
 }
 

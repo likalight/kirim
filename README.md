@@ -144,8 +144,8 @@ The rules are deterministic and live in [`packages/works/src/examine.mjs`](packa
 | **Transparency** | Every step appends to a decision log with a reason; the console renders it live |
 | **Authorisation** | Autonomous below `HUMAN_APPROVAL_ABOVE_USD`, asks above it — a threshold, not an approval queue |
 | **Spending controls** | Per-call, per-milestone and per-run ceilings, enforced in the only process that can sign |
-| **Security** | The agent never holds a seed. `wallets.json` is gitignored. Testnet only. |
-| **Traceability** | Every ledger write carries a `Memo` bound to the milestone and a `SourceTag` for the agent |
+| **Security** | The agent never holds a seed. The ledger service — which holds all of them — requires a bearer token on every route that moves money, compared in constant time; read-only inspection stays open. Provider attestations are ed25519-verified before they are believed. No shipped default secrets. `wallets.json` is gitignored. Testnet only. |
+| **Traceability** | Every ledger write carries a `Memo` bound to the milestone and the Starter Kit's `SourceTag`. Every decision is persisted to `docs/runs/<milestone>.jsonl` — a run that scrolled past in a terminal is not an audit trail. |
 | **Failure handling** | Discrepancy → funds held. Nothing presented → escrow cancels itself. Ledger error → the run stops loudly rather than narrating a settlement that never happened. |
 | **Safeguards** | Providers verify payment **on-ledger** before serving a byte; the escrow condition means Kirim cannot pay for work that was never evidenced |
 

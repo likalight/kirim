@@ -42,8 +42,9 @@ function attest(claim) {
 // longer needs its own verification hop into the ledger service.
 const mppGate = MppServer.createMarket({
   recipient: PAY_TO,
-  secretKey: process.env.MPP_SECRET_KEY
-    || 'kirim-dev-secret-key-at-least-32-bytes-long',
+  // No hardcoded fallback. A shipped default secret is not a secret, and this
+  // one binds challenges to their contents.
+  secretKey: process.env.MPP_SECRET_KEY,
 });
 
 const CATALOG = [

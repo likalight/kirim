@@ -5,3 +5,4 @@ wallets.json
 *.log
 docs/demo-run.raw
 .DS_Store
+docs/runs/
