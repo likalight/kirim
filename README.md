@@ -180,6 +180,41 @@ a signature.
 `20260530` rather than a number we invented, and `0` is respected as "suppress
 tagging" rather than treated as absent.
 
+## Claw Credit — written, gated, and honest about why
+
+Agent credit is the right idea for this product. Today Sarah's wallet must hold
+XRP before her agent can buy a thirty-cent inspection; with a credit line it
+does not, and the checks are settled and repaid later.
+
+The integration is written against the documented API and sits ahead of MPP in
+the ledger service's `/buy`: when credit is available it is used, otherwise the
+purchase settles from our own wallet. It is **not live**, and `npm run
+credit:status` says exactly why rather than pretending:
+
+```
+$ curl localhost:4010/credit
+{
+  "available": false,
+  "blockers": [
+    "CLAW_CREDIT_ENABLED is not 1 — credit is off by default.",
+    "No credentials at ~/.openclaw/agents/default/agent/clawcredit.json and no
+     CLAW_INVITE_CODE to register with. Claw Credit registration is invite-only."
+  ]
+}
+```
+
+Four gates, in order of how hard they are to pass:
+
+1. **Registration is invite-only.** `credit.register({ inviteCode })` — we have no code.
+2. **It expects an OpenClaw workspace**, and reads credentials from `~/.openclaw/agents/<agent>/agent/clawcredit.json`.
+3. **Registration does not grant credit.** A new agent enters a "pre-qualification monitoring phase" that needs a `HEARTBEAT.md` check and time to elapse.
+4. **There is no sandbox.** The published 52KB skill mentions Base/USDC, Solana/USDC and XRPL/RLUSD, and never a testnet — so the path is mainnet-shaped and a testnet prototype cannot exercise it even with an invite.
+
+The skill itself is vendored at `.claude/skills/clawcredit/SKILL.md` and the SDK
+is an optional dependency. When an invite code arrives this goes live by setting
+one environment variable; nothing else in Kirim changes, because the agent asks
+the ledger service to buy a URL either way.
+
 ## Client authorisation is a signature, not a flag
 
 Above `HUMAN_APPROVAL_ABOVE_USD` the agent finishes its work and stops. The

@@ -21,11 +21,15 @@
     "milestone": "node --env-file-if-exists=.env services/orchestrator/src/cli-works.mjs",
     "credential:smoke": "node --env-file-if-exists=.env scripts/credential-smoke.mjs",
     "topup": "node --env-file-if-exists=.env scripts/topup.mjs",
-    "authorise": "node --env-file-if-exists=.env scripts/authorise.mjs"
+    "authorise": "node --env-file-if-exists=.env scripts/authorise.mjs",
+    "credit:status": "node --env-file-if-exists=.env -e \"import(process.cwd()+\"/packages/mpp/src/credit.mjs\").then(m=>console.log(JSON.stringify(m.status(),null,2)))\""
   },
   "dependencies": {
     "mppx": "^0.8.19",
     "xrpl": "^4.1.0",
     "xrpl-mpp-sdk": "^0.1.0-beta.2"
+  },
+  "optionalDependencies": {
+    "@t54-labs/clawcredit-sdk": "^0.4.4"
   }
 }

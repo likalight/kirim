@@ -2,7 +2,7 @@ import http from 'node:http';
 import { loadWallets } from './wallets.mjs';
 import { SpendPolicy } from './policy.mjs';
 import { toCents } from '@kirim/trade';
-import { MppClient } from '@kirim/mpp';
+import { MppClient, Credit } from '@kirim/mpp';
 import {
   xrpl, settlementAsset, pay, escrowCreate, escrowFinish, escrowCancel,
   verifyTx, balances, trustSet, explorerTx, scalePrincipal,
@@ -64,6 +64,23 @@ const routes = {
     const verdict = policy.check({ amountCents: cents, tradeId, kind: 'operating' });
     if (!verdict.ok) return { refused: true, ...verdict };
 
+    // Credit first when it is genuinely available: the client should not have
+    // to pre-fund a wallet to buy a thirty-cent inspection. Falls through to
+    // settling from our own wallet over MPP when it is not.
+    const credit = Credit.status();
+    if (credit.available) {
+      const out = await Credit.buyOnCredit(b.url, {
+        priceUsd: b.priceUsd, reason: b.reason ?? 'Evidence check for a construction milestone.',
+      });
+      policy.record({ amountCents: cents, tradeId, kind: 'operating' });
+      return {
+        refused: false, data: out.data, txHash: out.txHash,
+        explorer: out.txHash ? explorerTx(out.txHash) : undefined,
+        protocol: 'Claw Credit (XRPL / RLUSD)',
+        remainingBalance: out.remainingBalance,
+      };
+    }
+
     const seed = wallets[b.from ?? 'buyer'].seed;
     const { data, receipt } = await MppClient.buy(b.url, { seed, mode: b.mode ?? 'push' });
     policy.record({ amountCents: cents, tradeId, kind: 'operating' });
@@ -73,6 +90,7 @@ const routes = {
       refused: false, data, receipt, txHash,
       explorer: txHash ? explorerTx(txHash) : undefined,
       protocol: 'MPP / xrpl-mpp-sdk',
+      credit: { available: false, blockers: credit.blockers },
     };
   },
 
@@ -194,6 +212,8 @@ const routes = {
       issuer: issuer.address, subject: subjectAddr,
     };
   },
+
+  'GET /credit': async () => Credit.status(),
 
   'GET /credentials': async (_b, url) => {
     const role = url.searchParams.get('role');
