@@ -4,6 +4,7 @@ import path from 'node:path';
 import { runMilestone, authoriseRelease, pendingReleases } from './works.mjs';
 import { runTrade } from './agent.mjs';
 import { summarise } from '@kirim/works';
+import { reasonerProvider } from './reasoner.mjs';
 
 /**
  * Orchestrator + console host.
@@ -107,6 +108,8 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  if (url.pathname === '/api/reasoner') return json(res, 200, reasonerProvider());
+
   if (url.pathname === '/api/record') {
     const r = await fetch(LEDGER + '/credentials?role=supplier').then((x) => x.json());
     return json(res, 200, { address: r.address, ...summarise(r.credentials) });
@@ -158,7 +161,10 @@ function json(res, code, body) {
 }
 
 server.listen(PORT, () => {
+  const r = reasonerProvider();
   console.log('[console] on http://localhost:' + PORT);
+  console.log('          review notes: ' + r.provider + (r.model ? ' / ' + r.model : '') +
+    (r.provider === 'none' ? '  (composed text — set a key to enable the model)' : ''));
   console.log('          ' + PROJECT.name + ' — ' + PROJECT.client + ' / ' + PROJECT.contractor);
   for (const m of PROJECT.milestones) console.log('          ' + m.id + '  ' + m.name);
 });

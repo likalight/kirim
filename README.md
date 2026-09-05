@@ -293,9 +293,31 @@ Claiming the RLUSD itself is a browser step at [tryrlusd.com](https://tryrlusd.c
 
 ## The model's role
 
-Deliberately narrow. The rules in `packages/works` decide whether money moves; a model never gets a vote. What it writes is the *advice* — the milestone review note, in language a homeowner and a contractor both understand.
+Deliberately narrow. The rules in `packages/works` decide whether money moves; a
+model never gets a vote. What it writes is the *advice* — the milestone review
+note a homeowner and a contractor actually read.
 
-Set `ANTHROPIC_API_KEY` to enable it. Without a key, composed text is used and the product still runs end to end — a demo must never depend on a key at venue wifi.
+Any one of these enables it, tried in that order:
+
+```bash
+ANTHROPIC_API_KEY=sk-ant-...                                    # Claude
+OPENAI_API_KEY=sk-...                                           # OpenAI
+OPENAI_API_KEY=gsk_...  OPENAI_BASE_URL=https://api.groq.com/openai/v1
+OPENAI_API_KEY=...      OPENAI_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai
+OPENAI_API_KEY=ollama   OPENAI_BASE_URL=http://localhost:11434/v1   # local, free
+```
+
+`KIRIM_MODEL` overrides the model for whichever provider is in use, and
+`GET /api/reasoner` reports which one is live rather than leaving you to guess.
+
+The workload is small — roughly 400 input and 120 output tokens per note, about
+a dozen notes for a full six-milestone run — so this costs fractions of a cent
+on any provider, and runs free on Groq, Gemini's free tier, or a local Ollama.
+
+**Without a key it still runs end to end** on composed text. That is not a
+placeholder, it is the demo's safety net: venue wifi fails and keys hit rate
+limits, and a review note that cannot be written must never stop a payment the
+rules have already decided.
 
 ## Builder feedback
 
