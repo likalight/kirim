@@ -1,7 +1,10 @@
 import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
-import { runMilestone, authoriseRelease, pendingReleases, refreshOpen } from './works.mjs';
+import {
+  runMilestone, authoriseRelease, pendingReleases, refreshOpen, closeProject,
+  reviews, confirmRejection,
+} from './works.mjs';
 import { runTrade } from './agent.mjs';
 import { summarise } from '@kirim/works';
 import { reasonerProvider } from './reasoner.mjs';
@@ -69,13 +72,18 @@ async function handle(req, res) {
     return json(res, 200, {
       id: PROJECT.id, name: PROJECT.name, kind: PROJECT.kind,
       currency: PROJECT.currency, narrative: PROJECT.narrative,
+      what: PROJECT.what, narrative: PROJECT.narrative,
       client: PROJECT.client, clientRole: PROJECT.clientRole,
+      clientContact: PROJECT.clientContact,
       contractor: PROJECT.contractor, contractorRole: PROJECT.contractorRole,
       site: PROJECT.site, totalCents: PROJECT.totalCents,
-      preferences: PROJECT.preferences,
+      preferences: PROJECT.preferences, model: PROJECT.model,
       milestones: PROJECT.milestones.map((m) => ({
-        id: m.id, name: m.name, amountCents: m.amountCents,
-        dueOn: m.dueOn, scenario: m.scenario,
+        id: m.id, name: m.name, plain: m.plain, amountCents: m.amountCents,
+        dueOn: m.dueOn, startsOn: m.startsOn, scenario: m.scenario,
+        requiredPhotos: m.requiredPhotos, minInspectionPercent: m.minInspectionPercent,
+        requiresPermit: m.requiresPermit ?? null, boq: m.boq ?? [],
+        hasRework: Boolean(m.resubmission),
         released: priorReleased.includes(m.id),
       })),
       trades: TRADES.map((t) => ({ id: t.id, label: t.label })),
@@ -136,45 +144,9 @@ async function handle(req, res) {
   // The before/after the whole product argues with.
   if (url.pathname === '/api/flows') return json(res, 200, FLOWS);
 
-  // Per-milestone state, rebuilt from the persisted decision logs so both
-  // views mean something on a cold page load rather than only during a run.
   if (url.pathname === '/api/state') {
-    const dir = path.resolve('docs/runs');
-    const state = {};
-    try {
-      for (const f of fs.readdirSync(dir)) {
-        if (!f.endsWith('.jsonl')) continue;
-        const lines = fs.readFileSync(path.join(dir, f), 'utf8').trim().split('\n');
-        const entries = lines.map((l) => { try { return JSON.parse(l); } catch { return null; } }).filter(Boolean);
-        if (!entries.length) continue;
-        const id = entries[0].tradeId.split('/')[1];
-        const last = entries[entries.length - 1];
-        const find = (stage, decision) => entries.find((e) => e.stage === stage && (!decision || e.decision === decision));
-        const released = find('settlement', 'released');
-        const returned = find('settlement', 'returned');
-        const examined = find('examination');
-        const funded = find('escrow', 'funded');
-        const fee = find('revenue', 'charged');
-        const outcome = find('outcome', 'complete');
-        state[id] = {
-          status: released ? 'released'
-            : returned ? 'returned'
-              : find('settlement', 'awaiting_client') ? 'awaiting_client'
-                : examined?.decision === 'more_info' ? 'more_info'
-                  : examined?.decision === 'flagged' ? 'flagged'
-                    : funded ? 'in_progress' : 'unknown',
-          note: examined?.reason ?? last.reason,
-          findings: examined?.findings ?? [],
-          spentCents: entries.filter((e) => e.costCents).reduce((a, e) => a + e.costCents, 0),
-          feeUsd: fee?.feeCents != null ? (fee.feeCents / 100).toFixed(2) : null,
-          elapsedSeconds: outcome?.elapsedSeconds ?? null,
-          at: last.at,
-          hashes: entries.filter((e) => e.txHash)
-            .map((e) => ({ stage: e.stage, decision: e.decision, txHash: e.txHash, explorer: e.explorer })),
-        };
-      }
-    } catch { /* no runs yet */ }
-    return json(res, 200, { milestones: state });
+    const milestones = milestoneState();
+    return json(res, 200, { milestones, project: projectSummary(milestones) });
   }
 
   // Proxies so the console can render the whole system from one origin.
@@ -239,6 +211,92 @@ async function handle(req, res) {
     return json(res, 200, { held: out });
   }
 
+  /**
+   * What a stage requires, and what turned up against it.
+   *
+   * The left-hand side is computed from the contract — the same fields the
+   * rules read — so the checklist cannot drift from what is actually enforced.
+   * Ask "is that really what it checks?" and the answer is yes by construction.
+   */
+  if (url.pathname === '/api/evidence') {
+    const id = url.searchParams.get('id');
+    const ms = PROJECT.milestones.find((m) => m.id === id);
+    if (!ms) return json(res, 404, { error: 'no_such_stage' });
+
+    const state = milestoneState()[id];
+    const attempt = state?.attempts > 1 && ms.resubmission ? 2 : 1;
+    const sub = attempt > 1 ? ms.resubmission : ms.submission;
+    const elements = PROJECT.model?.elements?.[id] ?? [];
+
+    const required = [];
+    required.push({
+      id: 'photos', need: `${ms.requiredPhotos} photographs, geotagged`,
+      detail: elements.length
+        ? 'one for each part of the building this stage covers'
+        : 'taken on site, within the dates of this stage',
+      parts: elements.map((e) => e.label),
+    });
+    for (const line of ms.boq ?? []) {
+      required.push({
+        id: 'boq:' + line.sku, need: 'Delivery note from the supplier',
+        detail: `${line.qty.toLocaleString('en-US')} ${line.description}`,
+      });
+    }
+    required.push({
+      id: 'invoice', need: 'A bill for the agreed amount',
+      detail: 'US$' + (ms.amountCents / 100).toLocaleString('en-US'),
+    });
+    if (ms.requiresPermit) {
+      required.push({ id: 'permit', need: 'Permit reference', detail: ms.requiresPermit });
+    }
+    required.push({
+      id: 'survey', need: 'Independent survey',
+      detail: `at least ${ms.minInspectionPercent}% of what this stage covers, actually built`,
+    });
+
+    return json(res, 200, {
+      milestone: { id: ms.id, name: ms.name, plain: ms.plain, amountCents: ms.amountCents,
+                   startsOn: ms.startsOn, dueOn: ms.dueOn },
+      attempt, required, elements,
+      submitted: sub ? {
+        submittedAt: sub.submittedAt, note: sub.note,
+        permitRef: sub.permitRef ?? null, invoice: sub.invoice ?? null,
+        photos: (sub.photos ?? []).map((x) => ({
+          file: x.file, takenAt: x.takenAt, evidences: x.evidences ?? null,
+          metresFromSite: metres(PROJECT.site, x),
+        })),
+        deliveries: sub.deliveries ?? [],
+      } : null,
+      site: PROJECT.site,
+      findings: state?.findings ?? [],
+      model: state?.model ?? null,
+      status: state?.status ?? 'unknown',
+    });
+  }
+
+  // Refusals the owner has been asked to confirm.
+  if (url.pathname === '/api/reviews') {
+    const all = reviews();
+    return json(res, 200, {
+      reviews: Object.entries(all).map(([key, r]) => ({ key, ...r })),
+    });
+  }
+
+  if (url.pathname === '/api/review/confirm' && req.method === 'POST') {
+    const key = url.searchParams.get('key');
+    if (!key) return json(res, 400, { error: 'key is required' });
+    try {
+      const out = await confirmRejection(key, {
+        by: PROJECT.clientContact ? `${PROJECT.clientContact} of ${PROJECT.client}` : PROJECT.client,
+        emit: (e) => broadcast({ type: 'decision', ...e }),
+      });
+      broadcast({ type: 'review_confirmed', key });
+      return json(res, 200, out);
+    } catch (e) {
+      return json(res, 404, { error: e.message });
+    }
+  }
+
   if (url.pathname === '/api/run' && req.method === 'POST') {
     if (busy) return json(res, 409, { error: 'a milestone is already running' });
     const id = url.searchParams.get('id');
@@ -260,6 +318,10 @@ async function handle(req, res) {
           emit: (e) => broadcast({ type: 'decision', ...e }),
         });
         if (outcome === 'released' && !priorReleased.includes(ms.id)) priorReleased.push(ms.id);
+        // A milestone product that never ends is a to-do list.
+        await closeProject(PROJECT, milestoneState(), {
+          emit: (e) => broadcast({ type: 'decision', ...e }),
+        }).catch((e) => console.error('[close]', e.message));
         broadcast({ type: 'run_finished', id, outcome });
       } else {
         const { outcome } = await runTrade(trade, {
@@ -281,6 +343,92 @@ async function handle(req, res) {
   if (!file.startsWith(CONSOLE_DIR) || !fs.existsSync(file)) return json(res, 404, { error: 'not_found' });
   res.writeHead(200, { 'content-type': MIME[path.extname(file)] || 'application/octet-stream' });
   fs.createReadStream(file).pipe(res);
+}
+
+/**
+ * Per-stage state, rebuilt from the persisted decision logs so the console
+ * means something on a cold page load rather than only during a run.
+ */
+function milestoneState() {
+  const dir = path.resolve('docs/runs');
+  const state = {};
+  try {
+    for (const f of fs.readdirSync(dir)) {
+      if (!f.endsWith('.jsonl')) continue;
+      const lines = fs.readFileSync(path.join(dir, f), 'utf8').trim().split('\n');
+      const entries = lines.map((l) => { try { return JSON.parse(l); } catch { return null; } }).filter(Boolean);
+      if (!entries.length) continue;
+      const id = entries[0].tradeId.split('/')[1];
+      if (id === 'CLOSE') continue;
+      const last = entries[entries.length - 1];
+      const find = (stage, decision) => entries.find((e) => e.stage === stage && (!decision || e.decision === decision));
+      const released = find('settlement', 'released');
+      const returned = find('settlement', 'returned');
+      const examined = [...entries].reverse().find((e) => e.stage === 'examination');
+      const funded = find('escrow', 'funded');
+      const fee = find('revenue', 'charged');
+      const outcome = find('outcome', 'complete');
+      state[id] = {
+        status: released ? 'released'
+          : returned ? 'returned'
+            : find('settlement', 'awaiting_client') ? 'awaiting_client'
+              : examined?.decision === 'more_info' ? 'more_info'
+                : examined?.decision === 'flagged' ? 'flagged'
+                  : funded ? 'in_progress' : 'unknown',
+        note: examined?.reason ?? last.reason,
+        findings: examined?.findings ?? [],
+        questions: examined?.questions ?? null,
+        model: examined?.model ?? null,
+        attempts: entries.filter((e) => e.stage === 'submission').length,
+        spentCents: entries.filter((e) => e.costCents).reduce((a, e) => a + e.costCents, 0),
+        feeUsd: fee?.feeCents != null ? (fee.feeCents / 100).toFixed(2) : null,
+        elapsedSeconds: outcome?.elapsedSeconds ?? null,
+        at: last.at,
+        hashes: entries.filter((e) => e.txHash)
+          .map((e) => ({ stage: e.stage, decision: e.decision, txHash: e.txHash, explorer: e.explorer })),
+      };
+    }
+  } catch { /* no runs yet */ }
+  return state;
+}
+
+/** Where the project as a whole stands, and whether it is finished. */
+function projectSummary(state) {
+  const RESOLVED = new Set(['released', 'returned']);
+  const ms = PROJECT.milestones;
+  const sum = (pred) => ms.filter(pred).reduce((a, m) => a + m.amountCents, 0);
+  const is = (id, st) => state[id]?.status === st;
+  const resolved = ms.filter((m) => RESOLVED.has(state[m.id]?.status)).length;
+  return {
+    stages: ms.length,
+    resolved,
+    closed: resolved === ms.length,
+    paidCents: sum((m) => is(m.id, 'released')),
+    returnedCents: sum((m) => is(m.id, 'returned')),
+    openCents: sum((m) => !RESOLVED.has(state[m.id]?.status)),
+    closedAt: closedAt(),
+  };
+}
+
+function closedAt() {
+  try {
+    const f = path.resolve('docs/runs', PROJECT.id.replace(/[^A-Za-z0-9._-]/g, '_') + '_CLOSE.jsonl');
+    const lines = fs.readFileSync(f, 'utf8').trim().split('\n');
+    const last = JSON.parse(lines[lines.length - 1]);
+    return last.at;
+  } catch { return null; }
+}
+
+/** Metres between the site and a photograph, so the console can say how far. */
+function metres(site, p) {
+  if (p.lat == null || p.lng == null) return null;
+  const R = 6371000;
+  const rad = (x) => (x * Math.PI) / 180;
+  const dLat = rad(p.lat - site.lat);
+  const dLng = rad(p.lng - site.lng);
+  const a = Math.sin(dLat / 2) ** 2
+    + Math.cos(rad(site.lat)) * Math.cos(rad(p.lat)) * Math.sin(dLng / 2) ** 2;
+  return Math.round(2 * R * Math.asin(Math.sqrt(a)));
 }
 
 function json(res, code, body) {

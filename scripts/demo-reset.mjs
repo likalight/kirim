@@ -17,7 +17,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const runs = path.resolve('docs/runs');
-const files = [path.resolve('.open-escrows.json'), path.resolve('.pending-releases.json')];
+const files = [path.resolve('.open-escrows.json'), path.resolve('.pending-releases.json'),
+  path.resolve('.paid-photos.json'), path.resolve('.reviews.json')];
 
 let cleared = 0;
 try {

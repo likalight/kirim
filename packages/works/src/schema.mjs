@@ -33,6 +33,7 @@ export function submission(o) {
     photos: o.photos ?? [],                // [{ file, takenAt, lat, lng, sha256 }]
     deliveries: o.deliveries ?? [],        // [{ ref, supplier, sku, qty, deliveredAt }]
     permitRef: o.permitRef ?? null,
+    invoice: o.invoice ?? null,            // { ref, amountCents, issuedOn }
   };
 }
 

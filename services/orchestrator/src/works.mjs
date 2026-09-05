@@ -121,6 +121,119 @@ function saveOpen() {
 loadOpen();
 
 /**
+ * Rejections waiting for the owner to confirm.
+ *
+ * When the agent refuses a claim it does not simply go quiet. It puts the
+ * refusal in front of the person whose money it is, with the reasons, and waits
+ * to be told to proceed. That is a different act from approving a payment: the
+ * owner is confirming a *no*, which is the decision they actually care about
+ * and the one the agent should never make alone in front of a counterparty.
+ *
+ * Note what they cannot do here — overrule the agent into paying. If a human
+ * could wave a failed claim through, none of the guarantees above it mean
+ * anything.
+ */
+const REVIEWS_FILE = path.resolve('.reviews.json');
+
+export function reviews() {
+  try {
+    return JSON.parse(fs.readFileSync(REVIEWS_FILE, 'utf8'));
+  } catch {
+    return {};
+  }
+}
+
+function saveReviews(all) {
+  try {
+    fs.writeFileSync(REVIEWS_FILE, JSON.stringify(all, null, 2));
+  } catch { /* never let bookkeeping break a settlement */ }
+}
+
+function openReview(key, body) {
+  const all = reviews();
+  all[key] = { ...body, raisedAt: new Date().toISOString(), state: 'waiting' };
+  saveReviews(all);
+}
+
+/**
+ * The owner has read the refusal and agreed with it. Nothing about the money
+ * changes — it was never going to move — but the decision is now a joint one,
+ * and it is on the record as such.
+ */
+export async function confirmRejection(key, { emit = () => {}, by = 'the owner' } = {}) {
+  const all = reviews();
+  const r = all[key];
+  if (!r) throw new Error('no review is waiting for ' + key);
+  if (r.state !== 'waiting') return { already: true, review: r };
+
+  const log = new DecisionLog(key, emit);
+  log.add('review', 'confirmed',
+    `${by} read the agent's reasons and agreed with the refusal. ${fmt(r.amountCents)} stays `
+    + `locked. This is a joint decision now — the agent found the problems, and the person whose `
+    + `money it is has said so out loud.`,
+    { confirmedBy: by, findings: r.findings });
+  persist(log, key + '/review');
+
+  all[key] = { ...r, state: 'confirmed', confirmedAt: new Date().toISOString(), confirmedBy: by };
+  saveReviews(all);
+  return { review: all[key] };
+}
+
+/**
+ * Photographs that have already been paid against.
+ *
+ * The recycled-photograph rule is only as good as its memory. Held in a Set on
+ * one process it fires when the whole demo runs in one go and silently does not
+ * when the stages are run separately — which is exactly the shape of a check
+ * that looks like it works right up until it matters.
+ *
+ * A photograph is spent when money moved against it, and that is a durable
+ * fact, so it is kept the way every other durable fact here is kept.
+ */
+const PHOTOS_FILE = path.resolve('.paid-photos.json');
+
+/**
+ * Stages that have actually been paid for, read off the persisted logs.
+ *
+ * The sequence rule ("you cannot certify the frame before the foundations")
+ * needs to know what has been released. Held in memory it answers differently
+ * depending on whether the demo ran in one process or several — which is not a
+ * rule, it is a coincidence.
+ */
+export function releasedStages() {
+  const out = [];
+  try {
+    const dir = path.resolve('docs/runs');
+    for (const f of fs.readdirSync(dir)) {
+      if (!f.endsWith('.jsonl')) continue;
+      const lines = fs.readFileSync(path.join(dir, f), 'utf8').trim().split('\n');
+      const entries = lines.map((l) => { try { return JSON.parse(l); } catch { return null; } }).filter(Boolean);
+      if (!entries.length) continue;
+      const id = entries[0].tradeId.split('/')[1];
+      if (entries.some((e) => e.stage === 'settlement' && e.decision === 'released')) out.push(id);
+    }
+  } catch { /* nothing has run */ }
+  return out;
+}
+
+export function paidPhotos() {
+  try {
+    return new Set(JSON.parse(fs.readFileSync(PHOTOS_FILE, 'utf8')));
+  } catch {
+    return new Set();
+  }
+}
+
+function recordPaidPhotos(hashes) {
+  if (!hashes.length) return;
+  const all = paidPhotos();
+  for (const h of hashes) all.add(h);
+  try {
+    fs.writeFileSync(PHOTOS_FILE, JSON.stringify([...all], null, 2));
+  } catch { /* never let bookkeeping break a settlement */ }
+}
+
+/**
  * The milestone agent.
  *
  * Client funds an escrow at the start of each milestone. The contractor
@@ -209,6 +322,7 @@ export async function runMilestone(project, ms0, {
     `${sub.photos.length} photograph(s), ` +
     `${sub.deliveries.length} delivery note(s)` +
     (sub.permitRef ? `, permit ${sub.permitRef}` : ', no permit reference') +
+    (sub.invoice ? `, invoice ${sub.invoice.ref} for ${fmt(sub.invoice.amountCents)}` : ', no invoice') +
     `. "${sub.note}"`, { attempt });
 
   // --- buy what is needed to check it --------------------------------------
@@ -308,6 +422,9 @@ export async function runMilestone(project, ms0, {
   }
 
   // --- execute the plan ------------------------------------------------------
+  // If a check cannot be bought the agent stops rather than deciding on
+  // evidence it never got. The money stays escrowed, which is the safe side of
+  // that failure — and it is a logged decision, not a stack trace.
   const bought = {};
   for (const step of plan.steps) {
     const query = step.provider.startsWith('site-inspection')
@@ -315,7 +432,22 @@ export async function runMilestone(project, ms0, {
       : step.provider === 'photo-forensics'
         ? { files: sub.photos.map((p) => p.file).join(',') }
         : { refs: sub.deliveries.map((d) => `${d.ref}|${d.supplier}`).join(',') };
-    bought[step.requirement] = await buy(step.provider, query, step.why);
+    try {
+      bought[step.requirement] = await buy(step.provider, query, step.why);
+    } catch (e) {
+      const outOfFunds = /PATH_FAILED|UNFUNDED|insufficient/i.test(e.message);
+      log.add('purchase', 'unavailable',
+        `Could not buy ${step.provider}: ${outOfFunds
+          ? 'the wallet paying for checks has run out. Run `npm run topup` and try again.'
+          : e.message}`);
+      log.add('settlement', 'held',
+        `${fmt(ms.amountCents)} stays in escrow. The agent could not obtain the evidence it needs `
+        + `to decide, and it will not release money on evidence it does not have.`);
+      openEscrows.set(key, { escrow, attempt, amountCents: ms.amountCents, at: new Date().toISOString() });
+      saveOpen();
+      persist(log, log.tradeId);
+      return { log, outcome: 'checks_unavailable', escrow, reworkable: true };
+    }
   }
 
   // Deliberately over the per-call ceiling, and offered on every milestone. The
@@ -327,13 +459,20 @@ export async function runMilestone(project, ms0, {
   const inspection = bought['completion'] ?? null;
 
   // --- examination ----------------------------------------------------------
+  // Whatever this process has seen, plus everything any earlier run paid for.
+  for (const h of paidPhotos()) seenPhotoHashes.add(h);
+  const released = [...new Set([...priorReleased, ...releasedStages()])];
+
   const result = examineMilestone({
-    ms, sub, inspection, photoForensics, materials, priorReleased, seenPhotoHashes,
+    ms, sub, inspection, photoForensics, materials, seenPhotoHashes,
+    priorReleased: released,
+    elements: project.model?.elements?.[ms.id] ?? null,
   });
 
   const advice = await explainMilestone({ project, ms, sub, result });
   log.add('examination', result.state, advice, {
     findings: result.all, verdict: result.verdict, state: result.state,
+    questions: result.questions, model: result.model,
   });
 
   // Held, not finished. The escrow stays open and is handed back to the
@@ -342,6 +481,21 @@ export async function runMilestone(project, ms0, {
     log.add('settlement', decision, reason, { attempt });
     openEscrows.set(key, { escrow, attempt, amountCents: ms.amountCents, at: new Date().toISOString() });
     saveOpen();
+
+    // A contradiction gets put in front of the owner. Missing paperwork does
+    // not — nobody needs to be interrupted because a photograph is late.
+    if (result.state === 'flagged') {
+      openReview(key, {
+        milestone: ms.id, name: ms.name, amountCents: ms.amountCents, attempt,
+        findings: result.blocking.map((f) => ({ code: f.code, text: f.text })),
+        verdict: result.verdict,
+      });
+      log.add('review', 'requested',
+        `${project.client} has been asked to confirm the refusal. The agent will not pay this `
+        + `claim; the owner is being told why, and is being asked to say whether they agree.`,
+        { attempt });
+    }
+
     log.add('rework', 'requested',
       `${project.contractor} has been notified and can present corrected evidence against `
       + `this same escrow. Nothing is final until it either conforms or the cancel time passes.`,
@@ -380,7 +534,9 @@ async function release({ project, ms, sub, escrow, amountUsd, log, authorisation
   // A photograph is spent at the moment it is paid against, not the moment it
   // is shown. Recording it any earlier would reject a contractor's own
   // untouched photographs the second they corrected the one that was wrong.
-  for (const p of sub.photos ?? []) if (p.sha256) seenPhotoHashes.add(p.sha256);
+  const spent = (sub.photos ?? []).map((x) => x.sha256).filter(Boolean);
+  for (const h of spent) seenPhotoHashes.add(h);
+  recordPaidPhotos(spent);
   const finished = await ledgerPost('/escrow/finish', {
     by: 'platform', owner: escrow.owner, offerSequence: escrow.offerSequence,
     condition: escrow.condition, fulfillment: escrow.fulfillment,
@@ -407,6 +563,8 @@ async function release({ project, ms, sub, escrow, amountUsd, log, authorisation
   savePending();
   openEscrows.delete(memo);
   saveOpen();
+  const rs = reviews();
+  if (rs[memo]) { delete rs[memo]; saveReviews(rs); }
 
   if (attempt > 1) {
     log.add('rework', 'accepted',
@@ -479,4 +637,55 @@ export async function authoriseRelease(key, authorisationTxHash, { emit = () => 
   if (!p) throw new Error(`No release is waiting on authorisation for ${key}`);
   const log = new DecisionLog(key, emit);
   return release({ ...p, log, authorisationTxHash });
+}
+
+
+/**
+ * Close the project once every stage has come to rest.
+ *
+ * A milestone product that never ends is a to-do list. The closing credential
+ * is written to the builder's own account like every other one, and is keyed to
+ * the project so it cannot be issued twice — the same reason a stage credential
+ * cannot be.
+ */
+export async function closeProject(project, statuses, { emit = () => {} } = {}) {
+  const RESOLVED = new Set(['released', 'returned']);
+  const stages = project.milestones.map((m) => statuses[m.id]?.status);
+  if (stages.length !== project.milestones.length) return null;
+  if (!stages.every((st) => RESOLVED.has(st))) return null;
+
+  const paid = project.milestones
+    .filter((m) => statuses[m.id]?.status === 'released')
+    .reduce((a, m) => a + m.amountCents, 0);
+  const returned = project.milestones
+    .filter((m) => statuses[m.id]?.status === 'returned')
+    .reduce((a, m) => a + m.amountCents, 0);
+
+  const log = new DecisionLog(`${project.id}/CLOSE`, emit);
+  log.add('project', 'closing',
+    `Every stage of ${project.name} has come to rest. ${fmt(paid)} was released against evidence `
+    + `and ${fmt(returned)} went back to ${project.client} because the work was never presented.`,
+    { paidCents: paid, returnedCents: returned });
+
+  let cred = null;
+  try {
+    cred = await ledgerPost('/credential/issue', {
+      by: 'platform', subject: 'supplier',
+      credentialType: `KIRIM:${project.id}:PROJECT`,
+      uri: `kirim:project/${project.id}/closed?paid=${paid}&returned=${returned}`,
+      accept: true,
+    });
+    log.add('project', cred.alreadyIssued ? 'already_closed' : 'closed',
+      cred.alreadyIssued
+        ? `${project.name} was already closed on ${project.contractor}'s ledger record.`
+        : `${project.name} is closed. The completed project is written to ${project.contractor}'s own `
+          + `XRPL account — they keep it, and they can show it to their next client without asking us.`,
+      { txHash: cred.txHash, explorer: cred.explorer });
+  } catch (e) {
+    log.add('project', 'close_failed',
+      `Every stage is resolved, but the closing credential could not be written: ${e.message}. `
+      + `The settlements stand; only the record is incomplete.`);
+  }
+  persist(log, log.tradeId);
+  return { log, paid, returned, credential: cred };
 }

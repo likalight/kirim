@@ -9,3 +9,5 @@ docs/runs/
 .pending-releases.json
 ~$*
 .open-escrows.json
+.paid-photos.json
+.reviews.json

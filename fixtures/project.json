@@ -1,458 +1,689 @@
 {
-  "id": "PRJ-2026-1802",
-  "name": "Jiangnan Yuan Phase 2 · Tower 3, Unit 1802",
-  "kind": "pre-sale apartment",
+  "id": "PRJ-2026-ANGGREK",
+  "name": "Anggrek Residence, Tower A",
+  "what": "an 8-storey apartment building, 96 flats",
+  "kind": "construction contract",
   "currency": "US$",
-  "client": "Mrs Chen",
-  "clientRole": "Buyer",
-  "contractor": "Hengrui Properties",
-  "contractorRole": "Developer",
-  "contractorUEN": "91410100MA3X8K7L2P",
-  "totalCents": 28000000,
-  "narrative": "A pre-sold apartment. The buyer pays before the building exists; her money sits in a supervision account and is drawn down by the developer as construction reaches each stage. Today a local official decides when each draw is released. Here, the evidence does.",
+  "client": "Mentari Group",
+  "clientRole": "the owner",
+  "clientContact": "Ibu Sari",
+  "contractor": "Gedung Jaya",
+  "contractorRole": "the builder",
+  "contractorUEN": "8120114032789",
+  "totalCents": 140000000,
+  "narrative": "Mentari Group is paying Gedung Jaya US$1,400,000 to build an apartment block in Tangerang. Like every construction contract anywhere, it is paid in stages as the work gets done — and like every construction contract anywhere, the argument is always whether the stage was really finished. Normally that argument is settled by a site visit, a quantity surveyor and sixty days of waiting. Here it is settled by evidence, in seconds.",
   "preferences": {
-    "autoReleaseCeilingUsd": 55000,
+    "autoReleaseCeilingUsd": 275000,
     "evidenceBudgetUsd": 5.0,
     "leaning": "cost",
-    "note": "Mrs Chen's own terms. She may be stricter than Kirim's platform ceiling, never looser."
+    "note": "Mentari Group's own terms. They may be stricter than Kirim's platform ceiling, never looser."
   },
   "site": {
-    "address": "Jiangnan Yuan Phase 2, Zhengdong New District, Zhengzhou",
-    "lat": 34.7466,
-    "lng": 113.6254,
+    "address": "Jl. Raya Serpong, BSD City, Tangerang",
+    "lat": -6.3019,
+    "lng": 106.6528,
     "radiusM": 200
+  },
+  "model": {
+    "ref": "Drawing set REV-C, signed by both sides",
+    "agreedOn": "2026-01-20",
+    "storeys": 8,
+    "units": 96,
+    "note": "The drawings both sides signed before a spade went in the ground. Each stage is a defined list of things that have to exist, so 'finished' is counted rather than argued about. On a live project the counts come from a drone or laser survey compared to the model; here the surveyor's counts are fixtures.",
+    "bands": [
+      {
+        "id": "M1",
+        "label": "Foundations",
+        "height": 1
+      },
+      {
+        "id": "M2",
+        "label": "Frame and floors",
+        "height": 3
+      },
+      {
+        "id": "M3",
+        "label": "Roof and walls",
+        "height": 2
+      },
+      {
+        "id": "M4",
+        "label": "Plumbing, wiring and interiors",
+        "height": 2
+      },
+      {
+        "id": "M5",
+        "label": "Car park and grounds",
+        "height": 1
+      },
+      {
+        "id": "M6",
+        "label": "Handover",
+        "height": 1
+      }
+    ],
+    "elements": {
+      "M1": [
+        {
+          "id": "piles",
+          "label": "Piles driven",
+          "agreed": 96,
+          "unit": "piles"
+        },
+        {
+          "id": "caps",
+          "label": "Pile caps poured",
+          "agreed": 24,
+          "unit": "caps"
+        },
+        {
+          "id": "slab",
+          "label": "Base slab poured",
+          "agreed": 6,
+          "unit": "pours"
+        }
+      ],
+      "M2": [
+        {
+          "id": "columns",
+          "label": "Columns, floor by floor",
+          "agreed": 8,
+          "unit": "floors"
+        },
+        {
+          "id": "core",
+          "label": "Lift and stair core",
+          "agreed": 8,
+          "unit": "floors"
+        },
+        {
+          "id": "slabs",
+          "label": "Floor slabs",
+          "agreed": 8,
+          "unit": "floors"
+        },
+        {
+          "id": "beams",
+          "label": "Beams",
+          "agreed": 8,
+          "unit": "floors"
+        }
+      ],
+      "M3": [
+        {
+          "id": "roof",
+          "label": "Roof deck",
+          "agreed": 8,
+          "unit": "sections"
+        },
+        {
+          "id": "waterproof",
+          "label": "Roof waterproofing",
+          "agreed": 8,
+          "unit": "sections"
+        },
+        {
+          "id": "walls",
+          "label": "External walls",
+          "agreed": 8,
+          "unit": "floors"
+        },
+        {
+          "id": "windows",
+          "label": "Windows fitted",
+          "agreed": 8,
+          "unit": "floors"
+        }
+      ],
+      "M4": [
+        {
+          "id": "floors",
+          "label": "Floors levelled",
+          "agreed": 96,
+          "unit": "flats"
+        },
+        {
+          "id": "plaster",
+          "label": "Walls plastered and painted",
+          "agreed": 96,
+          "unit": "flats"
+        },
+        {
+          "id": "bathrooms",
+          "label": "Bathrooms waterproofed",
+          "agreed": 96,
+          "unit": "flats"
+        },
+        {
+          "id": "risers",
+          "label": "Pipe and cable risers",
+          "agreed": 96,
+          "unit": "flats"
+        }
+      ],
+      "M5": [
+        {
+          "id": "bays",
+          "label": "Parking bays marked",
+          "agreed": 60,
+          "unit": "bays"
+        },
+        {
+          "id": "drive",
+          "label": "Driveway laid",
+          "agreed": 4,
+          "unit": "sections"
+        },
+        {
+          "id": "drains",
+          "label": "Drainage runs",
+          "agreed": 12,
+          "unit": "runs"
+        },
+        {
+          "id": "planting",
+          "label": "Landscaping",
+          "agreed": 4,
+          "unit": "zones"
+        }
+      ],
+      "M6": []
+    }
   },
   "milestones": [
     {
       "id": "M1",
-      "name": "Foundation and substructure",
-      "amountCents": 4000000,
-      "startsOn": "2026-03-01",
-      "dueOn": "2026-05-30",
+      "name": "Foundations",
+      "plain": "Digging and pouring the base",
+      "amountCents": 20000000,
+      "startsOn": "2026-02-02",
+      "dueOn": "2026-04-30",
       "requiredPhotos": 3,
       "minInspectionPercent": 95,
-      "requiresPermit": "Construction works permit",
+      "requiresPermit": "Building permit (IMB)",
       "boq": [
         {
-          "sku": "CON-C40",
-          "description": "C40 ready-mix concrete, cubic metres",
-          "qty": 1400
+          "sku": "CON-K350",
+          "description": "K350 ready-mix concrete, cubic metres",
+          "qty": 1200
         }
       ],
-      "scenario": "Evidence conforms — the draw releases autonomously and the stage is recorded",
+      "scenario": "Everything is in order. The agent checks it, releases the money, and tells the owner.",
       "submission": {
-        "submittedAt": "2026-05-28T16:20:00+08:00",
-        "note": "Raft foundation poured and cured. Pile caps signed off by the supervising engineer.",
-        "permitRef": "ZZ/CW/2026/40219",
+        "submittedAt": "2026-04-28T16:20:00+07:00",
+        "note": "All 96 piles driven, caps poured, base slab complete and cured.",
+        "permitRef": "IMB/TNG/2026/40219",
+        "invoice": {
+          "ref": "INV-GJ-0114",
+          "amountCents": 20000000,
+          "issuedOn": "2026-04-28"
+        },
         "photos": [
           {
-            "file": "found-raft-01.jpg",
-            "takenAt": "2026-05-24T10:12:00+08:00",
-            "lat": 34.74672,
-            "lng": 113.62556,
-            "sha256": "9f2a1c44e8b7d3016a5c9e2f7b41d8a3c06e5f9b2d4a7c1e83f60b5d2a9c4e17"
+            "file": "foundation-piles.jpg",
+            "takenAt": "2026-04-24T10:12:00+07:00",
+            "lat": -6.30178,
+            "lng": 106.65296,
+            "sha256": "9f2a1c44e8b7d3016a5c9e2f7b41d8a3c06e5f9b2d4a7c1e83f60b5d2a9c4e17",
+            "evidences": "piles"
           },
           {
-            "file": "found-piles-02.jpg",
-            "takenAt": "2026-05-24T10:31:00+08:00",
-            "lat": 34.74651,
-            "lng": 113.62518,
-            "sha256": "3d81f0b6c25e94a7d13b8f602ea45c9718d3b6a0f4c27e59b81d0a63f7e2c845"
+            "file": "foundation-caps.jpg",
+            "takenAt": "2026-04-24T10:31:00+07:00",
+            "lat": -6.30199,
+            "lng": 106.65258,
+            "sha256": "3d81f0b6c25e94a7d13b8f602ea45c9718d3b6a0f4c27e59b81d0a63f7e2c845",
+            "evidences": "caps"
           },
           {
-            "file": "found-pour-03.jpg",
-            "takenAt": "2026-05-26T15:02:00+08:00",
-            "lat": 34.74644,
-            "lng": 113.62566,
-            "sha256": "b70e5a92d1f483c6027ba9e5d84c31f0a62d7b98e05c34a1f7d2b60e9a35c8d4"
+            "file": "foundation-slab.jpg",
+            "takenAt": "2026-04-26T15:02:00+07:00",
+            "lat": -6.30206,
+            "lng": 106.65306,
+            "sha256": "b70e5a92d1f483c6027ba9e5d84c31f0a62d7b98e05c34a1f7d2b60e9a35c8d4",
+            "evidences": "slab"
           }
         ],
         "deliveries": [
           {
             "ref": "CON-88213",
-            "supplier": "Zhengzhou Jianye Ready-Mix",
-            "sku": "CON-C40",
-            "qty": 1400,
-            "deliveredAt": "2026-05-20"
+            "supplier": "Beton Nusantara",
+            "sku": "CON-K350",
+            "qty": 1200,
+            "deliveredAt": "2026-04-20"
           }
         ]
       },
       "inspection": {
-        "percentComplete": 100,
+        "observed": {
+          "piles": 96,
+          "caps": 24,
+          "slab": 6
+        },
         "defects": []
       }
     },
     {
       "id": "M2",
-      "name": "Structural frame topped out",
-      "amountCents": 5000000,
-      "startsOn": "2026-05-30",
-      "dueOn": "2026-09-15",
+      "name": "Frame and floors",
+      "plain": "The concrete skeleton, all eight floors",
+      "amountCents": 32500000,
+      "startsOn": "2026-04-30",
+      "dueOn": "2026-08-31",
       "dependsOn": "M1",
       "requiredPhotos": 3,
       "minInspectionPercent": 95,
       "boq": [
         {
-          "sku": "REB-HRB400",
-          "description": "HRB400 reinforcement bar, tonnes",
-          "qty": 620
+          "sku": "REB-BJTS420",
+          "description": "BjTS420 reinforcement bar, tonnes",
+          "qty": 380
         },
         {
-          "sku": "CON-C40",
-          "description": "C40 ready-mix concrete, cubic metres",
-          "qty": 3200
+          "sku": "CON-K350",
+          "description": "K350 ready-mix concrete, cubic metres",
+          "qty": 2400
         }
       ],
-      "scenario": "A photo taken 2.4km from site, and a delivery note the supplier has never heard of — flagged",
+      "scenario": "The biggest payment in the contract. Everything checks out — but it is over the limit the owner set, so Ibu Sari signs it herself.",
       "submission": {
-        "submittedAt": "2026-09-14T18:05:00+08:00",
-        "note": "Frame topped out to level 33. Ready for the next draw.",
+        "submittedAt": "2026-08-29T18:05:00+07:00",
+        "note": "Frame topped out. All eight floors poured, core complete.",
+        "invoice": {
+          "ref": "INV-GJ-0210",
+          "amountCents": 32500000,
+          "issuedOn": "2026-08-29"
+        },
         "photos": [
           {
-            "file": "frame-l28-01.jpg",
-            "takenAt": "2026-09-10T09:40:00+08:00",
-            "lat": 34.74663,
-            "lng": 113.62541,
-            "sha256": "1a4c7e90b3d582f61c9a0e47b28d5f3061e9c2a84b70d5f36a1e8c94d207b3f5"
+            "file": "frame-columns.jpg",
+            "takenAt": "2026-08-25T09:40:00+07:00",
+            "lat": -6.30187,
+            "lng": 106.65281,
+            "sha256": "1a4c7e90b3d582f61c9a0e47b28d5f3061e9c2a84b70d5f36a1e8c94d207b3f5",
+            "evidences": "columns"
           },
           {
-            "file": "frame-core-02.jpg",
-            "takenAt": "2026-09-10T09:55:00+08:00",
-            "lat": 34.7681,
-            "lng": 113.63005,
-            "sha256": "6e2b8d51f7a09c34e15d7b28a604f39c85b1e0d7a2c36f48b95d1c07e3a8624f"
+            "file": "frame-core.jpg",
+            "takenAt": "2026-08-25T09:55:00+07:00",
+            "lat": -6.30191,
+            "lng": 106.65277,
+            "sha256": "d3719ab08c65e24f10b8d5a37e94c6021f8b3ade5c07419b62d8f0a1c53e7b46",
+            "evidences": "core"
           },
           {
-            "file": "frame-slab-03.jpg",
-            "takenAt": "2026-09-12T11:20:00+08:00",
-            "lat": 34.7468,
-            "lng": 113.62509,
-            "sha256": "c05f3a71e69b28d4f0a37c85b1e6d902a4f7c38b05e12d6a9c4b73f08e5d1a26"
+            "file": "frame-slabs.jpg",
+            "takenAt": "2026-08-26T11:20:00+07:00",
+            "lat": -6.3017,
+            "lng": 106.65249,
+            "sha256": "c05f3a71e69b28d4f0a37c85b1e6d902a4f7c38b05e12d6a9c4b73f08e5d1a26",
+            "evidences": "slabs"
+          },
+          {
+            "file": "frame-beams.jpg",
+            "takenAt": "2026-08-26T11:41:00+07:00",
+            "lat": -6.30202,
+            "lng": 106.65303,
+            "sha256": "5a90c31e7b2d64f8093a1c58e7b40d26f83c910a4b7e2d5c609f3a18b47d0e25",
+            "evidences": "beams"
           }
         ],
         "deliveries": [
           {
             "ref": "REB-77120",
-            "supplier": "Henan Steel Trading",
-            "sku": "REB-HRB400",
-            "qty": 620,
-            "deliveredAt": "2026-08-02"
+            "supplier": "Baja Perkasa",
+            "sku": "REB-BJTS420",
+            "qty": 380,
+            "deliveredAt": "2026-07-02"
           },
           {
-            "ref": "CON-77999",
-            "supplier": "Zhengzhou Jianye Ready-Mix",
-            "sku": "CON-C40",
-            "qty": 3200,
-            "deliveredAt": "2026-08-19"
+            "ref": "CON-79210",
+            "supplier": "Beton Nusantara",
+            "sku": "CON-K350",
+            "qty": 2400,
+            "deliveredAt": "2026-07-19"
           }
         ]
       },
       "inspection": {
-        "percentComplete": 98,
+        "observed": {
+          "columns": 8,
+          "core": 8,
+          "slabs": 8,
+          "beams": 8
+        },
         "defects": []
-      },
-      "resubmission": {
-        "submittedAt": "2026-09-16T11:30:00+08:00",
-        "note": "Reshot the core photograph on site — the first one was taken at our yard by mistake. Delivery note CON-77999 was a duplicate raised in error; the correct note for the same pour is CON-79210.",
-        "photos": [
-          {
-            "file": "frame-l28-01.jpg",
-            "takenAt": "2026-09-10T09:40:00+08:00",
-            "lat": 34.74663,
-            "lng": 113.62541,
-            "sha256": "1a4c7e90b3d582f61c9a0e47b28d5f3061e9c2a84b70d5f36a1e8c94d207b3f5"
-          },
-          {
-            "file": "frame-core-02b.jpg",
-            "takenAt": "2026-09-16T08:55:00+08:00",
-            "lat": 34.74659,
-            "lng": 113.62537,
-            "sha256": "d3719ab08c65e24f10b8d5a37e94c6021f8b3ade5c07419b62d8f0a1c53e7b46"
-          },
-          {
-            "file": "frame-slab-03.jpg",
-            "takenAt": "2026-09-12T11:20:00+08:00",
-            "lat": 34.7468,
-            "lng": 113.62509,
-            "sha256": "c05f3a71e69b28d4f0a37c85b1e6d902a4f7c38b05e12d6a9c4b73f08e5d1a26"
-          }
-        ],
-        "deliveries": [
-          {
-            "ref": "REB-77120",
-            "supplier": "Henan Steel Trading",
-            "sku": "REB-HRB400",
-            "qty": 620,
-            "deliveredAt": "2026-08-02"
-          },
-          {
-            "ref": "CON-79210",
-            "supplier": "Zhengzhou Jianye Ready-Mix",
-            "sku": "CON-C40",
-            "qty": 3200,
-            "deliveredAt": "2026-08-19"
-          }
-        ]
-      },
-      "reinspection": {
-        "percentComplete": 98,
-        "defects": []
-      },
-      "reworkScenario": "The off-site photograph is reshot on site and the phantom delivery note is replaced with a real one — releases"
+      }
     },
     {
       "id": "M3",
-      "name": "Façade and windows sealed",
-      "amountCents": 4000000,
-      "startsOn": "2026-09-15",
+      "name": "Roof and walls",
+      "plain": "Making it weatherproof",
+      "amountCents": 20000000,
+      "startsOn": "2026-08-31",
       "dueOn": "2026-11-30",
       "requiredPhotos": 3,
       "minInspectionPercent": 95,
-      "requiresPermit": "Curtain wall certification",
       "boq": [
         {
-          "sku": "GLZ-LOWE",
-          "description": "Low-E insulated glazing units, square metres",
-          "qty": 2400
+          "sku": "WIN-ALU",
+          "description": "Aluminium window units",
+          "qty": 384
         }
       ],
-      "scenario": "One photo, no delivery notes, no inspection result — more information needed, not a rejection",
+      "scenario": "Only one photo and no paperwork. Nothing is wrong — there just is not enough to decide on yet, and nothing is held against the builder.",
       "submission": {
-        "submittedAt": "2026-11-28T20:11:00+08:00",
-        "note": "Curtain wall up on the east elevation. Rest of the paperwork tomorrow.",
-        "permitRef": "ZZ/CW/2026/55831",
+        "submittedAt": "2026-11-28T20:11:00+07:00",
+        "note": "Roof deck done. Sending the rest of the paperwork tomorrow.",
         "photos": [
           {
-            "file": "facade-east-01.jpg",
-            "takenAt": "2026-11-26T14:02:00+08:00",
-            "lat": 34.74658,
-            "lng": 113.62551,
-            "sha256": "84b1d0c73e5a29f6018c4b7d2e0a6f5391c73b8d04e2a165f9c8b3d70a24e6f1"
+            "file": "roof-deck.jpg",
+            "takenAt": "2026-11-26T14:02:00+07:00",
+            "lat": -6.30192,
+            "lng": 106.65291,
+            "sha256": "84b1d0c73e5a29f6018c4b7d2e0a6f5391c73b8d04e2a165f9c8b3d70a24e6f1",
+            "evidences": "roof"
           }
         ],
         "deliveries": []
       },
-      "inspection": null,
-      "resubmission": {
-        "submittedAt": "2026-11-29T15:05:00+08:00",
-        "note": "Full set attached — north and west elevations added, glazing delivery notes, and the curtain wall inspection came back this morning.",
-        "permitRef": "ZZ/CW/2026/55831",
-        "photos": [
-          {
-            "file": "facade-east-01.jpg",
-            "takenAt": "2026-11-26T14:02:00+08:00",
-            "lat": 34.74658,
-            "lng": 113.62551,
-            "sha256": "84b1d0c73e5a29f6018c4b7d2e0a6f5391c73b8d04e2a165f9c8b3d70a24e6f1"
-          },
-          {
-            "file": "facade-north-02.jpg",
-            "takenAt": "2026-11-29T09:18:00+08:00",
-            "lat": 34.74671,
-            "lng": 113.62534,
-            "sha256": "6b09e3d75a1c48f2093b7e6c05d4a81f37c92b0e6a5d13f847b0c29e5a17d340"
-          },
-          {
-            "file": "facade-west-03.jpg",
-            "takenAt": "2026-11-29T09:41:00+08:00",
-            "lat": 34.74649,
-            "lng": 113.62561,
-            "sha256": "f18d4a70b25c96e3018f7d2b64a03c95e7b18d0c43a629f5b07e1d38c496a2b7"
-          }
-        ],
-        "deliveries": [
-          {
-            "ref": "GLZ-90118",
-            "supplier": "Xinyi Glass",
-            "sku": "GLZ-LOWE",
-            "qty": 2400,
-            "deliveredAt": "2026-10-30"
-          }
-        ]
-      },
-      "reinspection": {
-        "percentComplete": 97,
-        "defects": []
-      },
-      "reworkScenario": "The two missing photographs, the delivery notes and the inspection arrive — releases"
+      "inspection": null
     },
     {
       "id": "M4",
-      "name": "Interior fit-out and building services",
-      "amountCents": 4000000,
+      "name": "Plumbing, wiring and interiors",
+      "plain": "Everything inside the flats",
+      "amountCents": 20000000,
       "startsOn": "2026-11-30",
-      "dueOn": "2027-02-28",
+      "dueOn": "2027-03-31",
       "requiredPhotos": 3,
       "minInspectionPercent": 95,
       "boq": [
         {
-          "sku": "TIL-600X600",
-          "description": "Porcelain floor tile, square metres",
-          "qty": 1800
+          "sku": "TIL-600",
+          "description": "Floor tile, square metres",
+          "qty": 5800
         }
       ],
-      "scenario": "Inspection finds 72% complete with a critical defect, plus a photograph recycled from the foundation stage — flagged",
+      "scenario": "The builder says the flats are finished. They are not. The agent refuses the claim and asks the owner to confirm — the money does not move.",
+      "reworkScenario": "The builder fixes the work, corrects the bill and sends real photographs. The same locked money is released.",
       "submission": {
-        "submittedAt": "2027-03-03T09:30:00+08:00",
-        "note": "Fit-out complete across the tower.",
+        "submittedAt": "2027-04-03T09:30:00+07:00",
+        "note": "All 96 flats finished inside.",
+        "invoice": {
+          "ref": "INV-GJ-0341",
+          "amountCents": 22000000,
+          "issuedOn": "2027-04-03"
+        },
         "photos": [
           {
-            "file": "fitout-unit-01.jpg",
-            "takenAt": "2027-02-25T13:15:00+08:00",
-            "lat": 34.74669,
-            "lng": 113.6253,
-            "sha256": "2f7a91c05b8e3d6417a0c9b24e5f8d3160b7a4c92e1d05f83b6c7a0d94e12b58"
+            "file": "interiors-floors.jpg",
+            "takenAt": "2027-03-25T13:15:00+07:00",
+            "lat": -6.30181,
+            "lng": 106.6527,
+            "sha256": "2f7a91c05b8e3d6417a0c9b24e5f8d3160b7a4c92e1d05f83b6c7a0d94e12b58",
+            "evidences": "floors"
           },
           {
-            "file": "fitout-bath-02.jpg",
-            "takenAt": "2027-02-25T13:41:00+08:00",
-            "lat": 34.74661,
-            "lng": 113.62522,
-            "sha256": "9f2a1c44e8b7d3016a5c9e2f7b41d8a3c06e5f9b2d4a7c1e83f60b5d2a9c4e17"
+            "file": "interiors-bathrooms.jpg",
+            "takenAt": "2027-03-25T13:41:00+07:00",
+            "lat": -6.30189,
+            "lng": 106.65262,
+            "sha256": "9f2a1c44e8b7d3016a5c9e2f7b41d8a3c06e5f9b2d4a7c1e83f60b5d2a9c4e17",
+            "evidences": "bathrooms"
           },
           {
-            "file": "fitout-mep-03.jpg",
-            "takenAt": "2027-02-26T10:05:00+08:00",
-            "lat": 34.74647,
-            "lng": 113.62559,
-            "sha256": "5c3e8b02a7f19d46e0b8c35a71d29f04b6e83c07a45d1f92b0e6c8a37d5941fb"
+            "file": "interiors-risers.jpg",
+            "takenAt": "2027-03-26T10:05:00+07:00",
+            "lat": -6.30203,
+            "lng": 106.65299,
+            "sha256": "5c3e8b02a7f19d46e0b8c35a71d29f04b6e83c07a45d1f92b0e6c8a37d5941fb",
+            "evidences": "risers"
           }
         ],
         "deliveries": [
           {
             "ref": "TIL-80442",
-            "supplier": "Foshan Ceramics Group",
-            "sku": "TIL-600X600",
-            "qty": 1800,
-            "deliveredAt": "2027-01-14"
+            "supplier": "Keramik Jaya",
+            "sku": "TIL-600",
+            "qty": 5800,
+            "deliveredAt": "2027-02-14"
           }
         ]
       },
       "inspection": {
-        "percentComplete": 72,
+        "observed": {
+          "floors": 96,
+          "plaster": 77,
+          "bathrooms": 54,
+          "risers": 50
+        },
         "defects": [
           {
             "severity": "critical",
-            "note": "Bathroom floors on the 18th storey fall away from the drains; ponding observed in eleven units."
+            "note": "Bathroom floors on the 6th floor slope away from the drains. Water pools in 11 flats."
           },
           {
             "severity": "minor",
-            "note": "Skirting joints require sealant in two units."
+            "note": "Skirting boards need sealing in two flats."
           }
         ]
       },
       "resubmission": {
-        "submittedAt": "2027-03-21T10:15:00+08:00",
-        "note": "Bathroom floors on the 18th storey have been taken up and relaid to fall. Re-inspection attached. The MEP photograph has been replaced — the file we sent had been through an editor and we have supplied the original capture.",
+        "submittedAt": "2027-04-21T10:15:00+07:00",
+        "note": "6th floor bathrooms taken up and relaid to fall. Remaining plastering and risers completed. Bill reissued at the agreed amount — the first one was raised against the wrong schedule. Original photographs attached.",
+        "invoice": {
+          "ref": "INV-GJ-0341R",
+          "amountCents": 20000000,
+          "issuedOn": "2027-04-21"
+        },
         "photos": [
           {
-            "file": "fitout-unit-01.jpg",
-            "takenAt": "2027-02-25T13:15:00+08:00",
-            "lat": 34.74669,
-            "lng": 113.6253,
-            "sha256": "2f7a91c05b8e3d6417a0c9b24e5f8d3160b7a4c92e1d05f83b6c7a0d94e12b58"
+            "file": "interiors-floors.jpg",
+            "takenAt": "2027-03-25T13:15:00+07:00",
+            "lat": -6.30181,
+            "lng": 106.6527,
+            "sha256": "2f7a91c05b8e3d6417a0c9b24e5f8d3160b7a4c92e1d05f83b6c7a0d94e12b58",
+            "evidences": "floors"
           },
           {
-            "file": "fitout-bath-02b.jpg",
-            "takenAt": "2027-03-19T14:07:00+08:00",
-            "lat": 34.74663,
-            "lng": 113.62525,
-            "sha256": "a5c827e0135b9d64f70a2c8e31d95b4067a3e1c85f20d9b476c0a38e1d52f9b3"
+            "file": "interiors-plaster-new.jpg",
+            "takenAt": "2027-04-19T13:52:00+07:00",
+            "lat": -6.30193,
+            "lng": 106.6526,
+            "sha256": "31c7a05e9b2d64f8a70c3b19e5d284f06a3c71e95b8d0426f1a93c58e07b2d64",
+            "evidences": "plaster"
           },
           {
-            "file": "fitout-mep-03b.jpg",
-            "takenAt": "2027-03-19T14:35:00+08:00",
-            "lat": 34.74647,
-            "lng": 113.62559,
-            "sha256": "0e93b5d7a2c41f680d5b93e07a2c418df65b90e37a2c4185d0b967e34a1c58d2"
+            "file": "interiors-bathrooms-new.jpg",
+            "takenAt": "2027-04-19T14:07:00+07:00",
+            "lat": -6.30187,
+            "lng": 106.65257,
+            "sha256": "a5c827e0135b9d64f70a2c8e31d95b4067a3e1c85f20d9b476c0a38e1d52f9b3",
+            "evidences": "bathrooms"
+          },
+          {
+            "file": "interiors-risers-new.jpg",
+            "takenAt": "2027-04-19T14:35:00+07:00",
+            "lat": -6.30203,
+            "lng": 106.65299,
+            "sha256": "0e93b5d7a2c41f680d5b93e07a2c418df65b90e37a2c4185d0b967e34a1c58d2",
+            "evidences": "risers"
           }
         ],
         "deliveries": [
           {
             "ref": "TIL-80442",
-            "supplier": "Foshan Ceramics Group",
-            "sku": "TIL-600X600",
-            "qty": 1800,
-            "deliveredAt": "2027-01-14"
+            "supplier": "Keramik Jaya",
+            "sku": "TIL-600",
+            "qty": 5800,
+            "deliveredAt": "2027-02-14"
           }
         ]
       },
       "reinspection": {
-        "percentComplete": 99,
+        "observed": {
+          "floors": 96,
+          "plaster": 95,
+          "bathrooms": 94,
+          "risers": 96
+        },
         "defects": []
-      },
-      "reworkScenario": "The defect is rectified, re-inspection reads 99%, and the recycled photograph is replaced — releases"
+      }
     },
     {
       "id": "M5",
-      "name": "Variation — additional basement parking level",
-      "amountCents": 6500000,
-      "startsOn": "2027-02-28",
-      "dueOn": "2027-05-31",
+      "name": "Car park and grounds",
+      "plain": "Everything outside the building",
+      "amountCents": 25000000,
+      "startsOn": "2027-03-31",
+      "dueOn": "2027-06-30",
       "requiredPhotos": 3,
       "minInspectionPercent": 95,
-      "requiresPermit": "Revised planning consent",
       "boq": [
         {
-          "sku": "CON-C40",
-          "description": "C40 ready-mix concrete, cubic metres",
-          "qty": 900
+          "sku": "ASP-AC",
+          "description": "Asphalt concrete, tonnes",
+          "qty": 340
         }
       ],
-      "scenario": "Evidence conforms, but the draw is above the buyer's own ceiling — she authorises it herself",
+      "scenario": "The work really was done and the survey agrees. But one photo was taken 2.4km away and the delivery note was never issued by the supplier. Built, and still refused.",
+      "reworkScenario": "The photo is retaken on site and the real delivery note is supplied — released.",
       "submission": {
-        "submittedAt": "2027-05-28T17:40:00+08:00",
-        "note": "Basement level B3 poured and certified. Revised consent attached.",
-        "permitRef": "ZZ/PL/2027/10877",
+        "submittedAt": "2027-06-28T17:40:00+07:00",
+        "note": "Car park surfaced and marked, drainage in, planting done.",
+        "invoice": {
+          "ref": "INV-GJ-0402",
+          "amountCents": 25000000,
+          "issuedOn": "2027-06-28"
+        },
         "photos": [
           {
-            "file": "b3-slab-01.jpg",
-            "takenAt": "2027-05-24T11:00:00+08:00",
-            "lat": 34.74655,
-            "lng": 113.62544,
-            "sha256": "7b1e0d94c62a3f58019d7c4b30e6a2f85c91b7d04a3e26f19c58b0d7a3e14265"
+            "file": "grounds-bays.jpg",
+            "takenAt": "2027-06-24T11:00:00+07:00",
+            "lat": -6.30195,
+            "lng": 106.65284,
+            "sha256": "7b1e0d94c62a3f58019d7c4b30e6a2f85c91b7d04a3e26f19c58b0d7a3e14265",
+            "evidences": "bays"
           },
           {
-            "file": "b3-ramp-02.jpg",
-            "takenAt": "2027-05-24T11:22:00+08:00",
-            "lat": 34.74664,
-            "lng": 113.62527,
-            "sha256": "0a6c3f81b9d47e25a3f08c61d95b2e740c8a37f16b0e5d29a74c1b83e60f5d92"
+            "file": "grounds-driveway.jpg",
+            "takenAt": "2027-06-24T11:22:00+07:00",
+            "lat": -6.2803,
+            "lng": 106.6528,
+            "sha256": "0a6c3f81b9d47e25a3f08c61d95b2e740c8a37f16b0e5d29a74c1b83e60f5d92",
+            "evidences": "drive"
           },
           {
-            "file": "b3-cert-03.jpg",
-            "takenAt": "2027-05-26T09:14:00+08:00",
-            "lat": 34.74642,
-            "lng": 113.62568,
-            "sha256": "e42b7c0951d68a3f07b2e9c14d80a6f35b17c0e92a48d6f01b93c7a05e28d461"
+            "file": "grounds-drains.jpg",
+            "takenAt": "2027-06-26T09:14:00+07:00",
+            "lat": -6.30208,
+            "lng": 106.65308,
+            "sha256": "e42b7c0951d68a3f07b2e9c14d80a6f35b17c0e92a48d6f01b93c7a05e28d461",
+            "evidences": "drains"
+          },
+          {
+            "file": "grounds-planting.jpg",
+            "takenAt": "2027-06-26T09:33:00+07:00",
+            "lat": -6.302,
+            "lng": 106.6528,
+            "sha256": "c8b0a7e3159d24f6083b1e7c50a94d38f26b0c95a71e3d48b09c6f21a58e37d0",
+            "evidences": "planting"
           }
         ],
         "deliveries": [
           {
-            "ref": "CON-81003",
-            "supplier": "Zhengzhou Jianye Ready-Mix",
-            "sku": "CON-C40",
-            "qty": 900,
-            "deliveredAt": "2027-05-14"
+            "ref": "ASP-99001",
+            "supplier": "Aspal Mandiri",
+            "sku": "ASP-AC",
+            "qty": 340,
+            "deliveredAt": "2027-05-11"
           }
         ]
       },
       "inspection": {
-        "percentComplete": 100,
+        "observed": {
+          "bays": 60,
+          "drive": 4,
+          "drains": 12,
+          "planting": 4
+        },
+        "defects": []
+      },
+      "resubmission": {
+        "submittedAt": "2027-07-02T09:20:00+07:00",
+        "note": "Driveway photo retaken on site — the first one was shot at our depot by mistake. Delivery note ASP-99001 was raised against the wrong order; the correct note from Aspal Mandiri is ASP-99114.",
+        "invoice": {
+          "ref": "INV-GJ-0402R",
+          "amountCents": 25000000,
+          "issuedOn": "2027-07-02"
+        },
+        "photos": [
+          {
+            "file": "grounds-bays.jpg",
+            "takenAt": "2027-06-24T11:00:00+07:00",
+            "lat": -6.30195,
+            "lng": 106.65284,
+            "sha256": "7b1e0d94c62a3f58019d7c4b30e6a2f85c91b7d04a3e26f19c58b0d7a3e14265",
+            "evidences": "bays"
+          },
+          {
+            "file": "grounds-driveway-new.jpg",
+            "takenAt": "2027-07-01T10:14:00+07:00",
+            "lat": -6.3019,
+            "lng": 106.65273,
+            "sha256": "4d18be0a52c97f36d81b40e7a2c95d13f608b7e2a4c05d9b3f716a8c0e25d4b9",
+            "evidences": "drive"
+          },
+          {
+            "file": "grounds-drains.jpg",
+            "takenAt": "2027-06-26T09:14:00+07:00",
+            "lat": -6.30208,
+            "lng": 106.65308,
+            "sha256": "e42b7c0951d68a3f07b2e9c14d80a6f35b17c0e92a48d6f01b93c7a05e28d461",
+            "evidences": "drains"
+          },
+          {
+            "file": "grounds-planting.jpg",
+            "takenAt": "2027-06-26T09:33:00+07:00",
+            "lat": -6.302,
+            "lng": 106.6528,
+            "sha256": "c8b0a7e3159d24f6083b1e7c50a94d38f26b0c95a71e3d48b09c6f21a58e37d0",
+            "evidences": "planting"
+          }
+        ],
+        "deliveries": [
+          {
+            "ref": "ASP-99114",
+            "supplier": "Aspal Mandiri",
+            "sku": "ASP-AC",
+            "qty": 340,
+            "deliveredAt": "2027-05-11"
+          }
+        ]
+      },
+      "reinspection": {
+        "observed": {
+          "bays": 60,
+          "drive": 4,
+          "drains": 12,
+          "planting": 4
+        },
         "defects": []
       }
     },
     {
       "id": "M6",
-      "name": "Completion and handover certificate",
-      "amountCents": 4500000,
-      "startsOn": "2027-05-31",
-      "dueOn": "2027-08-31",
+      "name": "Handover",
+      "plain": "Final checks, then the keys",
+      "amountCents": 22500000,
+      "startsOn": "2027-06-30",
+      "dueOn": "2027-09-30",
       "requiredPhotos": 4,
       "minInspectionPercent": 98,
       "noSubmission": true,
       "cancelAfterSeconds": 30,
-      "scenario": "The developer runs out of cash and never presents completion — the escrow returns the buyer's money instead of it vanishing into the group",
+      "scenario": "The builder runs out of money and never presents handover. The escrow gives the owner their money back on its own — no lawyers, no waiting.",
       "boq": []
     }
   ]

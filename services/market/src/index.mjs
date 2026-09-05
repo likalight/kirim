@@ -73,7 +73,7 @@ const CATALOG = [
     id: 'site-inspection',
     path: '/v1/site-inspection',
     name: 'Independent site inspection',
-    description: 'Automated inspection of a construction milestone: percent complete and defects.',
+    description: 'Surveys the site and measures it against the agreed model: percent complete and open defects.',
     price: '0.30',
     turnaroundHours: 48,
     reliability: 0.94,
@@ -82,7 +82,7 @@ const CATALOG = [
     id: 'site-inspection-express',
     path: '/v1/site-inspection-express',
     name: 'Independent site inspection (express)',
-    description: 'The same inspection, surveyed within the hour. Priced for deadline pressure.',
+    description: 'The same survey against the same model, within the hour. Priced for deadline pressure.',
     price: '0.55',
     turnaroundHours: 1,
     reliability: 0.98,
@@ -160,10 +160,18 @@ const HANDLERS = {
       projectId: PROJECT.id,
       milestoneId: q.get('milestone'),
       attempt: Number(q.get('attempt') || 1),
-      percentComplete: i ? i.percentComplete : null,
+      // Counts per element, not a bare percentage. The percentage is then
+      // arithmetic anyone can redo, rather than a number to be taken on trust.
+      observed: i ? i.observed : null,
+      elements: PROJECT.model?.elements?.[q.get('milestone')] ?? null,
+      // What the figure was measured against. On a live project this is a
+      // photogrammetric or laser scan compared to the IFC model; the point is
+      // that completion is measured against something both sides signed rather
+      // than asserted by whoever wants paying.
+      measuredAgainst: PROJECT.model ? PROJECT.model.ref : null,
       defects: i ? i.defects : [],
       inspectedAt: new Date().toISOString(),
-      method: 'automated survey, unattended',
+      method: 'photogrammetric survey against the agreed model, unattended',
     });
   },
 
@@ -176,10 +184,14 @@ const HANDLERS = {
       projectId: PROJECT.id,
       milestoneId: q.get('milestone'),
       attempt: Number(q.get('attempt') || 1),
-      percentComplete: i ? i.percentComplete : null,
+      // Counts per element, not a bare percentage. The percentage is then
+      // arithmetic anyone can redo, rather than a number to be taken on trust.
+      observed: i ? i.observed : null,
+      elements: PROJECT.model?.elements?.[q.get('milestone')] ?? null,
+      measuredAgainst: PROJECT.model ? PROJECT.model.ref : null,
       defects: i ? i.defects : [],
       inspectedAt: new Date().toISOString(),
-      method: 'automated survey, express',
+      method: 'photogrammetric survey against the agreed model, express',
       turnaroundHours: 1,
     });
   },

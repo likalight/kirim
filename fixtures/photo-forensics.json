@@ -1,4 +1,4 @@
 {
-  "note": "Findings the forensics provider reports per file. Anything not listed comes back clean.",
-  "fitout-mep-03.jpg": { "reason": "EXIF software tag shows re-encoding by an image editor after capture; original capture data absent." }
+  "note": "What the forensics provider reports per file. Anything not listed comes back clean.",
+  "interiors-risers.jpg": { "reason": "The EXIF software tag shows the file was re-saved by a photo editor after it was taken, and the original capture data is gone." }
 }
