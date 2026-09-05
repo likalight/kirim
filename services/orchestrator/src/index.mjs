@@ -351,7 +351,9 @@ async function handle(req, res) {
  */
 function milestoneState() {
   const dir = path.resolve('docs/runs');
-  const state = {};
+  // A stage can have more than one log file — the run itself, and the owner's
+  // confirmation of a refusal. They are one story, so they are read as one.
+  const byStage = new Map();
   try {
     for (const f of fs.readdirSync(dir)) {
       if (!f.endsWith('.jsonl')) continue;
@@ -360,35 +362,43 @@ function milestoneState() {
       if (!entries.length) continue;
       const id = entries[0].tradeId.split('/')[1];
       if (id === 'CLOSE') continue;
-      const last = entries[entries.length - 1];
-      const find = (stage, decision) => entries.find((e) => e.stage === stage && (!decision || e.decision === decision));
-      const released = find('settlement', 'released');
-      const returned = find('settlement', 'returned');
-      const examined = [...entries].reverse().find((e) => e.stage === 'examination');
-      const funded = find('escrow', 'funded');
-      const fee = find('revenue', 'charged');
-      const outcome = find('outcome', 'complete');
-      state[id] = {
-        status: released ? 'released'
-          : returned ? 'returned'
-            : find('settlement', 'awaiting_client') ? 'awaiting_client'
-              : examined?.decision === 'more_info' ? 'more_info'
-                : examined?.decision === 'flagged' ? 'flagged'
-                  : funded ? 'in_progress' : 'unknown',
-        note: examined?.reason ?? last.reason,
-        findings: examined?.findings ?? [],
-        questions: examined?.questions ?? null,
-        model: examined?.model ?? null,
-        attempts: entries.filter((e) => e.stage === 'submission').length,
-        spentCents: entries.filter((e) => e.costCents).reduce((a, e) => a + e.costCents, 0),
-        feeUsd: fee?.feeCents != null ? (fee.feeCents / 100).toFixed(2) : null,
-        elapsedSeconds: outcome?.elapsedSeconds ?? null,
-        at: last.at,
-        hashes: entries.filter((e) => e.txHash)
-          .map((e) => ({ stage: e.stage, decision: e.decision, txHash: e.txHash, explorer: e.explorer })),
-      };
+      if (!byStage.has(id)) byStage.set(id, []);
+      byStage.get(id).push(...entries);
     }
   } catch { /* no runs yet */ }
+
+  const state = {};
+  for (const [id, all] of byStage) {
+    const entries = all.sort((a, b) => String(a.at).localeCompare(String(b.at)));
+    const last = entries[entries.length - 1];
+    const find = (stage, decision) => entries.find((e) => e.stage === stage && (!decision || e.decision === decision));
+    const released = find('settlement', 'released');
+    const returned = find('settlement', 'returned');
+    const examined = [...entries].reverse().find((e) => e.stage === 'examination');
+    const funded = find('escrow', 'funded');
+    const fee = find('revenue', 'charged');
+    const outcome = find('outcome', 'complete');
+    state[id] = {
+      status: released ? 'released'
+        : returned ? 'returned'
+          : find('settlement', 'awaiting_client') ? 'awaiting_client'
+            : examined?.decision === 'more_info' ? 'more_info'
+              : examined?.decision === 'flagged' ? 'flagged'
+                : funded ? 'in_progress' : 'unknown',
+      note: examined?.reason ?? last.reason,
+      findings: examined?.findings ?? [],
+      questions: examined?.questions ?? null,
+      model: examined?.model ?? null,
+      reviewConfirmed: Boolean(find('review', 'confirmed')),
+      attempts: entries.filter((e) => e.stage === 'submission').length,
+      spentCents: entries.filter((e) => e.costCents).reduce((a, e) => a + e.costCents, 0),
+      feeUsd: fee?.feeCents != null ? (fee.feeCents / 100).toFixed(2) : null,
+      elapsedSeconds: outcome?.elapsedSeconds ?? null,
+      at: last.at,
+      hashes: entries.filter((e) => e.txHash)
+        .map((e) => ({ stage: e.stage, decision: e.decision, txHash: e.txHash, explorer: e.explorer })),
+    };
+  }
   return state;
 }
 
