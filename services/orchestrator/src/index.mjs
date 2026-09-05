@@ -1,7 +1,7 @@
 import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
-import { runMilestone, authoriseRelease, pendingReleases } from './works.mjs';
+import { runMilestone, authoriseRelease, pendingReleases, refreshOpen } from './works.mjs';
 import { runTrade } from './agent.mjs';
 import { summarise } from '@kirim/works';
 import { reasonerProvider } from './reasoner.mjs';
@@ -223,6 +223,22 @@ async function handle(req, res) {
     return json(res, 200, { address: r.address, ...summarise(r.credentials) });
   }
 
+  // Milestones held for rework: the escrow is still funded and still open.
+  if (url.pathname === '/api/held') {
+    const out = [];
+    for (const [key, h] of refreshOpen()) {
+      const id = key.split('/')[1];
+      const ms = PROJECT.milestones.find((m) => m.id === id);
+      out.push({
+        key, milestone: id, name: ms?.name ?? id,
+        amountCents: h.amountCents, attempt: h.attempt,
+        canResubmit: Boolean(ms?.resubmission),
+        heldAt: h.at,
+      });
+    }
+    return json(res, 200, { held: out });
+  }
+
   if (url.pathname === '/api/run' && req.method === 'POST') {
     if (busy) return json(res, 409, { error: 'a milestone is already running' });
     const id = url.searchParams.get('id');
@@ -232,7 +248,11 @@ async function handle(req, res) {
 
     busy = true;
     json(res, 202, { started: id });
-    broadcast({ type: 'run_started', id, label: ms ? ms.name : trade.label });
+    const again = ms ? refreshOpen().has(PROJECT.id + '/' + ms.id) : false;
+    broadcast({
+      type: 'run_started', id,
+      label: (ms ? ms.name : trade.label) + (again ? ' — corrected evidence' : ''),
+    });
     try {
       if (ms) {
         const { outcome } = await runMilestone(PROJECT, ms, {

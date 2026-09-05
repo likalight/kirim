@@ -20,7 +20,7 @@ const THEM = () => ((state.role === 'client' ? state.project?.contractorRole : s
   || (state.role === 'client' ? 'Contractor' : 'Client')).toLowerCase();
 
 const state = {
-  view: 'overview',
+  view: 'demo',
   role: 'client',
   project: null,
   milestones: {},
@@ -28,6 +28,8 @@ const state = {
   pending: [],
   providers: [],
   wallets: null,
+  wallets0: null,
+  held: [],
   flows: null,
   reasoner: null,
   running: null,
@@ -63,6 +65,7 @@ const PIPELINE = [
 ];
 
 const ICONS = {
+  demo: 'M3 2 l10 6 l-10 6 z',
   overview: 'M2 8 L8 2 L14 8 M4 7 v7 h8 v-7',
   milestones: 'M2 3 h12 M2 8 h12 M2 13 h7',
   evidence: 'M2 4 h12 v9 H2 z M5 4 l1-2 h4 l1 2 M8 11 a2.2 2.2 0 1 0 0-4.4 a2.2 2.2 0 0 0 0 4.4',
@@ -73,6 +76,7 @@ const ICONS = {
 };
 
 const VIEWS = [
+  ['demo', 'Demo'],
   ['overview', 'Overview'],
   ['flows', 'Before / after'],
   ['milestones', 'Milestones'],
@@ -85,7 +89,7 @@ const VIEWS = [
 
 // ---------------------------------------------------------------- data
 async function load() {
-  const [project, st, record, pending, providers, wallets, reasoner, flows] = await Promise.all([
+  const [project, st, record, pending, providers, wallets, reasoner, flows, held] = await Promise.all([
     fetch('/api/project').then((r) => r.json()),
     fetch('/api/state').then((r) => r.json()).catch(() => ({ milestones: {} })),
     fetch('/api/record').then((r) => r.json()).catch(() => null),
@@ -94,11 +98,12 @@ async function load() {
     fetch('/api/wallets').then((r) => r.json()).catch(() => null),
     fetch('/api/reasoner').then((r) => r.json()).catch(() => null),
     fetch('/api/flows').then((r) => r.json()).catch(() => null),
+    fetch('/api/held').then((r) => r.json()).catch(() => ({ held: [] })),
   ]);
   Object.assign(state, {
     project, milestones: st.milestones || {}, record,
     pending: pending.pending || [], providers: providers.providers || [],
-    wallets, reasoner, flows,
+    wallets, reasoner, flows, held: held.held || [],
   });
   render();
 }
@@ -146,7 +151,8 @@ function head(title, sub, meta) {
 function render() {
   renderNav();
   const fn = {
-    overview: viewOverview, flows: viewFlows, milestones: viewMilestones, evidence: viewEvidence,
+    demo: viewDemo, overview: viewOverview, flows: viewFlows,
+    milestones: viewMilestones, evidence: viewEvidence,
     payments: viewPayments, providers: viewProviders, record: viewRecord, system: viewSystem,
   }[state.view];
   $('main').innerHTML = fn();
@@ -185,6 +191,90 @@ function pipelineHtml() {
  * and the developer. Only the steps that actually change are marked — claiming
  * to change the parts that work would make the rest less believable.
  */
+/**
+ * The presenter screen. One view, three acts, and the wallet balances that
+ * prove the rest of the console is not a simulation.
+ *
+ * Everything here is already available in the seven working modules — this is
+ * the same data with the crowding taken out, because three minutes is not
+ * enough time to teach somebody a navigation bar.
+ */
+const ACTS = [
+  { n: 1, id: 'M1', title: 'It pays',
+    line: 'Evidence conforms. Nobody approves anything. Watch the balances.' },
+  { n: 2, id: 'M4', title: 'It refuses',
+    line: 'Inspection reads 72%, a critical defect, and a photograph recycled from the foundation. Nothing moves.' },
+  { n: 3, id: 'M4', title: 'It closes the loop', rework: true,
+    line: 'The developer rectifies the defect and resubmits. Same escrow, no second payment.' },
+];
+
+function walletCard(role, label, sub) {
+  const w = (state.wallets?.wallets ?? []).find((x) => x.role === role);
+  const before = (state.wallets0?.wallets ?? []).find((x) => x.role === role);
+  const now = w?.xrp != null ? Number(w.xrp) : null;
+  const was = before?.xrp != null ? Number(before.xrp) : null;
+  const d = now != null && was != null ? now - was : 0;
+  const moved = Math.abs(d) > 0.000001;
+
+  return `<div class="wc ${moved ? (d > 0 ? 'up' : 'down') : ''}">
+    <div class="lbl">${esc(label)}</div>
+    <div class="bal">${now != null ? now.toFixed(2) : '—'}<span class="ccy">XRP</span></div>
+    ${moved ? `<div class="delta">${d > 0 ? '+' : '−'}${Math.abs(d).toFixed(2)}</div>`
+      : `<div class="sub">${esc(sub)}</div>`}
+    ${w ? `<a class="addr" href="https://testnet.xrpl.org/accounts/${esc(w.address)}"
+      target="_blank" rel="noopener">${esc(w.address.slice(0, 14))}…</a>` : ''}
+  </div>`;
+}
+
+function viewDemo() {
+  const p = state.project;
+  const lockedCents = state.held.reduce((a, h) => a + (h.amountCents || 0), 0);
+  const heldIds = new Set(state.held.map((h) => h.milestone));
+
+  const acts = ACTS.map((a) => {
+    const st = state.milestones[a.id];
+    const isHeld = heldIds.has(a.id);
+    // Act 3 only means anything once act 2 has actually held the money.
+    const ready = a.rework ? isHeld : true;
+    const done = a.rework
+      ? (st?.status === 'released' && !isHeld)
+      : a.n === 2 ? isHeld : st?.status === 'released';
+    return `<button class="act ${done ? 'done' : ''} ${ready ? '' : 'waiting'}"
+        data-run="${a.id}" ${state.running || !ready ? 'disabled' : ''}>
+      <span class="n">${a.n}</span>
+      <span class="body"><span class="t">${esc(a.title)}</span>
+        <span class="l">${esc(a.line)}</span></span>
+      <span class="go">${done ? 'done' : ready ? (a.rework ? 'resubmit' : 'run') : 'after 2'}</span>
+    </button>`;
+  }).join('');
+
+  return head('Three minutes',
+    `${esc(p.client)} bought ${esc(p.name)} off-plan. ${esc(p.contractor)} is building it. `
+    + `Every figure below is a live XRPL testnet balance — click an address and check it.`,
+    state.running ? 'RUNNING' : 'IDLE')
+    + `<div class="wallets">
+        ${walletCard('buyer', p.client + ' · buyer', 'her mortgage, before it is drawn')}
+        <div class="wc lock"><div class="lbl">Locked in escrow</div>
+          <div class="bal">${(lockedCents / 100).toLocaleString('en-US', { maximumFractionDigits: 0 })}<span class="ccy">${esc(cur())}</span></div>
+          <div class="sub">${state.held.length
+            ? state.held.length + ' stage(s) held — evidence did not conform yet'
+            : 'nothing held right now'}</div>
+          <div class="addr">crypto-condition · nobody holds the key but the agent</div></div>
+        ${walletCard('supplier', p.contractor + ' · developer', 'paid only on conforming evidence')}
+      </div>`
+    + `<h3 class="sec">The demo</h3><div class="acts">${acts}</div>`
+    + pipelineHtml()
+    + `<div class="split"><div>${feedHtml()}</div>
+        <div><div class="panel"><h4>What you are watching</h4>
+          <div class="row"><span>settles in</span><span>${esc(state.wallets?.payments ?? '—')}</span></div>
+          <div class="row"><span>principal escrowed in</span><span>${esc(state.wallets?.escrow ?? '—')}</span></div>
+          <div class="row"><span>review notes by</span><span>${esc(state.reasoner?.provider ?? '—')}</span></div>
+          <div class="row"><span>network</span><span>XRPL testnet</span></div>
+          <p class="pnote">The rules decide; the model only writes the note that explains them.
+            Every hash in the feed is clickable and resolves on the public explorer.</p>
+        </div></div></div>`;
+}
+
 function viewFlows() {
   const f = state.flows;
   if (!f) return head('Before / after', 'Flow comparison unavailable.') + `<div class="empty">Could not load fixtures/flows.json.</div>`;
@@ -530,13 +620,36 @@ function toHex(s) {
     .map((b) => b.toString(16).padStart(2, '0')).join('').toUpperCase();
 }
 
+/**
+ * Balances while a run is in flight. The claim this product makes is that money
+ * moves on a public ledger in seconds; a screen that only says so afterwards is
+ * asking to be taken on trust.
+ */
+let balanceTimer = null;
+
+async function refreshWallets() {
+  const w = await fetch('/api/wallets').then((r) => r.json()).catch(() => null);
+  if (!w) return;
+  state.wallets = w;
+  if (state.view === 'demo' || state.view === 'payments') render();
+}
+
+async function refreshHeld() {
+  const h = await fetch('/api/held').then((r) => r.json()).catch(() => null);
+  if (h) state.held = h.held || [];
+}
+
 function run(id) {
   if (state.running) return;
   state.running = id;
   state.feed = [];
   state.stage = null;
+  // Freeze the opening balances so the deltas mean "since this run started".
+  state.wallets0 = state.wallets ? JSON.parse(JSON.stringify(state.wallets)) : null;
   render();
   fetch('/api/run?id=' + encodeURIComponent(id), { method: 'POST' });
+  clearInterval(balanceTimer);
+  balanceTimer = setInterval(refreshWallets, 2500);
 }
 
 // Each side sees what concerns it.
@@ -553,7 +666,11 @@ es.onmessage = async (ev) => {
   if (e.type === 'run_finished' || e.type === 'run_failed') {
     state.running = null;
     state.stage = null;
+    clearInterval(balanceTimer);
+    // One last read after the ledger has validated, then leave the deltas up.
+    await refreshHeld();
     await load();
+    await refreshWallets();
     return;
   }
   if (e.type !== 'decision') return;

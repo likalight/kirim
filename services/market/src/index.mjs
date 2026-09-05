@@ -151,11 +151,15 @@ const HANDLERS = {
   }),
   'site-inspection': (q) => {
     const ms = PROJECT.milestones.find((m) => m.id === q.get('milestone'));
-    const i = ms?.inspection;
+    // A re-inspection after rework reports the site as it now stands. Serving
+    // the first visit's findings again would make rectification unprovable.
+    const i = Number(q.get('attempt') || 1) > 1 && ms?.reinspection
+      ? ms.reinspection : ms?.inspection;
     return attest({
       claim: 'site_inspection',
       projectId: PROJECT.id,
       milestoneId: q.get('milestone'),
+      attempt: Number(q.get('attempt') || 1),
       percentComplete: i ? i.percentComplete : null,
       defects: i ? i.defects : [],
       inspectedAt: new Date().toISOString(),
@@ -165,11 +169,13 @@ const HANDLERS = {
 
   'site-inspection-express': (q) => {
     const ms = PROJECT.milestones.find((m) => m.id === q.get('milestone'));
-    const i = ms?.inspection;
+    const i = Number(q.get('attempt') || 1) > 1 && ms?.reinspection
+      ? ms.reinspection : ms?.inspection;
     return attest({
       claim: 'site_inspection',
       projectId: PROJECT.id,
       milestoneId: q.get('milestone'),
+      attempt: Number(q.get('attempt') || 1),
       percentComplete: i ? i.percentComplete : null,
       defects: i ? i.defects : [],
       inspectedAt: new Date().toISOString(),

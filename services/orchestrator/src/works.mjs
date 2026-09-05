@@ -77,6 +77,50 @@ function savePending() {
 loadPending();
 
 /**
+ * Escrows that are funded and still open because the evidence did not conform.
+ * A held milestone is not a finished one — the money is still locked, the
+ * contractor still has until `CancelAfter`, and a corrected submission has to
+ * be examined against the *same* escrow rather than a second one.
+ *
+ * Without this the loop the product describes does not exist: the agent would
+ * say "the contractor may present corrected evidence" and then have nowhere
+ * for that evidence to go.
+ */
+const OPEN_FILE = path.resolve('.open-escrows.json');
+export const openEscrows = new Map();
+
+function loadOpen(quiet = false) {
+  try {
+    const raw = JSON.parse(fs.readFileSync(OPEN_FILE, 'utf8'));
+    openEscrows.clear();
+    for (const [k, v] of Object.entries(raw)) openEscrows.set(k, v);
+    if (openEscrows.size && !quiet) {
+      console.log(`[agent] recovered ${openEscrows.size} escrow(s) still open on held milestones`);
+    }
+  } catch {
+    if (quiet) openEscrows.clear(); // the file is gone: nothing is held
+  }
+}
+
+/**
+ * `npm run milestone` and the console are separate processes writing the same
+ * held-escrow file. Whoever reads it second has to read it from disk, or the
+ * console will offer to fund an escrow that is already open.
+ */
+export function refreshOpen() {
+  loadOpen(true);
+  return openEscrows;
+}
+
+function saveOpen() {
+  try {
+    fs.writeFileSync(OPEN_FILE, JSON.stringify(Object.fromEntries(openEscrows), null, 2));
+  } catch { /* never let bookkeeping break a settlement */ }
+}
+
+loadOpen();
+
+/**
  * The milestone agent.
  *
  * Client funds an escrow at the start of each milestone. The contractor
@@ -89,36 +133,57 @@ loadPending();
  * @kirim/works decide; the model writes the advice.
  */
 export async function runMilestone(project, ms0, {
-  emit = () => {}, seenPhotoHashes = new Set(), priorReleased = [],
+  emit = () => {}, seenPhotoHashes = new Set(), priorReleased = [], resubmit = false,
 } = {}) {
   const ms = milestone({ ...ms0, projectId: project.id, site: project.site });
-  const log = new DecisionLog(`${project.id}/${ms.id}`, emit);
+  const key = `${project.id}/${ms.id}`;
+  const log = new DecisionLog(key, emit);
   const startedAt = Date.now();
   const amountUsd = (ms.amountCents / 100).toFixed(2);
 
-  log.add('milestone', 'opened',
-    `${ms.name} — ${fmt(ms.amountCents)} of ${project.name}. Agreed ${ms.startsOn} to ${ms.dueOn}, ` +
-    `site ${project.site.address}, ${ms.requiredPhotos} photographs required` +
-    (ms.requiresPermit ? `, ${ms.requiresPermit} permit required.` : '.'),
-    { amountCents: ms.amountCents });
+  // A held milestone still has its escrow. Coming back to it is a second
+  // attempt at the same money, not a second commitment of it.
+  refreshOpen();
+  const held = openEscrows.get(key);
+  const attempt = (held?.attempt ?? 0) + 1;
 
-  // --- fund the escrow ------------------------------------------------------
-  const escrow = await ledgerPost('/escrow/create', {
-    from: 'buyer', to: 'supplier', amount: amountUsd, tradeId: `${project.id}/${ms.id}`,
-    memo: `${project.id}/${ms.id}`, cancelAfterSeconds: ms0.cancelAfterSeconds ?? 900,
-  });
-  if (escrow.refused) {
-    log.add('escrow', 'refused', escrow.reason, { amountCents: ms.amountCents });
-    persist(log, log.tradeId);
-  return { log, outcome: 'refused' };
+  log.add('milestone', attempt > 1 ? 'reopened' : 'opened',
+    attempt > 1
+      ? `${ms.name} — attempt ${attempt}. ${fmt(ms.amountCents)} is still escrowed from the `
+        + `first submission; ${project.contractor} has presented corrected evidence against `
+        + `the same escrow.`
+      : `${ms.name} — ${fmt(ms.amountCents)} of ${project.name}. Agreed ${ms.startsOn} to ${ms.dueOn}, `
+        + `site ${project.site.address}, ${ms.requiredPhotos} photographs required`
+        + (ms.requiresPermit ? `, ${ms.requiresPermit} permit required.` : '.'),
+    { amountCents: ms.amountCents, attempt });
+
+  // --- fund the escrow, or pick up the one already funded -------------------
+  let escrow;
+  if (held) {
+    escrow = held.escrow;
+    log.add('escrow', 'reused',
+      `No second payment. ${fmt(ms.amountCents)} has been locked under the same `
+      + `crypto-condition since attempt 1 — a rejected milestone never returned the `
+      + `money to ${project.client}, and never released it to ${project.contractor} either.`,
+      { txHash: escrow.txHash, explorer: escrow.explorer, amountCents: ms.amountCents });
+  } else {
+    escrow = await ledgerPost('/escrow/create', {
+      from: 'buyer', to: 'supplier', amount: amountUsd, tradeId: key,
+      memo: key, cancelAfterSeconds: ms0.cancelAfterSeconds ?? 900,
+    });
+    if (escrow.refused) {
+      log.add('escrow', 'refused', escrow.reason, { amountCents: ms.amountCents });
+      persist(log, log.tradeId);
+      return { log, outcome: 'refused' };
+    }
+
+    log.add('escrow', 'funded',
+      `${fmt(ms.amountCents)} committed by ${project.client} and locked to ${project.contractor}. ` +
+      `Released only against conforming evidence; returns to ${project.client} automatically if ` +
+      `nothing is presented before the cancel time.`,
+      { txHash: escrow.txHash, explorer: escrow.explorer, amountCents: ms.amountCents });
+    if (escrow.scaled) log.add('escrow', 'note', escrow.scalingNote, {});
   }
-
-  log.add('escrow', 'funded',
-    `${fmt(ms.amountCents)} committed by ${project.client} and locked to ${project.contractor}. ` +
-    `Released only against conforming evidence; returns to ${project.client} automatically if ` +
-    `nothing is presented before the cancel time.`,
-    { txHash: escrow.txHash, explorer: escrow.explorer, amountCents: ms.amountCents });
-  if (escrow.scaled) log.add('escrow', 'note', escrow.scalingNote, {});
 
   // --- the contractor performs, or does not --------------------------------
   if (ms0.noSubmission) {
@@ -136,12 +201,15 @@ export async function runMilestone(project, ms0, {
   return { log, outcome: 'timed_out_and_returned' };
   }
 
-  const sub = submission({ ...ms0.submission, milestoneId: ms.id });
-  log.add('submission', 'received',
-    `${project.contractor} submitted ${sub.photos.length} photograph(s), ` +
+  // Attempt 2 is the corrected evidence, if the fixture carries any.
+  const raw = attempt > 1 && ms0.resubmission ? ms0.resubmission : ms0.submission;
+  const sub = submission({ ...raw, milestoneId: ms.id });
+  log.add('submission', attempt > 1 ? 'resubmitted' : 'received',
+    `${project.contractor} ${attempt > 1 ? 'resubmitted' : 'submitted'} ` +
+    `${sub.photos.length} photograph(s), ` +
     `${sub.deliveries.length} delivery note(s)` +
     (sub.permitRef ? `, permit ${sub.permitRef}` : ', no permit reference') +
-    `. "${sub.note}"`);
+    `. "${sub.note}"`, { attempt });
 
   // --- buy what is needed to check it --------------------------------------
   // The agent never signs. It asks the ledger service to buy a URL over MPP;
@@ -243,7 +311,7 @@ export async function runMilestone(project, ms0, {
   const bought = {};
   for (const step of plan.steps) {
     const query = step.provider.startsWith('site-inspection')
-      ? { milestone: ms.id }
+      ? { milestone: ms.id, attempt: String(attempt) }
       : step.provider === 'photo-forensics'
         ? { files: sub.photos.map((p) => p.file).join(',') }
         : { refs: sub.deliveries.map((d) => `${d.ref}|${d.supplier}`).join(',') };
@@ -262,40 +330,57 @@ export async function runMilestone(project, ms0, {
   const result = examineMilestone({
     ms, sub, inspection, photoForensics, materials, priorReleased, seenPhotoHashes,
   });
-  for (const p of sub.photos) if (p.sha256) seenPhotoHashes.add(p.sha256);
 
   const advice = await explainMilestone({ project, ms, sub, result });
   log.add('examination', result.state, advice, {
     findings: result.all, verdict: result.verdict, state: result.state,
   });
 
-  if (result.state === 'more_info') {
-    log.add('settlement', 'held',
-      `${fmt(ms.amountCents)} stays in escrow. Nothing submitted contradicts the scope — the ` +
-      `submission is simply incomplete, and ${project.contractor} can complete it before the cancel time. ` +
-      `No mark is recorded against their track record.`);
+  // Held, not finished. The escrow stays open and is handed back to the
+  // contractor, so a corrected submission has the same money to release.
+  const hold = (decision, reason, outcome) => {
+    log.add('settlement', decision, reason, { attempt });
+    openEscrows.set(key, { escrow, attempt, amountCents: ms.amountCents, at: new Date().toISOString() });
+    saveOpen();
+    log.add('rework', 'requested',
+      `${project.contractor} has been notified and can present corrected evidence against `
+      + `this same escrow. Nothing is final until it either conforms or the cancel time passes.`,
+      { attempt });
     persist(log, log.tradeId);
-  return { log, outcome: 'more_information_needed', escrow };
+    return { log, outcome, escrow, reworkable: true };
+  };
+
+  if (result.state === 'more_info') {
+    return hold('held',
+      `${fmt(ms.amountCents)} stays in escrow. Nothing submitted contradicts the scope — the `
+      + `submission is simply incomplete, and ${project.contractor} can complete it before the `
+      + `cancel time. No mark is recorded against their track record.`,
+      'more_information_needed');
   }
 
   if (result.state === 'flagged') {
-    log.add('settlement', 'withheld',
-      `${fmt(ms.amountCents)} stays in escrow pending ${project.client}'s review. ` +
-      `The contractor may present corrected evidence, or the funds return automatically.`);
-    persist(log, log.tradeId);
-  return { log, outcome: 'flagged_for_review', escrow };
+    return hold('withheld',
+      `${fmt(ms.amountCents)} stays in escrow pending ${project.client}'s review. `
+      + `${project.contractor} may present corrected evidence, or the funds return automatically.`,
+      'flagged_for_review');
   }
 
   // --- release --------------------------------------------------------------
-  return release({ project, ms, sub, escrow, amountUsd, log, startedAt });
+  return release({ project, ms, sub, escrow, amountUsd, log, startedAt, attempt, seenPhotoHashes });
 }
 
 /**
  * Finish the escrow and write the track record. Split out because a release
  * above the ceiling happens later, after the client has signed.
  */
-async function release({ project, ms, sub, escrow, amountUsd, log, authorisationTxHash, startedAt = Date.now() }) {
+async function release({ project, ms, sub, escrow, amountUsd, log, authorisationTxHash,
+                         startedAt = Date.now(), attempt = 1, seenPhotoHashes = new Set() }) {
   const memo = `${project.id}/${ms.id}`;
+
+  // A photograph is spent at the moment it is paid against, not the moment it
+  // is shown. Recording it any earlier would reject a contractor's own
+  // untouched photographs the second they corrected the one that was wrong.
+  for (const p of sub.photos ?? []) if (p.sha256) seenPhotoHashes.add(p.sha256);
   const finished = await ledgerPost('/escrow/finish', {
     by: 'platform', owner: escrow.owner, offerSequence: escrow.offerSequence,
     condition: escrow.condition, fulfillment: escrow.fulfillment,
@@ -306,6 +391,8 @@ async function release({ project, ms, sub, escrow, amountUsd, log, authorisation
   if (finished.refused) {
     pendingReleases.set(memo, { project, ms, sub, escrow, amountUsd, startedAt });
     savePending();
+    openEscrows.delete(memo);
+    saveOpen();
     log.add('settlement', 'awaiting_client', finished.reason, {
       amountCents: ms.amountCents,
       authorisation: finished.authorisation
@@ -318,6 +405,16 @@ async function release({ project, ms, sub, escrow, amountUsd, log, authorisation
 
   pendingReleases.delete(memo);
   savePending();
+  openEscrows.delete(memo);
+  saveOpen();
+
+  if (attempt > 1) {
+    log.add('rework', 'accepted',
+      `Corrected on attempt ${attempt}. The money never left ${project.client}'s escrow while `
+      + `the work was being put right, and ${project.contractor} was not made to wait for a `
+      + `dispute to resolve before being paid for work that now conforms.`,
+      { attempt });
+  }
 
   if (authorisationTxHash) {
     log.add('authorisation', 'verified',

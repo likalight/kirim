@@ -12,7 +12,7 @@
   "narrative": "A pre-sold apartment. The buyer pays before the building exists; her money sits in a supervision account and is drawn down by the developer as construction reaches each stage. Today a local official decides when each draw is released. Here, the evidence does.",
   "preferences": {
     "autoReleaseCeilingUsd": 55000,
-    "evidenceBudgetUsd": 5.00,
+    "evidenceBudgetUsd": 5.0,
     "leaning": "cost",
     "note": "Mrs Chen's own terms. She may be stricter than Kirim's platform ceiling, never looser."
   },
@@ -33,7 +33,11 @@
       "minInspectionPercent": 95,
       "requiresPermit": "Construction works permit",
       "boq": [
-        { "sku": "CON-C40", "description": "C40 ready-mix concrete, cubic metres", "qty": 1400 }
+        {
+          "sku": "CON-C40",
+          "description": "C40 ready-mix concrete, cubic metres",
+          "qty": 1400
+        }
       ],
       "scenario": "Evidence conforms — the draw releases autonomously and the stage is recorded",
       "submission": {
@@ -41,15 +45,42 @@
         "note": "Raft foundation poured and cured. Pile caps signed off by the supervising engineer.",
         "permitRef": "ZZ/CW/2026/40219",
         "photos": [
-          { "file": "found-raft-01.jpg", "takenAt": "2026-05-24T10:12:00+08:00", "lat": 34.74672, "lng": 113.62556, "sha256": "9f2a1c44e8b7d3016a5c9e2f7b41d8a3c06e5f9b2d4a7c1e83f60b5d2a9c4e17" },
-          { "file": "found-piles-02.jpg", "takenAt": "2026-05-24T10:31:00+08:00", "lat": 34.74651, "lng": 113.62518, "sha256": "3d81f0b6c25e94a7d13b8f602ea45c9718d3b6a0f4c27e59b81d0a63f7e2c845" },
-          { "file": "found-pour-03.jpg", "takenAt": "2026-05-26T15:02:00+08:00", "lat": 34.74644, "lng": 113.62566, "sha256": "b70e5a92d1f483c6027ba9e5d84c31f0a62d7b98e05c34a1f7d2b60e9a35c8d4" }
+          {
+            "file": "found-raft-01.jpg",
+            "takenAt": "2026-05-24T10:12:00+08:00",
+            "lat": 34.74672,
+            "lng": 113.62556,
+            "sha256": "9f2a1c44e8b7d3016a5c9e2f7b41d8a3c06e5f9b2d4a7c1e83f60b5d2a9c4e17"
+          },
+          {
+            "file": "found-piles-02.jpg",
+            "takenAt": "2026-05-24T10:31:00+08:00",
+            "lat": 34.74651,
+            "lng": 113.62518,
+            "sha256": "3d81f0b6c25e94a7d13b8f602ea45c9718d3b6a0f4c27e59b81d0a63f7e2c845"
+          },
+          {
+            "file": "found-pour-03.jpg",
+            "takenAt": "2026-05-26T15:02:00+08:00",
+            "lat": 34.74644,
+            "lng": 113.62566,
+            "sha256": "b70e5a92d1f483c6027ba9e5d84c31f0a62d7b98e05c34a1f7d2b60e9a35c8d4"
+          }
         ],
         "deliveries": [
-          { "ref": "CON-88213", "supplier": "Zhengzhou Jianye Ready-Mix", "sku": "CON-C40", "qty": 1400, "deliveredAt": "2026-05-20" }
+          {
+            "ref": "CON-88213",
+            "supplier": "Zhengzhou Jianye Ready-Mix",
+            "sku": "CON-C40",
+            "qty": 1400,
+            "deliveredAt": "2026-05-20"
+          }
         ]
       },
-      "inspection": { "percentComplete": 100, "defects": [] }
+      "inspection": {
+        "percentComplete": 100,
+        "defects": []
+      }
     },
     {
       "id": "M2",
@@ -61,24 +92,113 @@
       "requiredPhotos": 3,
       "minInspectionPercent": 95,
       "boq": [
-        { "sku": "REB-HRB400", "description": "HRB400 reinforcement bar, tonnes", "qty": 620 },
-        { "sku": "CON-C40", "description": "C40 ready-mix concrete, cubic metres", "qty": 3200 }
+        {
+          "sku": "REB-HRB400",
+          "description": "HRB400 reinforcement bar, tonnes",
+          "qty": 620
+        },
+        {
+          "sku": "CON-C40",
+          "description": "C40 ready-mix concrete, cubic metres",
+          "qty": 3200
+        }
       ],
       "scenario": "A photo taken 2.4km from site, and a delivery note the supplier has never heard of — flagged",
       "submission": {
         "submittedAt": "2026-09-14T18:05:00+08:00",
         "note": "Frame topped out to level 33. Ready for the next draw.",
         "photos": [
-          { "file": "frame-l28-01.jpg", "takenAt": "2026-09-10T09:40:00+08:00", "lat": 34.74663, "lng": 113.62541, "sha256": "1a4c7e90b3d582f61c9a0e47b28d5f3061e9c2a84b70d5f36a1e8c94d207b3f5" },
-          { "file": "frame-core-02.jpg", "takenAt": "2026-09-10T09:55:00+08:00", "lat": 34.76810, "lng": 113.63005, "sha256": "6e2b8d51f7a09c34e15d7b28a604f39c85b1e0d7a2c36f48b95d1c07e3a8624f" },
-          { "file": "frame-slab-03.jpg", "takenAt": "2026-09-12T11:20:00+08:00", "lat": 34.74680, "lng": 113.62509, "sha256": "c05f3a71e69b28d4f0a37c85b1e6d902a4f7c38b05e12d6a9c4b73f08e5d1a26" }
+          {
+            "file": "frame-l28-01.jpg",
+            "takenAt": "2026-09-10T09:40:00+08:00",
+            "lat": 34.74663,
+            "lng": 113.62541,
+            "sha256": "1a4c7e90b3d582f61c9a0e47b28d5f3061e9c2a84b70d5f36a1e8c94d207b3f5"
+          },
+          {
+            "file": "frame-core-02.jpg",
+            "takenAt": "2026-09-10T09:55:00+08:00",
+            "lat": 34.7681,
+            "lng": 113.63005,
+            "sha256": "6e2b8d51f7a09c34e15d7b28a604f39c85b1e0d7a2c36f48b95d1c07e3a8624f"
+          },
+          {
+            "file": "frame-slab-03.jpg",
+            "takenAt": "2026-09-12T11:20:00+08:00",
+            "lat": 34.7468,
+            "lng": 113.62509,
+            "sha256": "c05f3a71e69b28d4f0a37c85b1e6d902a4f7c38b05e12d6a9c4b73f08e5d1a26"
+          }
         ],
         "deliveries": [
-          { "ref": "REB-77120", "supplier": "Henan Steel Trading", "sku": "REB-HRB400", "qty": 620, "deliveredAt": "2026-08-02" },
-          { "ref": "CON-77999", "supplier": "Zhengzhou Jianye Ready-Mix", "sku": "CON-C40", "qty": 3200, "deliveredAt": "2026-08-19" }
+          {
+            "ref": "REB-77120",
+            "supplier": "Henan Steel Trading",
+            "sku": "REB-HRB400",
+            "qty": 620,
+            "deliveredAt": "2026-08-02"
+          },
+          {
+            "ref": "CON-77999",
+            "supplier": "Zhengzhou Jianye Ready-Mix",
+            "sku": "CON-C40",
+            "qty": 3200,
+            "deliveredAt": "2026-08-19"
+          }
         ]
       },
-      "inspection": { "percentComplete": 98, "defects": [] }
+      "inspection": {
+        "percentComplete": 98,
+        "defects": []
+      },
+      "resubmission": {
+        "submittedAt": "2026-09-16T11:30:00+08:00",
+        "note": "Reshot the core photograph on site — the first one was taken at our yard by mistake. Delivery note CON-77999 was a duplicate raised in error; the correct note for the same pour is CON-79210.",
+        "photos": [
+          {
+            "file": "frame-l28-01.jpg",
+            "takenAt": "2026-09-10T09:40:00+08:00",
+            "lat": 34.74663,
+            "lng": 113.62541,
+            "sha256": "1a4c7e90b3d582f61c9a0e47b28d5f3061e9c2a84b70d5f36a1e8c94d207b3f5"
+          },
+          {
+            "file": "frame-core-02b.jpg",
+            "takenAt": "2026-09-16T08:55:00+08:00",
+            "lat": 34.74659,
+            "lng": 113.62537,
+            "sha256": "d3719ab08c65e24f10b8d5a37e94c6021f8b3ade5c07419b62d8f0a1c53e7b46"
+          },
+          {
+            "file": "frame-slab-03.jpg",
+            "takenAt": "2026-09-12T11:20:00+08:00",
+            "lat": 34.7468,
+            "lng": 113.62509,
+            "sha256": "c05f3a71e69b28d4f0a37c85b1e6d902a4f7c38b05e12d6a9c4b73f08e5d1a26"
+          }
+        ],
+        "deliveries": [
+          {
+            "ref": "REB-77120",
+            "supplier": "Henan Steel Trading",
+            "sku": "REB-HRB400",
+            "qty": 620,
+            "deliveredAt": "2026-08-02"
+          },
+          {
+            "ref": "CON-79210",
+            "supplier": "Zhengzhou Jianye Ready-Mix",
+            "sku": "CON-C40",
+            "qty": 3200,
+            "deliveredAt": "2026-08-19"
+          }
+        ]
+      },
+      "reinspection": {
+        "percentComplete": 98,
+        "defects": []
+      },
+      "reworkScenario": "The off-site photograph is reshot on site and the phantom delivery note is replaced with a real one — releases"
     },
     {
       "id": "M3",
@@ -90,7 +210,11 @@
       "minInspectionPercent": 95,
       "requiresPermit": "Curtain wall certification",
       "boq": [
-        { "sku": "GLZ-LOWE", "description": "Low-E insulated glazing units, square metres", "qty": 2400 }
+        {
+          "sku": "GLZ-LOWE",
+          "description": "Low-E insulated glazing units, square metres",
+          "qty": 2400
+        }
       ],
       "scenario": "One photo, no delivery notes, no inspection result — more information needed, not a rejection",
       "submission": {
@@ -98,11 +222,59 @@
         "note": "Curtain wall up on the east elevation. Rest of the paperwork tomorrow.",
         "permitRef": "ZZ/CW/2026/55831",
         "photos": [
-          { "file": "facade-east-01.jpg", "takenAt": "2026-11-26T14:02:00+08:00", "lat": 34.74658, "lng": 113.62551, "sha256": "84b1d0c73e5a29f6018c4b7d2e0a6f5391c73b8d04e2a165f9c8b3d70a24e6f1" }
+          {
+            "file": "facade-east-01.jpg",
+            "takenAt": "2026-11-26T14:02:00+08:00",
+            "lat": 34.74658,
+            "lng": 113.62551,
+            "sha256": "84b1d0c73e5a29f6018c4b7d2e0a6f5391c73b8d04e2a165f9c8b3d70a24e6f1"
+          }
         ],
         "deliveries": []
       },
-      "inspection": null
+      "inspection": null,
+      "resubmission": {
+        "submittedAt": "2026-11-29T15:05:00+08:00",
+        "note": "Full set attached — north and west elevations added, glazing delivery notes, and the curtain wall inspection came back this morning.",
+        "permitRef": "ZZ/CW/2026/55831",
+        "photos": [
+          {
+            "file": "facade-east-01.jpg",
+            "takenAt": "2026-11-26T14:02:00+08:00",
+            "lat": 34.74658,
+            "lng": 113.62551,
+            "sha256": "84b1d0c73e5a29f6018c4b7d2e0a6f5391c73b8d04e2a165f9c8b3d70a24e6f1"
+          },
+          {
+            "file": "facade-north-02.jpg",
+            "takenAt": "2026-11-29T09:18:00+08:00",
+            "lat": 34.74671,
+            "lng": 113.62534,
+            "sha256": "6b09e3d75a1c48f2093b7e6c05d4a81f37c92b0e6a5d13f847b0c29e5a17d340"
+          },
+          {
+            "file": "facade-west-03.jpg",
+            "takenAt": "2026-11-29T09:41:00+08:00",
+            "lat": 34.74649,
+            "lng": 113.62561,
+            "sha256": "f18d4a70b25c96e3018f7d2b64a03c95e7b18d0c43a629f5b07e1d38c496a2b7"
+          }
+        ],
+        "deliveries": [
+          {
+            "ref": "GLZ-90118",
+            "supplier": "Xinyi Glass",
+            "sku": "GLZ-LOWE",
+            "qty": 2400,
+            "deliveredAt": "2026-10-30"
+          }
+        ]
+      },
+      "reinspection": {
+        "percentComplete": 97,
+        "defects": []
+      },
+      "reworkScenario": "The two missing photographs, the delivery notes and the inspection arrive — releases"
     },
     {
       "id": "M4",
@@ -113,28 +285,103 @@
       "requiredPhotos": 3,
       "minInspectionPercent": 95,
       "boq": [
-        { "sku": "TIL-600X600", "description": "Porcelain floor tile, square metres", "qty": 1800 }
+        {
+          "sku": "TIL-600X600",
+          "description": "Porcelain floor tile, square metres",
+          "qty": 1800
+        }
       ],
       "scenario": "Inspection finds 72% complete with a critical defect, plus a photograph recycled from the foundation stage — flagged",
       "submission": {
         "submittedAt": "2027-03-03T09:30:00+08:00",
         "note": "Fit-out complete across the tower.",
         "photos": [
-          { "file": "fitout-unit-01.jpg", "takenAt": "2027-02-25T13:15:00+08:00", "lat": 34.74669, "lng": 113.62530, "sha256": "2f7a91c05b8e3d6417a0c9b24e5f8d3160b7a4c92e1d05f83b6c7a0d94e12b58" },
-          { "file": "fitout-bath-02.jpg", "takenAt": "2027-02-25T13:41:00+08:00", "lat": 34.74661, "lng": 113.62522, "sha256": "9f2a1c44e8b7d3016a5c9e2f7b41d8a3c06e5f9b2d4a7c1e83f60b5d2a9c4e17" },
-          { "file": "fitout-mep-03.jpg", "takenAt": "2027-02-26T10:05:00+08:00", "lat": 34.74647, "lng": 113.62559, "sha256": "5c3e8b02a7f19d46e0b8c35a71d29f04b6e83c07a45d1f92b0e6c8a37d5941fb" }
+          {
+            "file": "fitout-unit-01.jpg",
+            "takenAt": "2027-02-25T13:15:00+08:00",
+            "lat": 34.74669,
+            "lng": 113.6253,
+            "sha256": "2f7a91c05b8e3d6417a0c9b24e5f8d3160b7a4c92e1d05f83b6c7a0d94e12b58"
+          },
+          {
+            "file": "fitout-bath-02.jpg",
+            "takenAt": "2027-02-25T13:41:00+08:00",
+            "lat": 34.74661,
+            "lng": 113.62522,
+            "sha256": "9f2a1c44e8b7d3016a5c9e2f7b41d8a3c06e5f9b2d4a7c1e83f60b5d2a9c4e17"
+          },
+          {
+            "file": "fitout-mep-03.jpg",
+            "takenAt": "2027-02-26T10:05:00+08:00",
+            "lat": 34.74647,
+            "lng": 113.62559,
+            "sha256": "5c3e8b02a7f19d46e0b8c35a71d29f04b6e83c07a45d1f92b0e6c8a37d5941fb"
+          }
         ],
         "deliveries": [
-          { "ref": "TIL-80442", "supplier": "Foshan Ceramics Group", "sku": "TIL-600X600", "qty": 1800, "deliveredAt": "2027-01-14" }
+          {
+            "ref": "TIL-80442",
+            "supplier": "Foshan Ceramics Group",
+            "sku": "TIL-600X600",
+            "qty": 1800,
+            "deliveredAt": "2027-01-14"
+          }
         ]
       },
       "inspection": {
         "percentComplete": 72,
         "defects": [
-          { "severity": "critical", "note": "Bathroom floors on the 18th storey fall away from the drains; ponding observed in eleven units." },
-          { "severity": "minor", "note": "Skirting joints require sealant in two units." }
+          {
+            "severity": "critical",
+            "note": "Bathroom floors on the 18th storey fall away from the drains; ponding observed in eleven units."
+          },
+          {
+            "severity": "minor",
+            "note": "Skirting joints require sealant in two units."
+          }
         ]
-      }
+      },
+      "resubmission": {
+        "submittedAt": "2027-03-21T10:15:00+08:00",
+        "note": "Bathroom floors on the 18th storey have been taken up and relaid to fall. Re-inspection attached. The MEP photograph has been replaced — the file we sent had been through an editor and we have supplied the original capture.",
+        "photos": [
+          {
+            "file": "fitout-unit-01.jpg",
+            "takenAt": "2027-02-25T13:15:00+08:00",
+            "lat": 34.74669,
+            "lng": 113.6253,
+            "sha256": "2f7a91c05b8e3d6417a0c9b24e5f8d3160b7a4c92e1d05f83b6c7a0d94e12b58"
+          },
+          {
+            "file": "fitout-bath-02b.jpg",
+            "takenAt": "2027-03-19T14:07:00+08:00",
+            "lat": 34.74663,
+            "lng": 113.62525,
+            "sha256": "a5c827e0135b9d64f70a2c8e31d95b4067a3e1c85f20d9b476c0a38e1d52f9b3"
+          },
+          {
+            "file": "fitout-mep-03b.jpg",
+            "takenAt": "2027-03-19T14:35:00+08:00",
+            "lat": 34.74647,
+            "lng": 113.62559,
+            "sha256": "0e93b5d7a2c41f680d5b93e07a2c418df65b90e37a2c4185d0b967e34a1c58d2"
+          }
+        ],
+        "deliveries": [
+          {
+            "ref": "TIL-80442",
+            "supplier": "Foshan Ceramics Group",
+            "sku": "TIL-600X600",
+            "qty": 1800,
+            "deliveredAt": "2027-01-14"
+          }
+        ]
+      },
+      "reinspection": {
+        "percentComplete": 99,
+        "defects": []
+      },
+      "reworkScenario": "The defect is rectified, re-inspection reads 99%, and the recycled photograph is replaced — releases"
     },
     {
       "id": "M5",
@@ -146,7 +393,11 @@
       "minInspectionPercent": 95,
       "requiresPermit": "Revised planning consent",
       "boq": [
-        { "sku": "CON-C40", "description": "C40 ready-mix concrete, cubic metres", "qty": 900 }
+        {
+          "sku": "CON-C40",
+          "description": "C40 ready-mix concrete, cubic metres",
+          "qty": 900
+        }
       ],
       "scenario": "Evidence conforms, but the draw is above the buyer's own ceiling — she authorises it herself",
       "submission": {
@@ -154,15 +405,42 @@
         "note": "Basement level B3 poured and certified. Revised consent attached.",
         "permitRef": "ZZ/PL/2027/10877",
         "photos": [
-          { "file": "b3-slab-01.jpg", "takenAt": "2027-05-24T11:00:00+08:00", "lat": 34.74655, "lng": 113.62544, "sha256": "7b1e0d94c62a3f58019d7c4b30e6a2f85c91b7d04a3e26f19c58b0d7a3e14265" },
-          { "file": "b3-ramp-02.jpg", "takenAt": "2027-05-24T11:22:00+08:00", "lat": 34.74664, "lng": 113.62527, "sha256": "0a6c3f81b9d47e25a3f08c61d95b2e740c8a37f16b0e5d29a74c1b83e60f5d92" },
-          { "file": "b3-cert-03.jpg", "takenAt": "2027-05-26T09:14:00+08:00", "lat": 34.74642, "lng": 113.62568, "sha256": "e42b7c0951d68a3f07b2e9c14d80a6f35b17c0e92a48d6f01b93c7a05e28d461" }
+          {
+            "file": "b3-slab-01.jpg",
+            "takenAt": "2027-05-24T11:00:00+08:00",
+            "lat": 34.74655,
+            "lng": 113.62544,
+            "sha256": "7b1e0d94c62a3f58019d7c4b30e6a2f85c91b7d04a3e26f19c58b0d7a3e14265"
+          },
+          {
+            "file": "b3-ramp-02.jpg",
+            "takenAt": "2027-05-24T11:22:00+08:00",
+            "lat": 34.74664,
+            "lng": 113.62527,
+            "sha256": "0a6c3f81b9d47e25a3f08c61d95b2e740c8a37f16b0e5d29a74c1b83e60f5d92"
+          },
+          {
+            "file": "b3-cert-03.jpg",
+            "takenAt": "2027-05-26T09:14:00+08:00",
+            "lat": 34.74642,
+            "lng": 113.62568,
+            "sha256": "e42b7c0951d68a3f07b2e9c14d80a6f35b17c0e92a48d6f01b93c7a05e28d461"
+          }
         ],
         "deliveries": [
-          { "ref": "CON-81003", "supplier": "Zhengzhou Jianye Ready-Mix", "sku": "CON-C40", "qty": 900, "deliveredAt": "2027-05-14" }
+          {
+            "ref": "CON-81003",
+            "supplier": "Zhengzhou Jianye Ready-Mix",
+            "sku": "CON-C40",
+            "qty": 900,
+            "deliveredAt": "2027-05-14"
+          }
         ]
       },
-      "inspection": { "percentComplete": 100, "defects": [] }
+      "inspection": {
+        "percentComplete": 100,
+        "defects": []
+      }
     },
     {
       "id": "M6",

@@ -1,6 +1,8 @@
 {
   "CON-88213": { "supplier": "Zhengzhou Jianye Ready-Mix", "sku": "CON-C40", "qty": 1400, "issuedOn": "2026-05-20" },
   "REB-77120": { "supplier": "Henan Steel Trading", "sku": "REB-HRB400", "qty": 620, "issuedOn": "2026-08-02" },
+  "CON-79210": { "supplier": "Zhengzhou Jianye Ready-Mix", "sku": "CON-C40", "qty": 3200, "issuedOn": "2026-08-19" },
+  "GLZ-90118": { "supplier": "Xinyi Glass", "sku": "GLZ-LOWE", "qty": 2400, "issuedOn": "2026-10-30" },
   "TIL-80442": { "supplier": "Foshan Ceramics Group", "sku": "TIL-600X600", "qty": 1800, "issuedOn": "2027-01-14" },
   "CON-81003": { "supplier": "Zhengzhou Jianye Ready-Mix", "sku": "CON-C40", "qty": 900, "issuedOn": "2027-05-14" }
 }
