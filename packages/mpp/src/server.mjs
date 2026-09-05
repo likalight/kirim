@@ -3,6 +3,31 @@ import { xrpl } from 'xrpl-mpp-sdk/server';
 import { toDrops } from 'xrpl-mpp-sdk';
 
 /**
+ * What the providers are paid in.
+ *
+ * RLUSD when an issuer is configured — a dollar-denominated price settling in
+ * a dollar stablecoin, which is the whole point of pricing evidence per call.
+ * XRP otherwise. The SDK serialises this into the 402 challenge, so the client
+ * learns the currency from the challenge rather than being told out of band.
+ */
+function chargeCurrency() {
+  const issuer = process.env.RLUSD_ISSUER;
+  if ((process.env.SETTLEMENT || 'RLUSD').toUpperCase() === 'RLUSD' && issuer) {
+    return {
+      currency: process.env.RLUSD_CURRENCY || '524C555344000000000000000000000000000000',
+      issuer,
+    };
+  }
+  return 'XRP';
+}
+
+const CURRENCY = chargeCurrency();
+const IS_IOU = typeof CURRENCY === 'object';
+// The method config takes the currency object; the per-request charge takes its
+// serialised form, which the SDK defines as JSON.stringify of that object.
+const CURRENCY_STR = IS_IOU ? JSON.stringify(CURRENCY) : 'XRP';
+
+/**
  * The seller side of the Machine Payments Protocol.
  *
  * MPP is what the challenge names alongside x402 — the Machine Payments
@@ -30,6 +55,7 @@ export function createMarket({ recipient, secretKey }) {
       xrpl.charge({
         recipient,
         network: NETWORK,
+        currency: CURRENCY,
         store: Store.memory(),
         storeDurability: 'process-local',
       }),
@@ -46,11 +72,15 @@ export function createMarket({ recipient, secretKey }) {
   return async function gate(req, res, { priceUsd, resource }) {
     const result = await Mppx.toNodeListener(
       payment.charge({
-        // XRP settles in drops. Prices are quoted in dollars in the catalogue
-        // and mapped 1:1 to XRP on testnet, so a US$0.30 check is 0.3 XRP —
-        // the amount the provider verifies is exactly the amount it quoted.
-        amount: toDrops(String(priceUsd)),
-        currency: 'XRP',
+        // An IOU amount is a decimal string; XRP settles in drops.
+        //
+        // Quote the IOU amount in its canonical numeric form. XRPL normalises
+        // issued-currency values, so a quote of "0.10" comes back off the
+        // ledger as "0.1" — and the SDK compares those as strings, rejecting a
+        // correct payment with AMOUNT_MISMATCH. Number() first, and the two
+        // agree. (0.08 settles; 0.10 does not, until you do this.)
+        amount: IS_IOU ? String(Number(priceUsd)) : toDrops(String(priceUsd)),
+        currency: CURRENCY_STR,
         recipient,
         description: resource,
         externalId: resource,

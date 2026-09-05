@@ -42,6 +42,56 @@ export function settlementAsset() {
 }
 export const isIOU = (a) => typeof a === 'object' && a !== null;
 
+/**
+ * Can this token be escrowed at all?
+ *
+ * TokenEscrow locks an issued token on its trust line, so the issuer has to
+ * permit that: `asfAllowTrustLineLocking`, which appears on the AccountRoot as
+ * `lsfAllowTrustLineLocking` (0x40000000).
+ *
+ * The RLUSD testnet issuer does not set it — its flags are 0x819A0000, which is
+ * `lsfAllowTrustLineClawback` (0x80000000) set and locking clear. So every
+ * EscrowCreate carrying RLUSD fails `tecNO_PERMISSION` on testnet however it is
+ * shaped, while an ordinary RLUSD Payment between the same accounts succeeds.
+ *
+ * Rather than hardcode that, we ask the ledger. The day the issuer enables
+ * locking, escrow moves to RLUSD with no code change.
+ */
+const LSF_ALLOW_TRUSTLINE_LOCKING = 0x40000000;
+let lockingCache = null;
+
+export async function issuerAllowsLocking(issuer) {
+  if (lockingCache && lockingCache.issuer === issuer) return lockingCache.allowed;
+  try {
+    const c = await xrpl();
+    const r = await c.request({ command: 'account_info', account: issuer });
+    const allowed = Boolean(r.result.account_data.Flags & LSF_ALLOW_TRUSTLINE_LOCKING);
+    lockingCache = { issuer, allowed };
+    return allowed;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * What the principal is escrowed in.
+ *
+ * Payments settle in RLUSD. The escrowed principal falls back to XRP when the
+ * token's issuer will not allow it to be locked — and says so, rather than
+ * failing at signing time with a code that reads like our fault.
+ */
+export async function escrowAsset() {
+  const asset = settlementAsset();
+  if (!isIOU(asset)) return { asset, reason: null };
+  if (await issuerAllowsLocking(asset.issuer)) return { asset, reason: null };
+  return {
+    asset: 'XRP',
+    reason: `The RLUSD issuer ${asset.issuer} does not set asfAllowTrustLineLocking, so `
+      + `TokenEscrow refuses it (tecNO_PERMISSION). The principal is escrowed in XRP; `
+      + `every agentic payment still settles in RLUSD.`,
+  };
+}
+
 export function amountField(asset, value) {
   return isIOU(asset)
     ? { currency: asset.currency, issuer: asset.issuer, value: String(value) }
@@ -221,11 +271,14 @@ export async function balances(address) {
  * Operating spend (x402 calls, all sub-dollar) is never scaled, so the amount a
  * provider verifies on-ledger is exactly the price it quoted.
  */
-export function scalePrincipal(usd) {
+export function scalePrincipal(usd, escrowedAsset) {
   const divisor = Number(
     process.env.SETTLEMENT_DIVISOR || process.env.XRP_FALLBACK_DIVISOR || 1000,
   );
-  const asset = settlementAsset();
+  // Name what actually moves. The principal may be escrowed in XRP while
+  // payments settle in RLUSD, and a note that reports the wrong unit is worse
+  // than no note.
+  const asset = escrowedAsset ?? settlementAsset();
   const unit = isIOU(asset) ? 'RLUSD' : 'XRP';
   const cap = isIOU(asset)
     ? 'the RLUSD faucet allows 10 RLUSD per account per 24 hours'

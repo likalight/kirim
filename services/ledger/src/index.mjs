@@ -8,6 +8,7 @@ import {
   xrpl, settlementAsset, pay, escrowCreate, escrowFinish, escrowCancel,
   verifyTx, balances, trustSet, explorerTx, scalePrincipal,
   credentialCreate, credentialAccept, readCredentials, verifyAuthorisation,
+  escrowAsset,
 } from './xrpl.mjs';
 
 /**
@@ -19,10 +20,17 @@ const wallets = loadWallets();
 const policy = new SpendPolicy();
 const asset = settlementAsset();
 
+// Payments settle in the settlement asset; the escrowed principal may have to
+// fall back, and we resolve that once at boot rather than at signing time.
+let escrow = { asset, reason: null };
+
 const routes = {
   'GET /health': async () => ({
     ok: true,
     settlement: asset === 'XRP' ? 'XRP' : 'RLUSD',
+    payments: asset === 'XRP' ? 'XRP' : 'RLUSD',
+    escrow: escrow.asset === 'XRP' ? 'XRP' : 'RLUSD',
+    escrowNote: escrow.reason,
     accounts: Object.fromEntries(Object.entries(wallets).map(([k, w]) => [k, w.address])),
     policy: policy.snapshot(),
   }),
@@ -100,12 +108,12 @@ const routes = {
   // here. The ceiling lives on /escrow/finish, where the act is irreversible.
   'POST /escrow/create': async (b) => {
     const wallet = wallets[b.from ?? 'buyer'];
-    const principal = scalePrincipal(b.amount);
+    const principal = scalePrincipal(b.amount, escrow.asset);
     const out = await escrowCreate({
       wallet,
       to: wallets[b.to]?.address ?? b.to,
       value: principal.value,
-      asset,
+      asset: escrow.asset,
       memo: b.memo ?? b.tradeId,
       cancelAfterSeconds: b.cancelAfterSeconds ?? 900,
     });
@@ -114,6 +122,7 @@ const routes = {
       offerSequence: out.offerSequence, condition: out.condition, fulfillment: out.fulfillment,
       owner: wallet.address,
       ledgerAmount: principal.value, scaled: principal.scaled, scalingNote: principal.note,
+      escrowAsset: escrow.asset === 'XRP' ? 'XRP' : 'RLUSD', escrowNote: escrow.reason,
     };
   },
 
@@ -330,7 +339,11 @@ function json(res, code, body) {
 }
 
 await xrpl();
+escrow = await escrowAsset();
 server.listen(PORT, () => {
-  console.log('[ledger] on :' + PORT + '  settlement=' + (asset === 'XRP' ? 'XRP' : 'RLUSD'));
+  console.log('[ledger] on :' + PORT
+    + '  payments=' + (asset === 'XRP' ? 'XRP' : 'RLUSD')
+    + '  escrow=' + (escrow.asset === 'XRP' ? 'XRP' : 'RLUSD'));
+  if (escrow.reason) console.log('         ' + escrow.reason);
   for (const [role, w] of Object.entries(wallets)) console.log('         ' + role.padEnd(9) + ' ' + w.address);
 });

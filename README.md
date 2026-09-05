@@ -447,11 +447,42 @@ fee charged, and the human baseline it replaced.
 
 ## Settlement currency
 
-Kirim settles in **RLUSD**. `.env` points at the testnet issuer `rQhWct2fv4Vc4KRjRgMrxa8xPN9Zx9iLKV` (`RLUSD_XRPL_ISSUER_TESTNET` in [t54-labs/rlusd-cli](https://github.com/t54-labs/rlusd-cli) — it is not documented in the challenge materials or on the faucet page), and `npm run setup` places trustlines on all four wallets.
+**Every agentic payment settles in RLUSD.** Evidence checks are quoted in
+dollars and paid in a dollar stablecoin — a US$0.30 inspection is 0.30 RLUSD,
+verified on-ledger by the provider before it serves a byte. Kirim's fee settles
+in RLUSD too.
 
-Claiming the RLUSD itself is a browser step at [tryrlusd.com](https://tryrlusd.com) — there is no API, and the official RLUSD CLI defers to the same page. Until the client wallet holds RLUSD, set `SETTLEMENT=XRP` and the whole flow runs identically.
+**The escrowed principal is in XRP, and not by choice.**
 
-**Testnet scaling.** The RLUSD faucet allows 10 RLUSD per account per 24 hours and the XRP faucet caps a wallet at 100 XRP, so a US$10,000 milestone cannot settle at par. The principal is divided by `SETTLEMENT_DIVISOR` (default 5000) before it touches the ledger, and **every response carrying a scaled amount says so**. Operating spend — the x402 calls, all sub-dollar — is never scaled, so the amount each provider verifies on-ledger is exactly the price it quoted. `SETTLEMENT_DIVISOR=1` settles at par on a funded account.
+`TokenEscrow` locks an issued token on its trust line, which the issuer has to
+permit via `asfAllowTrustLineLocking`. The RLUSD testnet issuer
+`rQhWct2fv4Vc4KRjRgMrxa8xPN9Zx9iLKV` carries flags `0x819A0000` — that is
+`lsfAllowTrustLineClawback` (`0x80000000`) **set** and `lsfAllowTrustLineLocking`
+(`0x40000000`) **clear**. So every `EscrowCreate` carrying RLUSD fails
+`tecNO_PERMISSION` on testnet, whatever its amount, destination, condition or
+timing, while an ordinary RLUSD `Payment` between the same accounts succeeds.
+
+Kirim does not hardcode that. At boot the ledger service asks the issuer whether
+locking is permitted and reports what it decided:
+
+```
+[ledger] on :4010  payments=RLUSD  escrow=XRP
+         The RLUSD issuer rQhWct2fv4Vc4KRjRgMrxa8xPN9Zx9iLKV does not set
+         asfAllowTrustLineLocking, so TokenEscrow refuses it (tecNO_PERMISSION).
+         The principal is escrowed in XRP; every agentic payment still settles
+         in RLUSD.
+```
+
+The day that issuer enables locking, escrow moves to RLUSD with no code change.
+
+### Testnet scaling
+
+The RLUSD faucet allows 10 RLUSD per account per 24 hours and the XRP faucet
+caps a wallet at 100 XRP, so a US$10,000 milestone cannot settle at par. The
+principal is divided by `SETTLEMENT_DIVISOR` (default 5000) before it touches
+the ledger, and **every response carrying a scaled amount says so** — naming the
+asset that actually moved. Payments are never scaled, so the amount each
+provider verifies on-ledger is exactly the price it quoted.
 
 ## Amendment status, checked on testnet
 
