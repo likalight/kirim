@@ -170,6 +170,37 @@ def footer(slide, left, right, color=INK_4):
           align=PP_ALIGN.RIGHT)
 
 
+LOGO_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                        "..", ".github", "logos")
+
+
+def logos(slide, top, right=None):
+    """SingHacks and Ripple, right-aligned, as single-colour lockups."""
+    right = right or (W - M)
+    rip = os.path.join(LOGO_DIR, "ripple.png")
+    sing = os.path.join(LOGO_DIR, "singhacks.png")
+
+    h_rip = Inches(0.3)
+    pic = slide.shapes.add_picture(rip, Emu(0), top, height=h_rip)
+    pic.left = Emu(int(right - pic.width))
+    rip_left = pic.left
+
+    div = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE,
+                                 Emu(int(rip_left - Inches(0.28))),
+                                 top - Inches(0.02), Emu(9525), Inches(0.34))
+    div.fill.solid(); div.fill.fore_color.rgb = PANEL_2
+    div.line.fill.background(); div.shadow.inherit = False
+
+    h_sing = Inches(0.34)
+    pic2 = slide.shapes.add_picture(sing, Emu(0), top - Inches(0.02), height=h_sing)
+    pic2.left = Emu(int(rip_left - Inches(0.56) - pic2.width))
+
+    tf = textbox(slide, Emu(int(pic2.left - Inches(1.35))), top + Inches(0.03),
+                 Inches(1.15), Inches(0.3), align=PP_ALIGN.RIGHT)
+    write(tf, "BUILT FOR", font=MONO, size=9, color=PANEL_FAINT, spacing=0.16,
+          first=True, align=PP_ALIGN.RIGHT)
+
+
 # ---------------------------------------------------------------- the deck
 def build(hashes):
     prs = Presentation()
@@ -191,9 +222,12 @@ def build(hashes):
           font=MONO, size=10.5, color=PANEL_FAINT, spacing=0.18, first=True)
     rule(s, M, Inches(2.0), CONTENT_W, color=PANEL_2, weight=Pt(1.0))
 
-    tf = textbox(s, M, H - Inches(1.15), CONTENT_W, Inches(0.5))
+    tf = textbox(s, M, H - Inches(1.15), Inches(6.0), Inches(0.5))
     write(tf, "Less blind trust. More visible proof.", font=MONO, size=12,
           color=PANEL_FAINT, spacing=0.08, first=True)
+
+    # the marks of the challenge this was built for, as single-colour lockups
+    logos(s, H - Inches(1.28))
 
     # ---------------------------------------------------------------- 2 problem
     s = slide_base(prs)
@@ -635,9 +669,10 @@ def build(hashes):
           font=DISPLAY, size=34, color=SAGE, line=1.2)
 
     rule(s, M, Inches(5.6), CONTENT_W, color=PANEL_2, weight=Pt(1.0))
-    tf = textbox(s, M, Inches(5.85), Inches(11.6), Inches(0.6))
+    tf = textbox(s, M, Inches(5.85), Inches(7.0), Inches(0.6))
     write(tf, "KIRIM  ·  LESS BLIND TRUST. MORE VISIBLE PROOF.", font=MONO,
           size=12, color=PANEL_FAINT, spacing=0.18, first=True)
+    logos(s, Inches(5.78))
 
     out = os.path.join(os.path.dirname(__file__), "KIRIM-pitch-deck.pptx")
     prs.save(out)

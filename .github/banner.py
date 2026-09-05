@@ -70,6 +70,26 @@ def build():
     d.text((m, 568), "the evidence, settled on the XRP Ledger.",
            font=font(SANS, 34), fill=PANEL_MUTED)
 
+    # event attribution — the marks of the challenge this was built for,
+    # both keyed to single-colour lockups so they sit on the dark ground
+    # without fighting the palette. Ripple keeps its own blue.
+    def paste_logo(path, height, right_edge, baseline):
+        logo = Image.open(os.path.join(os.path.dirname(__file__), "logos", path))
+        w = int(logo.width * height / logo.height)
+        logo = logo.resize((w, height), Image.LANCZOS)
+        x = right_edge - w
+        img.paste(logo, (x, baseline - height), logo)
+        return x
+
+    lg_baseline = 700
+    x_ripple = paste_logo("ripple.png", 46, W - m, lg_baseline)
+    d.rectangle([x_ripple - 46, lg_baseline - 46, x_ripple - 45, lg_baseline], fill=PANEL_2)
+    x_sing = paste_logo("singhacks.png", 54, x_ripple - 92, lg_baseline + 4)
+    f = font(MONO, 22)
+    label = "BUILT FOR"
+    lw = d.textlength(label, font=f) + len(label) * 5
+    tracked(d, (x_sing - lw - 46, lg_baseline - 30), label, f, PANEL_FAINT, 5)
+
     # state strip — the four escrow states the product actually has
     states = [("FUNDED", TRUSTED), ("HELD", CONTESTED), ("RELEASED", SAGE),
               ("RETURNED", PANEL_FAINT)]
