@@ -15,6 +15,7 @@ import { reasonerProvider } from './reasoner.mjs';
  */
 const PORT = Number(process.env.ORCHESTRATOR_PORT || 4000);
 const LEDGER = 'http://localhost:' + (process.env.LEDGER_PORT || 4010);
+const MARKET = 'http://localhost:' + (process.env.MARKET_PORT || 4020);
 const PROJECT = JSON.parse(fs.readFileSync('fixtures/project.json', 'utf8'));
 const TRADES = JSON.parse(fs.readFileSync('fixtures/trades.json', 'utf8'));
 const CONSOLE_DIR = path.resolve('apps/console/public');
@@ -167,6 +168,40 @@ async function handle(req, res) {
       }
     } catch { /* no runs yet */ }
     return json(res, 200, { milestones: state });
+  }
+
+  // Proxies so the console can render the whole system from one origin.
+  if (url.pathname === '/api/providers') {
+    const [cat, health] = await Promise.all([
+      fetch(MARKET + '/v1/catalog').then((r) => r.json()).catch(() => null),
+      fetch(MARKET + '/v1/health').then((r) => r.json()).catch(() => null),
+    ]);
+    if (!cat) return json(res, 200, { providers: [], market: 'unreachable' });
+    const avail = new Map((health?.providers ?? []).map((p) => [p.id, p]));
+    return json(res, 200, {
+      payTo: cat.payTo,
+      providers: cat.providers.map((p) => ({ ...p, ...(avail.get(p.id) ?? {}) })),
+    });
+  }
+
+  if (url.pathname === '/api/wallets') {
+    const h = await fetch(LEDGER + '/health').then((r) => r.json()).catch(() => null);
+    if (!h) return json(res, 200, { wallets: [], ledger: 'unreachable' });
+    const roles = Object.keys(h.accounts);
+    const wallets = await Promise.all(roles.map(async (role) => {
+      const b = await fetch(LEDGER + '/balances?role=' + role).then((r) => r.json()).catch(() => null);
+      const xrp = b?.balances?.find((x) => x.currency === 'XRP');
+      const rl = b?.balances?.find((x) => x.currency?.startsWith('524C555344'));
+      return {
+        role, address: h.accounts[role],
+        xrp: xrp?.value ?? null, rlusd: rl?.value ?? null,
+        who: { buyer: 'Client', supplier: 'Contractor', inspector: 'Evidence providers', platform: 'Kirim' }[role] ?? role,
+      };
+    }));
+    return json(res, 200, {
+      wallets, payments: h.payments, escrow: h.escrow, escrowNote: h.escrowNote,
+      policy: h.policy,
+    });
   }
 
   if (url.pathname === '/api/record') {
