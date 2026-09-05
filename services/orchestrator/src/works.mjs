@@ -132,8 +132,29 @@ export async function runMilestone(project, ms0, {
   const daysLate = Math.round(
     (Date.parse(sub.submittedAt) - Date.parse(ms.dueOn + 'T23:59:59+08:00')) / 86400000,
   );
-  const reqs = requirements({ ms, sub, daysLate });
-  const budgetUsd = Number(process.env.MAX_PER_TRADE_USD ?? 5);
+  // The client's own terms. Kirim's platform ceilings still apply — Sarah may
+  // be stricter than the platform, never looser.
+  const prefs = { ...(project.preferences ?? {}), clientName: project.client };
+  const reqs = requirements({ ms, sub, daysLate, prefs });
+  const budgetUsd = Math.min(
+    Number(process.env.MAX_PER_TRADE_USD ?? 5),
+    Number(prefs.evidenceBudgetUsd ?? Infinity),
+  );
+
+  // Availability, before anything is planned around a provider that is down.
+  const health = await fetch(MARKET() + '/v1/health').then((r) => r.json()).catch(() => null);
+  const availability = new Map((health?.providers ?? []).map((p) => [p.id, p]));
+  for (const p of catalog.providers) {
+    const h = availability.get(p.id);
+    if (h) { p.available = h.available; p.reliability = h.reliability; }
+  }
+  const down = catalog.providers.filter((p) => p.available === false);
+  if (down.length) {
+    log.add('discovery', 'unavailable',
+      `${down.map((p) => p.name).join(', ')} ${down.length === 1 ? 'is' : 'are'} not accepting ` +
+      `requests. The plan routes around ${down.length === 1 ? 'it' : 'them'}.`,
+      { unavailable: down.map((p) => p.id) });
+  }
 
   const proposed = await planEvidence({
     project, ms, sub, reqs, catalog: catalog.providers, budgetUsd, daysLate,
@@ -141,7 +162,8 @@ export async function runMilestone(project, ms0, {
   const plan = validatePlan({ proposed, reqs, catalog: catalog.providers, budgetUsd });
 
   log.add('planning', proposed ? 'planned' : 'planned_by_rule',
-    `${plan.steps.length} check(s) to buy for US$${plan.estimatedUsd} of a US$${budgetUsd.toFixed(2)} budget: ` +
+    `${plan.steps.length} check(s) to buy for US$${plan.estimatedUsd} of ${project.client}'s ` +
+    `US$${budgetUsd.toFixed(2)} evidence budget: ` +
     plan.steps.map((st) => `${st.provider} — ${st.why}`).join(' ') +
     (plan.skipped.length
       ? ' Skipped: ' + plan.skipped.map((sk) => `${sk.requirement} — ${sk.why}`).join(' ')
@@ -212,6 +234,7 @@ async function release({ project, ms, sub, escrow, amountUsd, log, authorisation
     by: 'platform', owner: escrow.owner, offerSequence: escrow.offerSequence,
     condition: escrow.condition, fulfillment: escrow.fulfillment,
     amount: amountUsd, memo, authorisationTxHash,
+    clientCeilingUsd: project.preferences?.autoReleaseCeilingUsd,
   });
 
   if (finished.refused) {

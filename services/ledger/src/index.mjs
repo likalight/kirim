@@ -121,7 +121,13 @@ const routes = {
   'POST /escrow/finish': async (b) => {
     if (b.amount !== undefined) {
       const cents = toCents(b.amount);
-      if (cents > policy.approvalAbove) {
+      // The client may set a stricter ceiling than the platform's. They may not
+      // set a looser one — a preference cannot buy away a safeguard.
+      const ceiling = Math.min(
+        policy.approvalAbove,
+        b.clientCeilingUsd !== undefined ? toCents(b.clientCeilingUsd) : Infinity,
+      );
+      if (cents > ceiling) {
         // Above the ceiling the client must authorise, and "authorise" means a
         // signature on the ledger from their own wallet — not a flag in a
         // request body that anything could set.

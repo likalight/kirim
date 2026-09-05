@@ -75,6 +75,7 @@ const CATALOG = [
     description: 'Automated inspection of a construction milestone: percent complete and defects.',
     price: '0.30',
     turnaroundHours: 48,
+    reliability: 0.94,
   },
   {
     id: 'site-inspection-express',
@@ -83,6 +84,7 @@ const CATALOG = [
     description: 'The same inspection, surveyed within the hour. Priced for deadline pressure.',
     price: '0.55',
     turnaroundHours: 1,
+    reliability: 0.98,
   },
   {
     id: 'photo-forensics',
@@ -90,6 +92,7 @@ const CATALOG = [
     name: 'Photo forensics',
     description: 'EXIF integrity and re-encoding check on submitted site photographs.',
     price: '0.08',
+    reliability: 0.91,
   },
   {
     id: 'materials-registry',
@@ -97,6 +100,7 @@ const CATALOG = [
     name: 'Materials delivery verification',
     description: 'Confirms delivery notes exist in the supplier registry with matching quantities.',
     price: '0.10',
+    reliability: 0.96,
   },
   {
     id: 'credit-report',
@@ -200,15 +204,34 @@ const HANDLERS = {
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, 'http://localhost:' + PORT);
 
+  // A provider can be taken down deliberately: MARKET_DOWN=site-inspection-express
+  // Demo day will not wait for a real outage to prove the fallback works.
+  const down = (process.env.MARKET_DOWN || '').split(',').map((x) => x.trim()).filter(Boolean);
+  const withAvailability = CATALOG.map((c) => ({ ...c, available: !down.includes(c.id) }));
+
   if (url.pathname === '/v1/catalog') {
-    return send(res, 200, { payTo: PAY_TO, network: 'xrpl-testnet', providers: CATALOG });
+    return send(res, 200, { payTo: PAY_TO, network: 'xrpl-testnet', providers: withAvailability });
+  }
+
+  if (url.pathname === '/v1/health') {
+    return send(res, 200, {
+      ok: true,
+      providers: withAvailability.map((c) => ({
+        id: c.id, available: c.available, reliability: c.reliability ?? null,
+        turnaroundHours: c.turnaroundHours ?? null,
+      })),
+    });
   }
   if (url.pathname === '/v1/pubkey') {
     return send(res, 200, { algorithm: 'ed25519', publicKey: PUBLIC_PEM });
   }
 
-  const entry = CATALOG.find((c) => c.path === url.pathname);
+  const entry = withAvailability.find((c) => c.path === url.pathname);
   if (!entry) return send(res, 404, { error: 'no_such_provider' });
+  if (!entry.available) {
+    return send(res, 503, { error: 'provider_unavailable', provider: entry.id,
+      detail: 'This provider is not accepting requests. Nothing was charged.' });
+  }
 
   const paid = await mppGate(req, res, { priceUsd: entry.price, resource: entry.id });
   if (!paid) return; // MPP wrote the 402 challenge (or an error) already

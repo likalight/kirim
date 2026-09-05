@@ -311,6 +311,48 @@ differing suggestion is recorded as considered rather than acted on. A small
 model should not get to spend more of the client's money against a rule that
 crisp.
 
+## The client sets the terms, not the operator
+
+Sarah's own preferences live on the project, and the agent reads them:
+
+```json
+"preferences": {
+  "autoReleaseCeilingUsd": 12000,
+  "evidenceBudgetUsd": 5.00,
+  "leaning": "cost"
+}
+```
+
+> 3 check(s) to buy for US$0.48 of **Sarah Lim's US$5.00 evidence budget** …
+> This milestone is inside its agreed date and **Sarah Lim leans to cost**, so the
+> slower survey costs nothing and the difference stays with them.
+
+A client may be **stricter** than Kirim's platform ceiling and never looser — the
+ledger service enforces the tighter of the two, so a preference cannot buy away
+a safeguard.
+
+## A provider going down does not stop a milestone
+
+Providers publish availability and a reliability score at `/v1/health`, and the
+agent checks before it plans. With the express inspector taken down
+(`MARKET_DOWN=site-inspection-express`) on a milestone that would otherwise
+require it:
+
+```
+DISCOVERY  unavailable
+           Independent site inspection (express) is not accepting requests.
+           The plan routes around it.
+
+PLANNING   corrected
+           site-inspection-express is unavailable; bought site-inspection
+           instead so the milestone is not held up by a provider outage.
+```
+
+An unavailable provider returns `503` and charges nothing, so the failure
+happens before payment rather than after it. If no provider can establish a
+mandatory requirement, the milestone is held rather than released on thinner
+evidence.
+
 ## The agent compares before it buys
 
 Two providers sell the same inspection — US$0.30 in 48 hours, or US$0.55 within

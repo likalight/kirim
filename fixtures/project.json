@@ -313,5 +313,11 @@
       "scenario": "Contractor never submits \u2014 escrow times out and Sarah's money returns",
       "boq": []
     }
-  ]
+  ],
+  "preferences": {
+    "autoReleaseCeilingUsd": 12000,
+    "evidenceBudgetUsd": 5.0,
+    "leaning": "cost",
+    "note": "Sarah's own terms. She may be stricter than Kirim's platform ceiling, never looser."
+  }
 }

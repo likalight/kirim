@@ -18,7 +18,7 @@
  * not drop it to save money. `moot` means the evidence cannot help — buying a
  * forensics report on zero photographs establishes nothing.
  */
-export function requirements({ ms, sub, daysLate = -1 }) {
+export function requirements({ ms, sub, daysLate = -1, prefs = {} }) {
   const out = [];
 
   out.push({
@@ -50,18 +50,34 @@ export function requirements({ ms, sub, daysLate = -1 }) {
   // client's money or keeps a contractor waiting, and neither is a good use of
   // a language model's discretion. The agent may still override it, and the
   // override is recorded.
+  // The deadline decides first. Where it does not, the client's own leaning
+  // does — this is Sarah's money and her stated preference, not a global
+  // default someone set in an env file.
   const urgent = daysLate >= 0;
+  const leaning = prefs.leaning ?? 'cost';
+  const preferred = urgent
+    ? 'site-inspection-express'
+    : (leaning === 'speed' || leaning === 'quality')
+      ? 'site-inspection-express'
+      : 'site-inspection';
+
   out.push({
     id: 'completion',
     need: `Independently establish completion against the ${ms.minInspectionPercent}% threshold `
       + `agreed for ${ms.name}.`,
     providers: ['site-inspection', 'site-inspection-express'],
-    preferred: urgent ? 'site-inspection-express' : 'site-inspection',
+    preferred,
     tradeoff: urgent
       ? `This milestone is ${daysLate} day(s) past its agreed date, so the express survey's `
         + `turnaround buys back real time the contractor is already waiting through.`
-      : `This milestone is inside its agreed date, so the slower survey costs nothing and `
-        + `the difference stays with the client.`,
+      : leaning === 'speed'
+        ? `The milestone is inside its agreed date, but ${prefs.clientName ?? 'the client'} asked for speed `
+          + `over cost, so the express survey is taken anyway.`
+        : leaning === 'quality'
+          ? `The milestone is inside its agreed date, but ${prefs.clientName ?? 'the client'} asked for the `
+            + `most reliable survey, and the express provider carries the better record.`
+          : `This milestone is inside its agreed date and ${prefs.clientName ?? 'the client'} leans to cost, `
+            + `so the slower survey costs nothing and the difference stays with them.`,
     mandatory: true,
     moot: false,
   });
@@ -79,6 +95,7 @@ export function requirements({ ms, sub, daysLate = -1 }) {
  */
 export function validatePlan({ proposed, reqs, catalog, budgetUsd }) {
   const byId = new Map(catalog.map((p) => [p.id, p]));
+  const up = (id) => byId.get(id) && byId.get(id).available !== false;
   const steps = [];
   const skipped = [];
   const corrections = [];
@@ -113,10 +130,29 @@ export function validatePlan({ proposed, reqs, catalog, budgetUsd }) {
     // may word the plan; it does not get to spend more of the client's money,
     // or keep a contractor waiting, against a rule this crisp. A differing
     // suggestion is recorded as considered rather than silently dropped.
-    if (req.preferred && providerId !== req.preferred) {
+    if (req.preferred && providerId !== req.preferred && up(req.preferred)) {
       corrections.push(`${providerId} was suggested for ${req.id}; ${req.preferred} was bought `
-        + `because the deadline decides this one.`);
+        + `because the deadline and the client's own terms decide this one.`);
       providerId = req.preferred;
+    }
+
+    // A provider that is not accepting requests cannot be bought from, however
+    // well it scores on price. Route to the alternative and say so.
+    if (!up(providerId)) {
+      const alternative = req.providers.find((id) => id !== providerId && up(id));
+      if (alternative) {
+        corrections.push(`${providerId} is unavailable; bought ${alternative} instead so the `
+          + `milestone is not held up by a provider outage.`);
+        providerId = alternative;
+      } else if (req.mandatory) {
+        corrections.push(`${providerId} is unavailable and nothing else establishes ${req.id}. `
+          + `The milestone cannot be released until it returns.`);
+        skipped.push({ requirement: req.id, why: `No available provider for ${req.id}.`, blocked: true });
+        continue;
+      } else {
+        skipped.push({ requirement: req.id, why: `${providerId} is unavailable.` });
+        continue;
+      }
     }
 
     if (choice?.skip && req.mandatory) {
