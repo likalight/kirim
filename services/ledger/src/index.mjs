@@ -2,6 +2,7 @@ import http from 'node:http';
 import { loadWallets } from './wallets.mjs';
 import { SpendPolicy } from './policy.mjs';
 import { toCents } from '@kirim/trade';
+import { MppClient } from '@kirim/mpp';
 import {
   xrpl, settlementAsset, pay, escrowCreate, escrowFinish, escrowCancel,
   verifyTx, balances, trustSet, explorerTx, scalePrincipal,
@@ -47,6 +48,32 @@ const routes = {
     });
     policy.record({ amountCents: cents, tradeId, kind: 'operating' });
     return { refused: false, txHash: out.hash, explorer: out.explorer };
+  },
+
+  /**
+   * Buy a resource over MPP.
+   *
+   * The agent asks; this service decides. The spend ceiling is checked before
+   * a single satoshi of intent leaves the process, and only then does the MPP
+   * client — which holds the seed — settle the 402 handshake. A refusal comes
+   * back as a decision with a reason, exactly like every other refusal here.
+   */
+  'POST /buy': async (b) => {
+    const cents = toCents(b.priceUsd);
+    const tradeId = b.tradeId ?? 'adhoc';
+    const verdict = policy.check({ amountCents: cents, tradeId, kind: 'operating' });
+    if (!verdict.ok) return { refused: true, ...verdict };
+
+    const seed = wallets[b.from ?? 'buyer'].seed;
+    const { data, receipt } = await MppClient.buy(b.url, { seed, mode: b.mode ?? 'push' });
+    policy.record({ amountCents: cents, tradeId, kind: 'operating' });
+
+    const txHash = MppClient.receiptTxHash(receipt);
+    return {
+      refused: false, data, receipt, txHash,
+      explorer: txHash ? explorerTx(txHash) : undefined,
+      protocol: 'MPP / xrpl-mpp-sdk',
+    };
   },
 
   // The trade principal. Bounded by the approval threshold, not the per-call cap.

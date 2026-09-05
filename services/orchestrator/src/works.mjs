@@ -1,4 +1,3 @@
-import { fetchWithPayment } from '@kirim/x402';
 import { DecisionLog, toCents, fmt } from '@kirim/trade';
 import { milestone, submission, examineMilestone, credentialUri } from '@kirim/works';
 import { explainMilestone } from './reasoner.mjs';
@@ -84,29 +83,30 @@ export async function runMilestone(project, ms0, {
     `. "${sub.note}"`);
 
   // --- buy what is needed to check it --------------------------------------
-  const pay = async ({ payTo, amount, resource }) => {
-    const r = await ledgerPost('/pay', {
-      from: 'buyer', to: payTo, amount, tradeId: `${project.id}/${ms.id}`,
-      memo: `${project.id}/${ms.id}/${resource}`,
-    });
-    return r.refused ? { refused: true, reason: r.reason } : { txHash: r.txHash, explorer: r.explorer };
-  };
-
+  // The agent never signs. It asks the ledger service to buy a URL over MPP;
+  // that service holds the seed, enforces the ceiling, and can refuse.
   const catalog = await fetch(MARKET() + '/v1/catalog').then((r) => r.json());
+
   const buy = async (id, query, why) => {
     const p = catalog.providers.find((x) => x.id === id);
     const url = MARKET() + p.path + (query ? '?' + new URLSearchParams(query) : '');
-    const out = await fetchWithPayment(url, { pay, memo: `${project.id}/${ms.id}` });
+
+    const out = await ledgerPost('/buy', {
+      url, priceUsd: p.price, from: 'buyer',
+      tradeId: `${project.id}/${ms.id}`, mode: 'push',
+    });
+
     if (out.refused) {
       log.add('purchase', 'declined',
         `${p.name} quoted US$${p.price}. ${out.reason} Proceeding without it.`,
         { provider: id, quotedUsd: p.price });
       return null;
     }
-    log.add('purchase', 'bought', `${p.name} — US$${p.price}. ${why}`, {
-      provider: id, costCents: toCents(p.price), txHash: out.txHash,
-      explorer: `${process.env.XRPL_EXPLORER || 'https://testnet.xrpl.org'}/transactions/${out.txHash}`,
-    });
+    log.add('purchase', 'bought',
+      `${p.name} — US$${p.price} over MPP. ${why}`, {
+        provider: id, costCents: toCents(p.price),
+        txHash: out.txHash, explorer: out.explorer,
+      });
     return out.data;
   };
 

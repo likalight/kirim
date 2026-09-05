@@ -1,10 +1,10 @@
 {
-  "name": "@kirim/market",
+  "name": "@kirim/mpp",
   "version": "1.0.0",
   "type": "module",
   "main": "src/index.mjs",
   "dependencies": {
-    "@kirim/x402": "1.0.0",
-    "@kirim/mpp": "1.0.0"
+    "mppx": "^0.8.0",
+    "xrpl-mpp-sdk": "0.1.0-beta.2"
   }
 }

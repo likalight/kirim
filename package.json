@@ -23,6 +23,8 @@
     "topup": "node --env-file-if-exists=.env scripts/topup.mjs"
   },
   "dependencies": {
-    "xrpl": "^4.1.0"
+    "mppx": "^0.8.19",
+    "xrpl": "^4.1.0",
+    "xrpl-mpp-sdk": "^0.1.0-beta.2"
   }
 }

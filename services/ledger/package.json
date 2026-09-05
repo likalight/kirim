@@ -3,5 +3,9 @@
   "version": "1.0.0",
   "type": "module",
   "main": "src/index.mjs",
-  "dependencies": { "xrpl": "^4.1.0", "@kirim/trade": "1.0.0" }
+  "dependencies": {
+    "xrpl": "^4.1.0",
+    "@kirim/trade": "1.0.0",
+    "@kirim/mpp": "1.0.0"
+  }
 }

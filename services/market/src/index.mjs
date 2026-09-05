@@ -1,7 +1,8 @@
 import http from 'node:http';
 import crypto from 'node:crypto';
 import fs from 'node:fs';
-import { gate, send } from '@kirim/x402';
+import { send } from '@kirim/x402';
+import { MppServer } from '@kirim/mpp';
 
 /**
  * The provider side of the market.
@@ -31,11 +32,13 @@ function attest(claim) {
   return { ...body, signature: sig.toString('base64') };
 }
 
-async function verifyOnLedger(hash) {
-  const r = await fetch(LEDGER + '/tx?hash=' + encodeURIComponent(hash));
-  if (!r.ok) throw new Error('ledger service returned ' + r.status);
-  return r.json();
-}
+// The MPP handler verifies settlement on-ledger itself, so the market no
+// longer needs its own verification hop into the ledger service.
+const mppGate = MppServer.createMarket({
+  recipient: PAY_TO,
+  secretKey: process.env.MPP_SECRET_KEY
+    || 'kirim-dev-secret-key-at-least-32-bytes-long',
+});
 
 const CATALOG = [
   {
@@ -177,20 +180,12 @@ const server = http.createServer(async (req, res) => {
   const entry = CATALOG.find((c) => c.path === url.pathname);
   if (!entry) return send(res, 404, { error: 'no_such_provider' });
 
-  const paid = await gate({
-    price: entry.price,
-    payTo: PAY_TO,
-    asset: 'settlement',
-    resource: entry.id,
-    description: entry.name,
-    verifyOnLedger,
-  })(req, res);
-
-  if (!paid) return; // 402 (or a refusal) already written
+  const paid = await mppGate(req, res, { priceUsd: entry.price, resource: entry.id });
+  if (!paid) return; // MPP wrote the 402 challenge (or an error) already
   send(res, 200, HANDLERS[entry.id](url.searchParams));
 });
 
 server.listen(PORT, () => {
-  console.log('[market] on :' + PORT + '  payTo=' + PAY_TO);
+  console.log('[market] on :' + PORT + '  payTo=' + PAY_TO + '  (MPP / xrpl-mpp-sdk)');
   for (const c of CATALOG) console.log('         ' + c.price.padStart(5) + '  ' + c.path);
 });
