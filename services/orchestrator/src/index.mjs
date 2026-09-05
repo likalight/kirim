@@ -128,6 +128,47 @@ async function handle(req, res) {
 
   if (url.pathname === '/api/reasoner') return json(res, 200, reasonerProvider());
 
+  // Per-milestone state, rebuilt from the persisted decision logs so both
+  // views mean something on a cold page load rather than only during a run.
+  if (url.pathname === '/api/state') {
+    const dir = path.resolve('docs/runs');
+    const state = {};
+    try {
+      for (const f of fs.readdirSync(dir)) {
+        if (!f.endsWith('.jsonl')) continue;
+        const lines = fs.readFileSync(path.join(dir, f), 'utf8').trim().split('\n');
+        const entries = lines.map((l) => { try { return JSON.parse(l); } catch { return null; } }).filter(Boolean);
+        if (!entries.length) continue;
+        const id = entries[0].tradeId.split('/')[1];
+        const last = entries[entries.length - 1];
+        const find = (stage, decision) => entries.find((e) => e.stage === stage && (!decision || e.decision === decision));
+        const released = find('settlement', 'released');
+        const returned = find('settlement', 'returned');
+        const examined = find('examination');
+        const funded = find('escrow', 'funded');
+        const fee = find('revenue', 'charged');
+        const outcome = find('outcome', 'complete');
+        state[id] = {
+          status: released ? 'released'
+            : returned ? 'returned'
+              : find('settlement', 'awaiting_client') ? 'awaiting_client'
+                : examined?.decision === 'more_info' ? 'more_info'
+                  : examined?.decision === 'flagged' ? 'flagged'
+                    : funded ? 'in_progress' : 'unknown',
+          note: examined?.reason ?? last.reason,
+          findings: examined?.findings ?? [],
+          spentCents: entries.filter((e) => e.costCents).reduce((a, e) => a + e.costCents, 0),
+          feeUsd: fee?.feeCents != null ? (fee.feeCents / 100).toFixed(2) : null,
+          elapsedSeconds: outcome?.elapsedSeconds ?? null,
+          at: last.at,
+          hashes: entries.filter((e) => e.txHash)
+            .map((e) => ({ stage: e.stage, decision: e.decision, txHash: e.txHash, explorer: e.explorer })),
+        };
+      }
+    } catch { /* no runs yet */ }
+    return json(res, 200, { milestones: state });
+  }
+
   if (url.pathname === '/api/record') {
     const r = await fetch(LEDGER + '/credentials?role=supplier')
       .then((x) => x.json()).catch(() => null);
