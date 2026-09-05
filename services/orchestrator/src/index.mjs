@@ -71,8 +71,7 @@ async function handle(req, res) {
   if (url.pathname === '/api/project') {
     return json(res, 200, {
       id: PROJECT.id, name: PROJECT.name, kind: PROJECT.kind,
-      currency: PROJECT.currency, narrative: PROJECT.narrative,
-      what: PROJECT.what, narrative: PROJECT.narrative,
+      currency: PROJECT.currency, narrative: PROJECT.narrative, what: PROJECT.what,
       client: PROJECT.client, clientRole: PROJECT.clientRole,
       clientContact: PROJECT.clientContact,
       contractor: PROJECT.contractor, contractorRole: PROJECT.contractorRole,
@@ -174,12 +173,26 @@ async function handle(req, res) {
       return {
         role, address: h.accounts[role],
         xrp: xrp?.value ?? null, rlusd: rl?.value ?? null,
-        who: { buyer: 'Client', supplier: 'Contractor', inspector: 'Evidence providers', platform: 'Kirim' }[role] ?? role,
+        who: {
+          buyer: PROJECT.client, supplier: PROJECT.contractor,
+          inspector: 'Evidence providers', platform: 'Kirim',
+        }[role] ?? role,
       };
     }));
+    // Running out of the asset the agent buys evidence with is the failure that
+    // actually happens, and it happens quietly a minute into a stage. Say so
+    // before anyone starts a demo rather than halfway through one.
+    const payer = wallets.find((w) => w.role === 'buyer');
+    const float = Number(payer?.rlusd ?? 0);
+    const PER_STAGE = 0.75;
     return json(res, 200, {
       wallets, payments: h.payments, escrow: h.escrow, escrowNote: h.escrowNote,
       policy: h.policy,
+      float: {
+        rlusd: float,
+        stagesLeft: Math.floor(float / PER_STAGE),
+        low: float < PER_STAGE * 3,
+      },
     });
   }
 

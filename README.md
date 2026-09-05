@@ -38,113 +38,98 @@ Pre-sale money is already held. The question is who decides it may be released, 
 ## The problem
 
 **Someone pays for construction before it exists, and someone has to decide when
-that money is released.** That decision is the whole problem, and nowhere is it
-larger than China.
+that money is released.** That decision is the whole problem.
 
-More than 85% of new homes in China are sold before they are built. Buyers pay
-in full or carry a mortgage on an apartment that is a hole in the ground, and
-between **50% and 70% of those pre-sale funds sit in escrow accounts controlled
-by local government**, with the rules set city by city. The money is already
-escrowed. The question has never been *whether* to hold it — it is **who decides
+Across ASEAN, **49 of 581 major infrastructure projects were cancelled or
+distressed after reaching financial closure** — about one in twelve, after the
+money was committed. That is the headline number, and underneath it sits the
+same failure repeated at every scale, from a national rail line to a
+twenty four unit apartment block.
+
+The pattern is always the same. Payment is staged against progress. Progress is
+verified by a person who visits the site. That person is expensive, slow, and
+cannot be everywhere, so in practice the verification thins out and the money
+keeps moving anyway. By the time anyone is certain the work was not done, it has
+been paid for.
+
+> **Uncompleted after years, Johor Bahru's 'sick' and 'abandoned' property
+> projects leave buyers in limbo.** They bought property in Johor Bahru hoping to
+> live or retire comfortably in Malaysia. After paying hefty sums, some are still
+> waiting for their dream homes to be completed.
+>
+> — [Channel NewsAsia](https://www.channelnewsasia.com/asia/malaysia-johor-bahru-sick-abandoned-stalled-property-buyers-limbo-5379511)
+
+It cuts the other way too. **Late payment is the single largest cause of
+contractor insolvency in the region.** Singapore has a Security of Payment Act
+precisely because subcontractors were going under while waiting to be certified
+for work they had already completed. Get the release decision wrong in one
+direction and buyers lose homes. Get it wrong in the other and honest builders
+starve mid project.
+
+**So the question is not whether to escrow construction money. It is who decides
 it may be released, and on what evidence.**
 
-That decision has failed in both directions inside five years:
-
-| | What happened |
-|---|---|
-| **Too tight** | In 2021 many cities curbed withdrawals from escrow. Developers ran out of cash mid-build and projects stopped. A February 2022 framework was issued explicitly to "correct over-tightening" |
-| **Too loose** | Evergrande collapsed with liabilities around **US$300 billion**, and buyers who had paid in full were left with unfinished flats — some withheld mortgage payments on homes that did not exist |
-| **The cost of fixing it** | By the end of 2025 roughly **7.5 million** previously undelivered homes had been handed over, supported by more than **7 trillion yuan (~US$1 trillion)** of whitelist financing |
-
-In August 2026 a new national standard tightened it again: pre-sale funds must
-stay in escrow until completion, and a building's main structural frame —
-foundation, floors, roof — must exist before sales can begin.
-
-**Every one of those interventions is a rule about releasing escrow against
-construction progress.** Today that release is a manual, discretionary,
-city-by-city administrative decision. It is slow when it should be fast, it was
-gamed when it should not have been, and it is made by people who cannot possibly
+Today that decision is a person with a clipboard. It is slow when it should be
+fast, it is unevenly applied, and it is made by people who cannot possibly
 inspect every project.
 
-### The pre-sale flow, before and after
-
-This is the demo scenario, and it is the mainland pre-sale (期房) model as it
-actually runs. **Nothing about selling off-plan changes.** Kirim sits between
-the bank and the developer and changes one thing: what the money is allowed to
-do while the buyer waits.
-
-**Before — the pre-sale flow today**
+### How it works today
 
 ```
-1  Developer  gets a pre-sale permit, sells the tower off-plan
-2  Buyer      pays a 20–30% deposit against a drawing
-3  Bank       disburses the whole mortgage to the developer, day one
-4  Account    money nominally sits in a local pre-sale supervision account
-5  Bureau     a local official approves each draw — rules differ by city
+1  Developer   sells or contracts the work before it is completed
+2  Client      starts paying before the building is finished
+3  Bank        disburses against progress claims, often well ahead of completion
+4  Account     funds sit in escrow, but the controls are fragmented
    ─────────────────────────────────────────────────────────────────────
-6  Developer  cash is moved to land, other projects, and group debt      ✗
-7  Site       funding runs out, work stops, the tower stands unfinished  ✗
-8  Buyer      keeps repaying a mortgage on a home that does not exist    ✗
-9  Recovery   litigation, a payment strike, or a state rescue fund       ✗
+5  Builder     has wide scope to treat the money as general funding      ✗
+6  Client      carries the risk if construction fails                    ✗
+7  Result      work stalls after the client has already paid             ✗
 ```
 
-**After — the same sale, with Kirim**
+Every safeguard in that flow depends on somebody checking, and nobody is paid to
+check often enough.
+
+### The same flow, with Kirim
 
 ```
-1  Developer  gets a pre-sale permit, sells the tower off-plan     unchanged
-2  Buyer      pays a deposit against a drawing                     unchanged
+1  Developer   sells or contracts the work before completion       unchanged
+2  Client      pays a deposit up front                             unchanged
    ─────────────────────────────────────────────────────────────────────
-3  Bank       disburses the whole mortgage day one — into escrow          ▸
-4  XRPL       one escrow per stage, each under a PREIMAGE-SHA-256 lock    ▸
-5  Developer  reaches a stage, submits photographs, notes, permits        ▸
-6  Agent      buys the verification it needs, paying per call over x402   ▸
-7  Agent      13 deterministic checks; conforming evidence pays in ~4s    ▸
-8  XRPL       non-conforming releases nothing, and names the failed check ▸
-9  XRPL       a stage never reached expires — CancelAfter refunds it      ▸
-10 Record     the completed stage is written to the developer's account   ▸
+3  Bank        the loan goes into escrow, not to the builder             ▸
+4  Escrow      locked on a public ledger under a crypto-condition        ▸
+5  Builder     reaches a stage and submits photographs, notes, a bill    ▸
+6  Agent       buys independent checks and reconciles them against the
+               drawings both sides signed                                ▸
+7  Release     conforming evidence pays in about four seconds            ▸
+8  Refusal     anything else holds, and names the failed check           ▸
+9  Refund      a stage never built returns the money automatically       ▸
+10 Record      the completed stage is written to the builder's account   ▸
 ```
 
-**The seven questions, answered both ways**
+**Two steps are deliberately unchanged.** Kirim does not need the market to stop
+selling ahead of completion, or clients to stop paying early. Those are how
+construction is funded, and a product that needed them to stop would never be
+adopted. What changes is the one thing in the middle: **whether the money can
+leave before the work exists.**
 
-| | Pre-sale today | With Kirim | What changed |
+| | Today | With Kirim | What changed |
 |---|---|---|---|
-| Can the developer sell before completion? | Yes — off-plan is the norm | Yes | *nothing* |
-| Does the buyer pay before completion? | Yes — deposit, then instalments | Yes | *nothing* |
-| Where does the mortgage money go? | To the developer, in full, day one | Into per-stage XRPL escrow, in full, day one | The bank still pays immediately. The developer just is not who receives it. |
-| Where does the buyer's money sit? | A supervision account drawn on an official's approval | An escrow object drawn on a crypto-condition | Discretion becomes a condition. Anyone can read the balance; nobody can lobby it. |
-| Can the developer use it elsewhere? | In practice yes — diversion is routine | No. Not for one stage, not for one hour | **This is the whole change. Everything else follows from it.** |
-| Who carries construction-failure risk? | The buyer | Nobody — unbuilt stages never release | Risk is not transferred to an insurer, it is removed from the transaction. |
-| If the developer runs out of cash? | Work stops, buyers keep paying, years of litigation | Remaining stages expire back to the buyer | The buyer's downside stops at the stages actually built. |
+| Who releases the money | A person who visits the site, if they can get there | An agent that reconciles evidence against the agreed drawings | Discretion becomes a condition |
+| Basis for release | Paperwork, and a site visit if you are lucky | Photographs with a verifiable time and place, delivery notes checked against the supplier's own records, an independent survey counted against the model | *nothing is taken on trust* |
+| Speed | Weeks of chasing | About four seconds | |
+| If nothing is delivered | Dispute, or write it off | The escrow returns the money on its own | No lawsuit |
+| If a claim is rejected | The job stops and lawyers start | The builder fixes it and resubmits against the same escrow | The client never pays twice |
+| Builder's reputation | A folder of photographs and hearsay | Credentials on their own ledger account, portable and verifiable | It survives us |
 
-Two of the seven answers are deliberately identical. A product that needed
-off-plan sale to stop, or buyers to stop paying early, would never be adopted —
-those are how the market funds construction. What changes is the middle row.
+**The demo below is one job**: an owner paying a contractor US$1,400,000 to build
+an eight storey apartment block outside Jakarta, in six stages. A project you can
+hold in your head is easier to judge than a portfolio, and the mechanism does not
+change with the number of zeroes. It is the same escrow, the same evidence rules,
+and the same release decision that is currently being made by hand on every
+construction site in the region.
 
-### The same instrument, at every size
-
-The shape is not unique to China, or to towers. Any pre-sale or milestone
-construction contract has it:
-
-- **Pre-sale housing** — China, Vietnam, Malaysia, Egypt, the Gulf
-- **Contractor progress claims** — endemic late payment; Singapore has a
-  Security of Payment Act precisely because of it
-- **A homeowner's renovation** — a deposit paid to a firm they cannot assess
-
-In each case money is committed before the work exists, and someone must decide
-when performance is good enough to release it. Get it wrong one way and honest
-builders starve mid-project. Get it wrong the other way and buyers lose homes
-they have already paid for.
-
-**The demo below is one pre-sold apartment** — Unit 1802 of a Zhengzhou tower,
-US$280,000 across six construction stages — because a single buyer's position is
-easier to judge than a balance sheet. The mechanism does not change with the
-number of zeroes: it is the same escrow, the same evidence rules, and the same
-release decision that China is currently making by hand, 113 cities at a time.
-
-**Sources:** [China gives property firms easier access to escrow funds](https://www.marketscreener.com/quote/stock/CHINA-EVERGRANDE-GROUP-6171025/news/China-gives-property-firms-easier-access-to-escrow-funds-report-37844197/) ·
-[Inside Evergrande's unfinished fairytale castle](https://www.straitstimes.com/asia/east-asia/inside-evergrandes-unfinished-fairytale-castle-and-the-long-shadow-of-chinas-property-boom-gone-bust) ·
-[Evergrande boss leads $627 billion in lost wealth for China's property tycoons](https://www.straitstimes.com/business/property/evergrande-boss-leads-627-billion-in-lost-wealth-for-chinas-property-tycoons) ·
-[China's property slump and the world's tallest empty building](https://www.taipeitimes.com/News/feat/archives/2026/07/16/2003860811)
+**Sources:** [OECD, Southeast Asia Investment Policy Perspectives](https://www.scribd.com/document/494467389/Southeast-Asia-Investment-Policy-Perspectives-2014) ·
+[Channel NewsAsia on abandoned Johor Bahru projects](https://www.channelnewsasia.com/asia/malaysia-johor-bahru-sick-abandoned-stalled-property-buyers-limbo-5379511)
 
 ## How it works
 
@@ -175,23 +160,35 @@ npm run milestone all     # or: npm run milestone M2
 
 `npm run escrow:smoke` is load-bearing. If it does not pass, nothing above it can be trusted.
 
-### The six scenarios
+### The six stages
 
-One pre-sold apartment, US$280,000 of the buyer's mortgage, escrowed a stage at
-a time:
+One job, US$1,400,000 of an owner's money, escrowed a stage at a time:
 
-| Stage | Draw | What it demonstrates |
+| Stage | Payment | What it demonstrates |
 |---|---|---|
-| `M1` Foundation and substructure | US$40,000 | Evidence conforms → **released autonomously**, credential issued |
-| `M2` Structural frame topped out | US$50,000 | A photo taken **2.4 km off site** and an unverifiable delivery note → **flagged** |
-| `M3` Façade and windows sealed | US$40,000 | One photo, no delivery notes, no inspection result → **more information needed** |
-| `M4` Interior fit-out and services | US$40,000 | Inspection at 72% with a critical defect, plus a **recycled photograph** → **flagged** |
-| `M5` Variation — extra basement level | US$65,000 | Evidence conforms but the draw is **above the buyer's ceiling** → she is asked |
-| `M6` Completion and handover | US$45,000 | The developer never presents completion → escrow **times out and the money returns** |
+| `M1` Foundations | US$200,000 | Everything reconciles → **released autonomously**, credential issued |
+| `M2` Frame and floors | US$325,000 | Clean, but above the owner's own ceiling → **they sign it themselves** |
+| `M3` Roof and walls | US$200,000 | One photograph, no delivery notes, no bill → **not enough sent yet** |
+| `M4` Plumbing, wiring and interiors | US$200,000 | Over-billed by US$20,000, 72% of the agreed scope built, a critical defect, a recycled photograph and an edited one → **refused, and the owner confirms it** |
+| `M5` Car park and grounds | US$250,000 | The work really was done, but a photograph was taken 2.4km away and a delivery note was never issued → **built, and still refused** |
+| `M6` Handover | US$225,000 | Never presented → escrow **times out and the money returns** |
 
-The interesting ones are `M2`, `M3` and `M6`. A payment that correctly does *not* happen is what makes an autonomous payment system credible.
+`M4` and `M5` both then release once the builder corrects the work and
+resubmits, against **the same escrow** — the owner is never asked to commit the
+money twice.
 
-`M3` matters for a different reason: *"you did not send enough"* and *"what you sent does not add up"* are different messages, and only the second should ever mark a developer's record.
+**Three of the six end with no payment to the builder.** The challenge's flow
+diagram has no branch for an agent deciding *not* to transact; each of these is a
+deliberate outcome with a recorded reason, and they are the part that makes an
+autonomous payment system credible.
+
+`M3` matters for a different reason: *"you did not send enough"* and *"what you
+sent does not add up"* are different messages, and only the second should ever
+mark a builder's record.
+
+`M5` matters because the model check passes. The car park is genuinely built and
+the survey agrees. It is refused on provenance alone, which is how you know the
+four checks are independent of each other.
 
 A full transcript of one run is in [docs/demo-run.txt](docs/demo-run.txt).
 
@@ -347,9 +344,9 @@ authorisation:
 Every released milestone issues an **XLS-70 Credential** to the contractor's own XRPL account, which they accept. It is keyed `KIRIM:<project>:<milestone>`, so it cannot be double-counted, and any future client can verify it without asking Kirim anything.
 
 ```
-type      KIRIM:PRJ-2026-1802:M1
+type      KIRIM:PRJ-2026-ANGGREK:M1
 subject   rhayr2jygcxFKDMN4ahdxkVHD4rwZXLvv3
-uri       kirim:milestone/PRJ-2026-1802/M1/foundation-and-substructure?onTime=1
+uri       kirim:milestone/PRJ-2026-ANGGREK/M1/foundations?onTime=1
 accepted  true
 ```
 
@@ -359,7 +356,7 @@ We do not claim a credential makes a contractor trustworthy. It makes their hist
 
 **Real:** every XRPL transaction. Escrow create, finish against a crypto-condition, cancel on timeout, every x402 payment, and every credential. Hashes are in [docs/transactions.md](docs/transactions.md) and link to the testnet explorer.
 
-**Simulated:** the developer, the photographs, the carrier and supplier registries, and the site inspector — all fixtures under `fixtures/`. No mainland developer has an x402 endpoint this weekend.
+**Simulated:** the builder, the photographs, the supplier registry, and the site surveyor — all fixtures under `fixtures/`. No contractor in Tangerang has an x402 endpoint this weekend.
 
 The line matters: simulated supply is normal, a simulated payment would not be.
 
@@ -370,16 +367,16 @@ the ledger rather than a line in this table.
 
 The fee scales with the instrument, not with our costs — which is the point. A
 release costs us the same handful of cents whether it frees US$10,000 of a
-renovation or US$4m of a tower's pre-sale escrow, because the evidence
+renovation or US$4m of a tower, because the evidence
 checks are priced per call rather than per site visit. That is why this can be
 0.8% where an escrow agent is 3–5%, and why it works at sizes where no human
 inspection regime is economic.
 
-On a released US$40,000 stage the decision log reads:
+On a released US$200,000 stage the decision log reads:
 
 ```
 REVENUE  charged
-         Kirim charged US$320.00 — 0.8% of the stage draw, taken at the moment of
+         Kirim charged US$1,600.00 — 0.8% of the stage payment, taken at the moment of
          release. An escrow agent charges 3–5% and takes days.
          https://testnet.xrpl.org/transactions/38B69E5464E4B1…
 ```
@@ -389,7 +386,7 @@ REVENUE  charged
 | Escrow agent today | 3–5% | days |
 | Kirim | **0.8%** | ~4 seconds |
 | Evidence checks bought per stage | US$0.48–0.73 | seconds |
-| On a US$280,000 apartment | ~US$2,240 total | across six stages |
+| On a US$1.4m building | ~US$11,200 total | across six stages |
 
 `PLATFORM_FEE_BPS` sets it; `0` turns it off. A fee that cannot be collected
 never unwinds a release that has already happened — it is reported as
@@ -421,23 +418,23 @@ differing suggestion is recorded as considered rather than acted on. A small
 model should not get to spend more of the client's money against a rule that
 crisp.
 
-## The buyer sets the terms, not the operator
+## The owner sets the terms, not the operator
 
-The buyer's own preferences live on the project, and the agent reads them:
+The owner's own preferences live on the project, and the agent reads them:
 
 ```json
 "preferences": {
-  "autoReleaseCeilingUsd": 55000,
+  "autoReleaseCeilingUsd": 275000,
   "evidenceBudgetUsd": 5.00,
   "leaning": "cost"
 }
 ```
 
-> 3 check(s) to buy for US$0.48 of **Mrs Chen's US$5.00 evidence budget** …
-> This stage is inside its agreed date and **Mrs Chen leans to cost**, so the
+> 3 check(s) to buy for US$0.48 of **Mentari Group's US$5.00 evidence budget** …
+> This stage is inside its agreed date and **Mentari Group leans to cost**, so the
 > slower survey costs nothing and the difference stays with them.
 
-A buyer may be **stricter** than Kirim's platform ceiling and never looser — the
+An owner may be **stricter** than Kirim's platform ceiling and never looser — the
 ledger service enforces the tighter of the two, so a preference cannot buy away
 a safeguard.
 
@@ -485,11 +482,11 @@ Same evidence, different purchase, and the reason is on the record either way.
 
 ```
 OUTCOME  complete
-         Foundation and substructure settled in 47s. Evidence cost US$0.48 and
-         Kirim charged US$320.00. The same assurance conventionally means a site
+         Foundations settled in 47s. Evidence cost US$0.48 and
+         Kirim charged US$1,600.00. The same assurance conventionally means a site
          visit and an escrow agent at 3–5% — days, not seconds, and roughly
-         US$1,600.00 on this stage. Hengrui Properties was paid on presentation
-         rather than waiting on a bureau's approval.
+         US$8,000.00 on this stage. Gedung Jaya was paid on presentation rather
+         than on sixty day terms.
 ```
 
 Measured from the run, not asserted in a table: elapsed seconds, evidence spend,

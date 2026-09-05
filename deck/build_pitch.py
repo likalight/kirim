@@ -225,256 +225,257 @@ def icon_clock(slide, x, y, size, colour):
 
 
 # ---------------------------------------------------------------- the pitch
+def flow_step(s, x, y, w, h, who, what, *, tone="neutral", tag=None):
+    """One box in a vertical flow. Tone carries the argument, not decoration."""
+    fill, line, who_c, what_c = {
+        "neutral": (PAPER_0, PAPER_3, INK_0, INK_3),
+        "bad": (QUARANTINED_TINT, QUARANTINED, QUARANTINED, RESTRICTED),
+        "good": (TRUSTED_TINT, TRUSTED, TRUSTED, INK_2),
+        "same": (PAPER_1, PAPER_3, INK_4, INK_4),
+    }[tone]
+    box(s, x, y, w, h, fill=fill, line_color=line)
+    tf = textbox(s, x + Inches(0.22), y + Inches(0.11), w - Inches(1.3), h - Inches(0.2))
+    write(tf, who, font=SANS, size=12.5, color=who_c, bold=True, first=True, space_after=1)
+    write(tf, what, font=SANS, size=11, color=what_c, line=1.25)
+    if tag:
+        tf2 = textbox(s, x + w - Inches(1.15), y + Inches(0.13), Inches(0.95), Inches(0.25),
+                      align=PP_ALIGN.RIGHT)
+        write(tf2, tag, font=MONO, size=8, color=INK_4, spacing=0.1, first=True,
+              align=PP_ALIGN.RIGHT)
+
+
+def arrow(s, cx, y, colour=PAPER_3):
+    box(s, cx - Emu(int(Pt(0.5).emu)), y, Emu(int(Pt(1).emu)), Inches(0.15), fill=colour)
+
+
 def build(hashes):
     prs = Presentation()
     prs.slide_width, prs.slide_height = W, H
 
-    # ============================================================ 1 — the hook
+    # ============================================================ 1 — title
     s = slide_base(prs, PANEL_0)
     eyebrow(s, "SingHacks 2026 · Ripple · AI-native business on XRPL", color=PANEL_FAINT)
     rule(s, M, Inches(1.05), CW, color=PANEL_2)
 
-    tf = textbox(s, M, Inches(1.7), Inches(9.4), Inches(2.6))
-    write(tf, "A trillion dollars was spent", font=DISPLAY, size=46, color=PANEL_INK,
-          line=1.12, first=True)
-    write(tf, "finishing homes people had", font=DISPLAY, size=46, color=PANEL_INK, line=1.12)
-    write(tf, "already paid for.", font=DISPLAY, size=46, color=CONTESTED, line=1.12)
+    tf = textbox(s, M, Inches(2.35), Inches(9.6), Inches(1.6))
+    write(tf, "Kirim", font=DISPLAY, size=76, color=PANEL_INK, line=1.0, first=True)
+    tf2 = textbox(s, M, Inches(3.5), Inches(9.6), Inches(0.6))
+    write(tf2, "to send", font=DISPLAY, size=26, color=CONTESTED, italic=True, line=1.1, first=True)
 
-    tf = textbox(s, M, Inches(4.6), Inches(8.4), Inches(1.0))
-    write(tf, "The money was never missing. It sat in escrow the whole time. "
-              "Somebody just had to decide it could be released — and that decision "
-              "is still made by hand.",
-          font=SANS, size=16, color=PANEL_MUTED, line=1.5, first=True)
+    rule(s, M, Inches(4.35), Inches(4.0), color=PANEL_2)
+    tf = textbox(s, M, Inches(4.6), Inches(9.0), Inches(0.9))
+    write(tf, "AI-verified milestone payments on the XRP Ledger.",
+          font=SANS, size=19, color=PANEL_MUTED, line=1.4, first=True)
 
-    rule(s, M, Inches(5.75), CW, color=PANEL_2)
-    tf = textbox(s, M, Inches(6.0), Inches(7.0), Inches(1.0))
-    write(tf, "KIRIM", font=DISPLAY, size=44, color=PANEL_INK, line=1.0, first=True)
-    tf2 = textbox(s, M + Inches(2.5), Inches(6.28), Inches(6.4), Inches(0.8))
-    write(tf2, "Construction escrow, released by an agent that examines the evidence. "
-               "Settled on the XRP Ledger.",
-          font=SANS, size=13.5, color=PANEL_MUTED, line=1.45, first=True)
+    tf = textbox(s, M, Inches(5.9), Inches(9.0), Inches(0.5))
+    write(tf, "Kalai  ·  Xin Rong  ·  Su Myat",
+          font=MONO, size=12, color=PANEL_FAINT, spacing=0.1, first=True)
     logos(s, Inches(6.45), dark=True)
+    icon_building(s, W - M - Inches(2.9), Inches(2.0), Inches(2.6), PANEL_2)
 
-    icon_building(s, W - M - Inches(2.9), Inches(1.8), Inches(2.6), PANEL_2)
-
-    # ============================================================ 2 — problem
+    # ============================================================ 2 — the risk
     s = slide_base(prs)
     eyebrow(s, "The problem")
-    tf = textbox(s, M, Inches(0.95), Inches(10.9), Inches(1.6))
-    write(tf, "Somebody pays before it exists.",
+    tf = textbox(s, M, Inches(0.95), Inches(10.6), Inches(1.1))
+    write(tf, "Construction project abandonment is a regional risk.",
           font=DISPLAY, size=34, color=INK_0, line=1.1, first=True)
-    write(tf, "Somebody decides when that money is released.",
-          font=DISPLAY, size=34, color=TRUSTED, line=1.1)
+    tf = textbox(s, M, Inches(1.75), Inches(9.6), Inches(0.5))
+    write(tf, "49 of 581 major ASEAN infrastructure projects were cancelled or distressed "
+              "after reaching financial closure.",
+          font=SANS, size=14.5, color=INK_3, line=1.45, first=True)
 
-    icon_lock(s, W - M - Inches(1.9), Inches(0.95), Inches(1.7), PAPER_3)
+    stats = [("8.4%", "cancelled or distressed", RESTRICTED),
+             ("581", "major projects tracked", INK_0),
+             ("49", "did not get built", RESTRICTED)]
+    colw = (CW - Inches(0.8)) / 3
+    y = Inches(2.75)
+    for i, (big, label, colour) in enumerate(stats):
+        x = M + i * (colw + Inches(0.4))
+        box(s, x, y, colw, Inches(1.5), fill=PAPER_0, line_color=PAPER_3)
+        box(s, x, y, colw, Inches(0.05), fill=colour)
+        tf = textbox(s, x + Inches(0.3), y + Inches(0.32), colw - Inches(0.6), Inches(0.7))
+        write(tf, big, font=DISPLAY, size=44, color=colour, line=1.0, first=True)
+        tf2 = textbox(s, x + Inches(0.3), y + Inches(1.05), colw - Inches(0.6), Inches(0.35))
+        write(tf2, label, font=SANS, size=12.5, color=INK_3, first=True)
 
-    stats = [
-        ("85%", "of new homes in China are\nsold before they are built"),
-        ("50–70%", "of pre-sale money sits in escrow\ncontrolled by local government"),
-        ("US$300bn", "of Evergrande liabilities — buyers\nwho paid in full got nothing"),
-        ("¥7tn", "of state financing to finish\n7.5m homes already paid for"),
-    ]
-    y = Inches(3.0)
-    colw = (CW - Inches(0.9)) / 2
-    for i, (big, label) in enumerate(stats):
-        x = M + (i % 2) * (colw + Inches(0.9))
-        yy = y + (i // 2) * Inches(1.55)
-        tf = textbox(s, x, yy, Inches(2.5), Inches(0.7))
-        write(tf, big, font=DISPLAY, size=34, color=RESTRICTED if i in (2,) else INK_0,
-              line=1.0, first=True)
-        tf2 = textbox(s, x + Inches(2.6), yy + Inches(0.05), colw - Inches(2.7), Inches(1.0))
-        for j, ln in enumerate(label.split("\n")):
-            write(tf2, ln, font=SANS, size=13, color=INK_2, line=1.35, first=(j == 0))
-        rule(s, x, yy + Inches(1.15), colw, color=PAPER_3)
+    box(s, M, Inches(4.6), CW, Inches(1.35), fill=PANEL_0)
+    tf = textbox(s, M + Inches(0.35), Inches(4.85), CW - Inches(0.7), Inches(1.0))
+    write(tf, "When progress and the use of funds cannot be verified, the client carries the risk.",
+          font=DISPLAY, size=19, color=PANEL_INK, line=1.35, first=True, space_after=6)
+    write(tf, "Kirim links every payment to verified progress, and leaves a record of how the "
+              "builder actually performed.",
+          font=SANS, size=13.5, color=PANEL_MUTED, line=1.4)
 
-    tf = textbox(s, M, Inches(5.95), CW, Inches(0.7))
-    write(tf, "The escrow already exists, at national scale. What fails is the release.",
-          font=DISPLAY, size=19, color=INK_2, italic=True, line=1.35, first=True)
+    tf = textbox(s, M, Inches(6.15), CW, Inches(0.3))
+    write(tf, "Source: OECD, Southeast Asia Investment Policy Perspectives",
+          font=MONO, size=9, color=INK_4, first=True)
     footer(s, "KIRIM", "01 / PROBLEM")
 
-    # ============================================================ 3 — before/after
+    # ============================================================ 3 — it is happening now
     s = slide_base(prs, PANEL_0)
-    eyebrow(s, "Before  /  after", color=PANEL_FAINT)
-    tf = textbox(s, M, Inches(0.9), Inches(11.0), Inches(0.9))
-    write(tf, "The same sale. One thing changes.",
-          font=DISPLAY, size=34, color=PANEL_INK, line=1.1, first=True)
-    tf = textbox(s, M, Inches(1.62), Inches(10.6), Inches(0.5))
-    write(tf, "China pre-sale (期房). Kirim sits between the bank and the developer — "
-              "it does not stop anyone selling off-plan.",
-          font=SANS, size=13, color=PANEL_MUTED, line=1.4, first=True)
+    eyebrow(s, "Not a hypothetical", color=PANEL_FAINT)
 
-    lanes = [
-        ("BEFORE  ·  PRE-SALE TODAY", QUARANTINED, [
-            ("Developer", "Sells the tower off-plan, years before it exists.", None),
-            ("Buyer", "Pays a 20–30% deposit against a drawing.", None),
-            ("Bank", "Pays the whole mortgage to the developer, day one.", None),
-            ("Bureau", "A local official approves each draw. Rules differ by city.", None),
-            ("Developer", "Cash is moved to land, other projects, group debt.", "bad"),
-            ("Buyer", "Work stops. She keeps paying for a home that does not exist.", "bad"),
-        ]),
-        ("AFTER  ·  THE SAME SALE, WITH KIRIM", SAGE, [
-            ("Developer", "Sells the tower off-plan, years before it exists.", "same"),
-            ("Buyer", "Pays a 20–30% deposit against a drawing.", "same"),
-            ("Bank", "Pays the whole mortgage day one — into escrow.", "new"),
-            ("XRPL", "A crypto-condition approves each draw. No official to lobby.", "new"),
-            ("Agent", "Examines the evidence. Releases in ~4s, or holds and says why.", "new"),
-            ("XRPL", "A stage never built expires back to her. No lawsuit.", "new"),
-        ]),
-    ]
+    box(s, M, Inches(1.5), Inches(0.05), Inches(2.6), fill=CONTESTED)
+    tf = textbox(s, M + Inches(0.45), Inches(1.5), Inches(10.2), Inches(2.2))
+    write(tf, "Uncompleted after years, Johor Bahru's ‘sick’ and "
+              "‘abandoned’ property projects leave buyers in limbo",
+          font=DISPLAY, size=33, color=PANEL_INK, line=1.18, first=True, space_after=14)
+    write(tf, "They bought property in Johor Bahru hoping to live or retire comfortably in "
+              "Malaysia. After paying hefty sums, some are still waiting for their dream homes "
+              "to be completed.",
+          font=SANS, size=15, color=PANEL_MUTED, line=1.5)
 
-    colw3 = (CW - Inches(0.5)) / 2
-    top = Inches(2.35)
-    for li, (title, colour, steps) in enumerate(lanes):
-        x = M + li * (colw3 + Inches(0.5))
-        box(s, x, top, colw3, Inches(3.72), fill=PANEL_1, line_color=PANEL_2)
-        box(s, x, top, colw3, Inches(0.05), fill=colour)
-        tf = textbox(s, x + Inches(0.28), top + Inches(0.24), colw3 - Inches(0.56), Inches(0.35))
-        write(tf, title, font=MONO, size=9.5, color=colour, spacing=0.14, bold=True, first=True)
+    tf = textbox(s, M + Inches(0.45), Inches(4.5), Inches(10.2), Inches(0.4))
+    write(tf, "Channel NewsAsia", font=MONO, size=10, color=CONTESTED, spacing=0.14, first=True)
 
-        yy = top + Inches(0.72)
-        for n, (who, text, mark) in enumerate(steps, 1):
-            if mark == "bad":
-                num_c, txt_c = QUARANTINED, RESTRICTED
-            elif mark == "new":
-                num_c, txt_c = SAGE, PANEL_INK
-            elif mark == "same":
-                num_c, txt_c = PANEL_FAINT, PANEL_FAINT
-            else:
-                num_c, txt_c = PANEL_MUTED, PANEL_MUTED
+    rule(s, M, Inches(5.3), CW, color=PANEL_2)
+    tf = textbox(s, M, Inches(5.6), Inches(10.4), Inches(0.8))
+    write(tf, "Buyers pay first and find out last. Every one of these started as a payment "
+              "somebody released against work that was never finished.",
+          font=DISPLAY, size=17, color=CONTESTED, italic=True, line=1.4, first=True)
+    footer(s, "KIRIM", "02 / EVIDENCE", color=PANEL_FAINT, line=PANEL_2)
 
-            tfn = textbox(s, x + Inches(0.28), yy - Inches(0.02), Inches(0.3), Inches(0.3))
-            write(tfn, str(n), font=MONO, size=11, color=num_c, first=True)
-            tfw = textbox(s, x + Inches(0.62), yy - Inches(0.03), Inches(1.05), Inches(0.3))
-            write(tfw, who.upper(), font=MONO, size=8, color=PANEL_FAINT, spacing=0.12, first=True)
-            tft = textbox(s, x + Inches(1.72), yy - Inches(0.05), colw3 - Inches(2.15), Inches(0.55))
-            write(tft, text, font=SANS, size=12, color=txt_c, line=1.32, first=True)
+    # ============================================================ 4 — the question
+    s = slide_base(prs, CONTESTED)
+    box(s, 0, Inches(1.9), W, Inches(3.4), fill=PANEL_0)
+    tf = textbox(s, M, Inches(2.5), CW, Inches(2.2), align=PP_ALIGN.CENTER)
+    write(tf, "How might we make construction payments in ASEAN safer",
+          font=DISPLAY, size=32, color=PANEL_INK, line=1.3, first=True, align=PP_ALIGN.CENTER)
+    write(tf, "by releasing funds only when verified progress is achieved?",
+          font=DISPLAY, size=32, color=SAGE, line=1.3, align=PP_ALIGN.CENTER)
+    icon_shield(s, (W - Inches(1.2)) / 2, Inches(5.7), Inches(1.2), PANEL_0)
 
-            if mark == "same":
-                tfm = textbox(s, x + colw3 - Inches(1.0), yy - Inches(0.02), Inches(0.85),
-                              Inches(0.3), align=PP_ALIGN.RIGHT)
-                write(tfm, "unchanged", font=MONO, size=7.5, color=PANEL_FAINT,
-                      first=True, align=PP_ALIGN.RIGHT)
-            yy += Inches(0.49)
-
-    box(s, M, Inches(6.3), CW, Inches(0.62), fill=PANEL_1, line_color=PANEL_2)
-    box(s, M, Inches(6.3), Inches(0.05), Inches(0.62), fill=SAGE)
-    tf = textbox(s, M + Inches(0.32), Inches(6.42), CW - Inches(0.64), Inches(0.45))
-    write(tf, "Two of the six steps are identical. The one that changes is whether "
-              "the money can leave — and everything else follows from that.",
-          font=DISPLAY, size=15.5, color=PANEL_INK, italic=True, line=1.3, first=True)
-
-    footer(s, "KIRIM · BEFORE / AFTER", "02 / THE CHANGE", color=PANEL_FAINT, line=PANEL_2)
-
-    # ============================================================ 4 — solution
+    # ============================================================ 5 — how it works today
     s = slide_base(prs)
-    eyebrow(s, "Our solution")
-    tf = textbox(s, M, Inches(0.95), Inches(10.0), Inches(1.0))
-    write(tf, "Release on evidence, not on somebody's judgement.",
-          font=DISPLAY, size=36, color=INK_0, line=1.1, first=True)
+    eyebrow(s, "How it works today")
+    tf = textbox(s, M, Inches(0.95), Inches(10.6), Inches(0.8))
+    write(tf, "Money moves first. Verification comes later, if at all.",
+          font=DISPLAY, size=31, color=INK_0, line=1.1, first=True)
 
     steps = [
-        (icon_lock, "MONEY LOCKED", "Escrowed on XRPL under a crypto-condition. "
-                                    "Nobody can spend it — including us."),
-        (icon_camera, "EVIDENCE SUBMITTED", "Photographs with a time and a place, delivery "
-                                           "notes, permits. Checkable, not just viewable."),
-        (icon_shield, "AGENT EXAMINES", "It buys the checks it needs and reconciles them "
-                                        "against the agreed scope."),
-        (icon_coins, "RELEASED IN ~4s", "Or held, with the reason named. Each release writes "
-                                        "a credential to the builder's account."),
+        ("Developer", "Sells the units before they are completed", "neutral"),
+        ("Buyer", "Starts paying before the building is finished", "neutral"),
+        ("Bank", "Mortgage money is paid out well before completion", "neutral"),
+        ("Escrow account", "Holds the funds, but the controls are fragmented", "neutral"),
+        ("Developer", "Has wide scope to use the cash as general funding", "bad"),
+        ("Buyer", "Carries the risk if construction fails", "bad"),
+        ("Result", "Work stalls after the buyer has already paid", "bad"),
     ]
-    cw4 = (CW - Inches(0.75)) / 4
-    y = Inches(2.35)
-    for i, (icon, title, body) in enumerate(steps):
-        x = M + i * (cw4 + Inches(0.25))
-        box(s, x, y, cw4, Inches(2.55), fill=PAPER_0, line_color=PAPER_3)
-        box(s, x, y, cw4, Inches(0.05), fill=TRUSTED if i == 3 else PAPER_3)
-        icon(s, x + Inches(0.24), y + Inches(0.3), Inches(0.85), TRUSTED if i == 3 else INK_3)
-        tf = textbox(s, x + Inches(0.24), y + Inches(1.28), cw4 - Inches(0.48), Inches(1.2))
-        write(tf, title, font=MONO, size=10, color=INK_4, spacing=0.14, first=True, space_after=8)
-        write(tf, body, font=SANS, size=12.5, color=INK_2, line=1.38)
+    fw, fh, gap = Inches(6.4), Inches(0.62), Inches(0.135)
+    fx = M + Inches(0.4)
+    y = Inches(1.85)
+    for who, what, tone in steps:
+        flow_step(s, fx, y, fw, fh, who, what, tone=tone)
+        y += fh + gap
 
-    tf = textbox(s, M, Inches(5.35), CW, Inches(0.9))
-    write(tf, "Remove the agent and you need a site visit for every payment. Remove "
-              "autonomous payment and the escrow is just an invoice again.",
-          font=DISPLAY, size=18, color=INK_2, italic=True, line=1.35, first=True)
-    footer(s, "KIRIM", "03 / SOLUTION")
+    icon_clock(s, fx + fw + Inches(0.9), Inches(2.4), Inches(1.3), PAPER_3)
+    tf = textbox(s, fx + fw + Inches(0.75), Inches(4.0), Inches(3.4), Inches(2.2))
+    write(tf, "Every safeguard here depends on somebody checking, and nobody is paid to check "
+              "often enough.",
+          font=SANS, size=13.5, color=INK_3, line=1.5, first=True, space_after=10)
+    write(tf, "By the time it is obvious, the money has gone.",
+          font=DISPLAY, size=16, color=QUARANTINED, italic=True, line=1.35)
+    footer(s, "KIRIM · CURRENT STATE", "03 / TODAY")
 
-    # ============================================================ 5 — benefits
+    # ============================================================ 6 — with Kirim
     s = slide_base(prs)
-    eyebrow(s, "What it is measurably better at")
-    tf = textbox(s, M, Inches(0.95), Inches(10.0), Inches(1.0))
+    eyebrow(s, "The new flow")
+    tf = textbox(s, M, Inches(0.95), Inches(10.6), Inches(0.8))
+    write(tf, "The same sale. The money just cannot leave until the work exists.",
+          font=DISPLAY, size=29, color=INK_0, line=1.1, first=True)
+
+    steps = [
+        ("Developer", "Sells the units before they are completed", "same", "unchanged"),
+        ("Buyer", "Pays a deposit up front", "same", "unchanged"),
+        ("Bank", "Puts the full loan into escrow, not into the developer's account", "good", None),
+        ("The escrow", "Locked on a public ledger. Nobody can move it, including us", "good", None),
+        ("The agent", "Buys independent checks and reconciles them against the agreed drawings", "good", None),
+        ("Release", "Conforming evidence pays in about four seconds. Anything else holds", "good", None),
+        ("Refund", "A stage that is never built returns the money on its own. No lawsuit", "good", None),
+    ]
+    y = Inches(1.85)
+    for who, what, tone, tag in steps:
+        flow_step(s, fx, y, fw, fh, who, what, tone=tone, tag=tag)
+        y += fh + gap
+
+    icon_lock(s, fx + fw + Inches(0.9), Inches(2.4), Inches(1.3), TRUSTED_TINT)
+    tf = textbox(s, fx + fw + Inches(0.75), Inches(4.0), Inches(3.4), Inches(2.2))
+    write(tf, "Nothing about how the market sells or how buyers pay has to change. Only the "
+              "destination of the money on day one.",
+          font=SANS, size=13.5, color=INK_3, line=1.5, first=True, space_after=10)
+    write(tf, "Two steps unchanged. Five that matter.",
+          font=DISPLAY, size=16, color=TRUSTED, italic=True, line=1.35)
+    footer(s, "KIRIM · WITH KIRIM", "04 / THE CHANGE")
+
+    # ============================================================ 7 — benefits
+    s = slide_base(prs)
+    eyebrow(s, "What changes for everyone")
+    tf = textbox(s, M, Inches(0.95), Inches(10.4), Inches(0.8))
     write(tf, "Every number here came off the ledger, not a projection.",
-          font=DISPLAY, size=34, color=INK_0, line=1.1, first=True)
+          font=DISPLAY, size=31, color=INK_0, line=1.1, first=True)
 
     rows = [
-        ("Time to release a stage draw", "weeks, city by city", "~4 seconds", TRUSTED),
-        ("Cost of holding the money", "3–5% to an escrow agent", "0.8%", TRUSTED),
-        ("Cost of checking the work", "a site visit, a day of someone's time", "US$0.48", TRUSTED),
-        ("Builder paid after evidence", "30–60 day terms", "on presentation", TRUSTED),
-        ("Nothing delivered", "dispute, or write-off", "escrow returns it", TRUSTED),
-        ("Builder's reputation", "a folder of photos", "credential on their ledger account", TRUSTED),
+        ("Time to release a stage", "weeks of chasing", "about 4 seconds"),
+        ("Cost of holding the money", "3–5% to an escrow agent", "0.8%"),
+        ("Cost of checking the work", "a site visit and a surveyor", "US$0.48"),
+        ("Builder is paid", "on 30 to 60 day terms", "on presentation"),
+        ("If a stage is never built", "dispute, or write it off", "refunded automatically"),
+        ("If a claim is rejected", "the job stops, lawyers start", "fix it and resubmit, same escrow"),
+        ("Builder's reputation", "a folder of photos and hearsay", "on their own ledger account"),
     ]
-    y = Inches(2.15)
+    y = Inches(2.05)
     rule(s, M, y - Inches(0.14), CW, color=PAPER_3)
-    for label, before, after, colour in rows:
+    for label, before, after in rows:
         tf = textbox(s, M, y, Inches(3.5), Inches(0.4))
         write(tf, label, font=SANS, size=13.5, color=INK_0, bold=True, first=True)
-        tf = textbox(s, M + Inches(3.6), y + Inches(0.02), Inches(3.7), Inches(0.4))
+        tf = textbox(s, M + Inches(3.7), y + Inches(0.02), Inches(3.6), Inches(0.4))
         write(tf, before, font=SANS, size=13, color=INK_4, first=True)
-        tf = textbox(s, M + Inches(7.6), y + Inches(0.02), Inches(3.9), Inches(0.4),
+        tf = textbox(s, M + Inches(7.5), y + Inches(0.02), Inches(4.0), Inches(0.4),
                      align=PP_ALIGN.RIGHT)
-        write(tf, after, font=SANS, size=13.5, color=colour, bold=True, first=True,
+        write(tf, after, font=SANS, size=13.5, color=TRUSTED, bold=True, first=True,
               align=PP_ALIGN.RIGHT)
-        y += Inches(0.52)
+        y += Inches(0.5)
         rule(s, M, y - Inches(0.12), CW, color=PAPER_2)
 
-    box(s, M, Inches(5.5), CW, Inches(1.05), fill=TRUSTED_TINT)
-    tf = textbox(s, M + Inches(0.3), Inches(5.72), CW - Inches(0.6), Inches(0.8))
-    write(tf, "Three of six stages in our demo end with no payment at all — held, "
-              "flagged, or returned.", font=DISPLAY, size=17, color=TRUSTED, italic=True,
-          line=1.35, first=True, space_after=4)
+    box(s, M, Inches(5.75), CW, Inches(0.95), fill=TRUSTED_TINT)
+    tf = textbox(s, M + Inches(0.3), Inches(5.95), CW - Inches(0.6), Inches(0.7))
+    write(tf, "Three of the six stages in our demo end with no payment at all.",
+          font=DISPLAY, size=17, color=TRUSTED, italic=True, line=1.3, first=True, space_after=3)
     write(tf, "A payment that correctly does not happen is what makes an autonomous "
-              "payment system worth trusting.", font=SANS, size=13, color=INK_2, line=1.35)
-    footer(s, "KIRIM", "04 / BENEFITS")
+              "payment system worth trusting.", font=SANS, size=12.5, color=INK_2, line=1.35)
+    footer(s, "KIRIM", "05 / BENEFITS")
 
-    # ============================================================ 6 — demo
+    # ============================================================ 8 — the demo
     s = slide_base(prs, PANEL_0)
     eyebrow(s, "The demo", color=PANEL_FAINT)
-    tf = textbox(s, M, Inches(0.95), Inches(10.4), Inches(1.0))
+    tf = textbox(s, M, Inches(0.95), Inches(10.4), Inches(0.9))
     write(tf, "Watch a stage pay itself. Then watch one refuse to.",
-          font=DISPLAY, size=34, color=PANEL_INK, line=1.1, first=True)
+          font=DISPLAY, size=32, color=PANEL_INK, line=1.1, first=True)
 
     beats = [
-        ("M1", "Evidence conforms", "released in 58s · fee charged · credential written", SAGE),
-        ("M2", "A photo taken 2.4km off site", "flagged — the money stays put", CONTESTED),
-        ("M3", "One photo of three", "more information needed — no mark on the builder", CONTESTED),
-        ("M5", "Above the buyer's ceiling", "she signs from her own wallet, then it releases", SAGE),
-        ("M6", "Completion never presented", "escrow times out, the money goes home", QUARANTINED),
+        ("1", "Foundations", "Evidence checks out. Nobody approves it. Paid in seconds.", SAGE),
+        ("2", "Plumbing and interiors", "Recycled photo, edited photo, over-billed by US$20,000, "
+         "72% of the agreed scope built. Refused, and the owner confirms it.", QUARANTINED),
+        ("3", "The same stage again", "Defect repaired, bill corrected, real photographs. "
+         "The same locked money is released. Nobody pays twice.", SAGE),
     ]
-    y = Inches(2.2)
-    for mid, what, outcome, colour in beats:
-        box(s, M, y, Inches(0.05), Inches(0.44), fill=colour)
-        tf = textbox(s, M + Inches(0.25), y + Inches(0.03), Inches(0.6), Inches(0.4))
-        write(tf, mid, font=MONO, size=12, color=PANEL_FAINT, first=True)
-        tf = textbox(s, M + Inches(0.95), y + Inches(0.02), Inches(4.3), Inches(0.4))
-        write(tf, what, font=SANS, size=13.5, color=PANEL_INK, bold=True, first=True)
-        tf = textbox(s, M + Inches(5.4), y + Inches(0.03), Inches(6.1), Inches(0.4))
-        write(tf, outcome, font=SANS, size=13, color=PANEL_MUTED, first=True)
-        y += Inches(0.62)
+    y = Inches(2.15)
+    for n, what, outcome, colour in beats:
+        box(s, M, y, CW, Inches(1.05), fill=PANEL_1, line_color=PANEL_2)
+        box(s, M, y, Inches(0.05), Inches(1.05), fill=colour)
+        tf = textbox(s, M + Inches(0.35), y + Inches(0.2), Inches(0.5), Inches(0.6))
+        write(tf, n, font=DISPLAY, size=26, color=colour, line=1.0, first=True)
+        tf = textbox(s, M + Inches(1.0), y + Inches(0.19), Inches(10.0), Inches(0.75))
+        write(tf, what, font=SANS, size=14.5, color=PANEL_INK, bold=True, first=True, space_after=3)
+        write(tf, outcome, font=SANS, size=12.5, color=PANEL_MUTED, line=1.35)
+        y += Inches(1.25)
 
-    rule(s, M, Inches(5.5), CW, color=PANEL_2)
-    tf = textbox(s, M, Inches(5.72), Inches(6.6), Inches(1.0))
-    write(tf, "Every payment is real on XRPL testnet. Evidence is bought over the "
-              "Machine Payments Protocol and settles in RLUSD.",
-          font=SANS, size=13, color=PANEL_MUTED, line=1.45, first=True)
-
-    tf = textbox(s, M + Inches(7.0), Inches(5.72), Inches(4.5), Inches(1.0))
-    for i, (label, h) in enumerate(hashes[:3]):
-        write(tf, h[:38] + "…", font=MONO, size=9.5, color=SAGE, line=1.5, first=(i == 0))
-    write(tf, "testnet.xrpl.org", font=MONO, size=9.5, color=PANEL_FAINT, line=1.5)
-
-    footer(s, "KIRIM · LESS BLIND TRUST. MORE VISIBLE PROOF.", "05 / DEMO",
-           color=PANEL_FAINT, line=PANEL_2)
+    rule(s, M, Inches(6.05), CW, color=PANEL_2)
+    tf = textbox(s, M, Inches(6.25), Inches(8.6), Inches(0.5))
+    write(tf, "Real transactions on the XRP Ledger testnet. Every hash is clickable.",
+          font=MONO, size=11, color=PANEL_FAINT, first=True)
+    logos(s, Inches(6.2), dark=True)
+    footer(s, "KIRIM", "06 / DEMO", color=PANEL_FAINT, line=PANEL_2)
 
     out = os.path.join(os.path.dirname(os.path.abspath(__file__)), "KIRIM-pitch.pptx")
     prs.save(out)

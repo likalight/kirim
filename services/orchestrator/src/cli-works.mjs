@@ -6,7 +6,7 @@
  * milestones.
  */
 import fs from 'node:fs';
-import { runMilestone } from './works.mjs';
+import { runMilestone, closeProject, stageStatuses } from './works.mjs';
 import { summarise } from '@kirim/works';
 
 const project = JSON.parse(fs.readFileSync('fixtures/project.json', 'utf8'));
@@ -70,6 +70,17 @@ for (const m of wanted) {
   outcomes.push({ id: m.id, name: m.name, outcome });
   console.log('  → ' + outcome.replace(/_/g, ' ') + '\n');
 }
+
+// The job closes wherever the last stage happened to be run, not only from the
+// console. A milestone product that never ends is a to-do list.
+await closeProject(project, stageStatuses(), {
+  emit: (e) => {
+    console.log(`[36m${e.stage.toUpperCase().padEnd(13)}[0m ${e.decision.replace(/_/g, ' ')}`);
+    for (const line of wrap(e.reason, W - 14)) console.log('              ' + line);
+    if (e.txHash) console.log('              [90m' + e.explorer + '[0m');
+    console.log();
+  },
+}).catch((e) => console.error('[close] ' + e.message));
 
 const after = await trackRecord();
 console.log(rule('='));

@@ -38,6 +38,12 @@ const state = {
   reasoner: null,
   running: null,
   stage: null,
+  // What the ledger is holding *right now*, including the run in flight. Without
+  // this the middle card only ever shows money stuck behind a rejection, and a
+  // successful stage looks like a bank transfer rather than an escrow that was
+  // opened, held for forty seconds, and then released.
+  lockedNow: null,
+  lockedLabel: null,
   feed: [],
 };
 
@@ -408,7 +414,9 @@ function reconcileHtml(model) {
  * the codes are for the audit trail, which is one click away.
  */
 function questionsHtml() {
-  const id = state.running || state.lastRun;
+  // Focus first: opening a stage you ran earlier should still show its verdict,
+  // not a blank space because this page load has not run anything yet.
+  const id = state.running || state.focus || state.lastRun;
   const st = id ? state.milestones[id] : null;
   const qs = st?.questions;
   const ms = state.project.milestones.find((m) => m.id === id);
@@ -481,6 +489,19 @@ function notificationsHtml() {
     `</div>`;
 }
 
+/**
+ * The agent pays for its own evidence, and when that wallet empties it cannot
+ * decide anything. Warn before a demo rather than a minute into one.
+ */
+function floatHtml() {
+  const f = state.wallets?.float;
+  if (!f?.low) return '';
+  return `<div class="lowfloat">
+    <strong>The agent is nearly out of money to buy checks with.</strong>
+    ${f.rlusd.toFixed(2)} RLUSD left, enough for about ${f.stagesLeft} more stage(s).
+    Run <code>npm run topup</code> before demoing.</div>`;
+}
+
 function closedHtml() {
   const p = state.projectState;
   if (!p?.closed) return '';
@@ -497,7 +518,8 @@ function closedHtml() {
 function viewDemo() {
   const p = state.project;
   const focused = state.focus ? p.milestones.find((m) => m.id === state.focus) : null;
-  const lockedCents = state.held.reduce((a, h) => a + (h.amountCents || 0), 0);
+  const heldCents = state.held.reduce((a, h) => a + (h.amountCents || 0), 0);
+  const lockedCents = heldCents + (state.lockedNow || 0);
 
   const head1 = focused
     ? `<div class="crumb"><button data-view="milestones">← all stages</button></div>`
@@ -510,22 +532,30 @@ function viewDemo() {
       </div>`;
 
   return head1
+    + floatHtml()
     + closedHtml()
     + reviewHtml()
+    + (focused ? '' : notificationsHtml())
     + `<h3 class="sec">${focused ? 'The money for this stage' : 'The money'}</h3>`
     + `<div class="wallets">
         ${walletCard('buyer', p.client, 'the owner — pays for the building')}
-        <div class="wc lock"><div class="lbl">Locked, going nowhere</div>
+        <div class="wc lock ${state.lockedNow ? 'live' : ''}"><div class="lbl">In escrow</div>
           <div class="bal">${(lockedCents / 100).toLocaleString('en-US', { maximumFractionDigits: 0 })}<span class="ccy">${esc(cur())}</span></div>
-          <div class="sub">${state.held.length
-            ? state.held.length + ' stage(s) held back'
-            : 'nothing held right now'}</div>
-          <div class="addr">nobody can move this — not them, not us</div></div>
+          <div class="sub">${state.lockedNow
+            ? esc(state.lockedLabel || 'locked, waiting on the evidence')
+            : state.held.length
+              ? state.held.length + ' stage(s) held back after a rejection'
+              : 'nothing locked right now'}</div>
+          <div class="addr">nobody can move this, not them, not us</div></div>
         ${walletCard('supplier', p.contractor, 'the builder — paid when a stage checks out')}
       </div>`
     + `<p class="cap">Click either name to check the balance on the public explorer.</p>`
     + (state.pending.length ? actionHtml() : '')
-    + (focused ? '' : `<h3 class="sec">Every stage</h3>` + milestoneListHtml())
+    + (focused
+      ? ''
+      : `<div class="stage2"><div><h3 class="sec">The building they agreed on</h3>`
+        + elevationHtml() + `</div><div><h3 class="sec">Every stage</h3>`
+        + milestoneListHtml() + `</div></div>`)
     + `<h3 class="sec">What the agent did${state.running ? ' — running now' : ''}</h3>`
     + pipelineHtml()
     + questionsHtml()
@@ -925,6 +955,8 @@ es.onmessage = async (ev) => {
     state.running = null;
     state.stage = null;
     clearInterval(balanceTimer);
+    state.lockedNow = null;
+    state.lockedLabel = null;
     // One last read after the ledger has validated, then leave the deltas up.
     await refreshHeld();
     await load();
@@ -934,6 +966,21 @@ es.onmessage = async (ev) => {
   if (e.type !== 'decision') return;
   state.stage = e.stage;
   state.feed.push(e);
+
+  // The escrow made visible as it happens.
+  if (e.stage === 'escrow' && (e.decision === 'funded' || e.decision === 'reused')) {
+    state.lockedNow = e.amountCents ?? null;
+    state.lockedLabel = e.decision === 'reused'
+      ? 'still locked from the first attempt' : 'locked before any work is checked';
+    render();
+    return;
+  }
+  if (e.stage === 'settlement' && ['released', 'returned'].includes(e.decision)) {
+    state.lockedNow = null;
+    state.lockedLabel = null;
+    render();
+    return;
+  }
   if (HIDE.has(e.stage)) {
     // still advances the pipeline, just not shown in this role's feed
     const flow = document.querySelector('.flow');

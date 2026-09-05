@@ -17,7 +17,13 @@ function persist(log, key) {
     const dir = path.resolve('docs/runs');
     fs.mkdirSync(dir, { recursive: true });
     const file = path.join(dir, key.replace(/[^A-Za-z0-9._-]/g, '_') + '.jsonl');
-    fs.writeFileSync(file, log.entries.map((e) => JSON.stringify(e)).join('\n') + '\n');
+    const body = log.entries.map((e) => JSON.stringify(e)).join('\n') + '\n';
+    // A second attempt continues the first one's story rather than erasing it.
+    // Overwriting is how a stage that was rejected, corrected and then paid ends
+    // up reading as though it sailed through first time.
+    const reopened = log.entries[0]?.decision === 'reopened';
+    if (reopened) fs.appendFileSync(file, body);
+    else fs.writeFileSync(file, body);
     return file;
   } catch {
     return null; // never let bookkeeping break a settlement
@@ -200,6 +206,42 @@ const PHOTOS_FILE = path.resolve('.paid-photos.json');
  * depending on whether the demo ran in one process or several — which is not a
  * rule, it is a coincidence.
  */
+/**
+ * How each stage stands, read off the persisted logs. Both the console and the
+ * CLI need this to know whether the job is finished, and neither should be
+ * asking the other process what it remembers.
+ */
+export function stageStatuses() {
+  const byStage = new Map();
+  try {
+    const dir = path.resolve('docs/runs');
+    for (const f of fs.readdirSync(dir)) {
+      if (!f.endsWith('.jsonl')) continue;
+      const lines = fs.readFileSync(path.join(dir, f), 'utf8').trim().split(/\r?\n/);
+      const entries = lines.map((l) => { try { return JSON.parse(l); } catch { return null; } }).filter(Boolean);
+      if (!entries.length) continue;
+      const id = entries[0].tradeId.split('/')[1];
+      if (id === 'CLOSE') continue;
+      if (!byStage.has(id)) byStage.set(id, []);
+      byStage.get(id).push(...entries);
+    }
+  } catch { /* nothing has run */ }
+
+  const out = {};
+  for (const [id, all] of byStage) {
+    const has = (stage, decision) => all.some((e) => e.stage === stage && e.decision === decision);
+    out[id] = {
+      status: has('settlement', 'released') ? 'released'
+        : has('settlement', 'returned') ? 'returned'
+          : has('settlement', 'awaiting_client') ? 'awaiting_client'
+            : has('examination', 'flagged') ? 'flagged'
+              : has('examination', 'more_info') ? 'more_info'
+                : has('escrow', 'funded') ? 'in_progress' : 'unknown',
+    };
+  }
+  return out;
+}
+
 export function releasedStages() {
   const out = [];
   try {
@@ -443,7 +485,13 @@ export async function runMilestone(project, ms0, {
       log.add('settlement', 'held',
         `${fmt(ms.amountCents)} stays in escrow. The agent could not obtain the evidence it needs `
         + `to decide, and it will not release money on evidence it does not have.`);
-      openEscrows.set(key, { escrow, attempt, amountCents: ms.amountCents, at: new Date().toISOString() });
+      // The builder did nothing wrong here, so this does not burn an attempt.
+      // Recording it as one would mean the next run reads their corrected
+      // evidence in answer to a claim they were never told had failed.
+      openEscrows.set(key, {
+        escrow, attempt: attempt - 1, amountCents: ms.amountCents,
+        at: new Date().toISOString(), infrastructural: true,
+      });
       saveOpen();
       persist(log, log.tradeId);
       return { log, outcome: 'checks_unavailable', escrow, reworkable: true };
