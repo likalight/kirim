@@ -260,18 +260,21 @@ export function releasedStages() {
 
 export function paidPhotos() {
   try {
-    return new Set(JSON.parse(fs.readFileSync(PHOTOS_FILE, 'utf8')));
+    const raw = JSON.parse(fs.readFileSync(PHOTOS_FILE, 'utf8'));
+    // An older build stored a bare list, before it mattered which stage paid.
+    if (Array.isArray(raw)) return Object.fromEntries(raw.map((h) => [h, '?']));
+    return raw;
   } catch {
-    return new Set();
+    return {};
   }
 }
 
-function recordPaidPhotos(hashes) {
+function recordPaidPhotos(hashes, milestoneId) {
   if (!hashes.length) return;
   const all = paidPhotos();
-  for (const h of hashes) all.add(h);
+  for (const h of hashes) all[h] = milestoneId;
   try {
-    fs.writeFileSync(PHOTOS_FILE, JSON.stringify([...all], null, 2));
+    fs.writeFileSync(PHOTOS_FILE, JSON.stringify(all, null, 2));
   } catch { /* never let bookkeeping break a settlement */ }
 }
 
@@ -507,8 +510,13 @@ export async function runMilestone(project, ms0, {
   const inspection = bought['completion'] ?? null;
 
   // --- examination ----------------------------------------------------------
-  // Whatever this process has seen, plus everything any earlier run paid for.
-  for (const h of paidPhotos()) seenPhotoHashes.add(h);
+  // Whatever this process has seen, plus everything an earlier run paid for —
+  // but only against a *different* stage. A photograph of the foundations is
+  // evidence for the foundations no matter how many times that stage is run;
+  // it is only recycled when it turns up somewhere it does not belong.
+  for (const [h, paidFor] of Object.entries(paidPhotos())) {
+    if (paidFor !== ms.id) seenPhotoHashes.add(h);
+  }
   const released = [...new Set([...priorReleased, ...releasedStages()])];
 
   const result = examineMilestone({
@@ -584,7 +592,7 @@ async function release({ project, ms, sub, escrow, amountUsd, log, authorisation
   // untouched photographs the second they corrected the one that was wrong.
   const spent = (sub.photos ?? []).map((x) => x.sha256).filter(Boolean);
   for (const h of spent) seenPhotoHashes.add(h);
-  recordPaidPhotos(spent);
+  recordPaidPhotos(spent, ms.id);
   const finished = await ledgerPost('/escrow/finish', {
     by: 'platform', owner: escrow.owner, offerSequence: escrow.offerSequence,
     condition: escrow.condition, fulfillment: escrow.fulfillment,

@@ -21,6 +21,7 @@
     "milestone": "node --env-file-if-exists=.env services/orchestrator/src/cli-works.mjs",
     "demo:reset": "node scripts/demo-reset.mjs",
     "demo:preload": "node --env-file-if-exists=.env scripts/demo-preload.mjs",
+    "demo:rebalance": "node --env-file-if-exists=.env scripts/rebalance.mjs",
     "credential:smoke": "node --env-file-if-exists=.env scripts/credential-smoke.mjs",
     "topup": "node --env-file-if-exists=.env scripts/topup.mjs",
     "authorise": "node --env-file-if-exists=.env scripts/authorise.mjs",

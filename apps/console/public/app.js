@@ -518,6 +518,8 @@ function closedHtml() {
 function viewDemo() {
   const p = state.project;
   const focused = state.focus ? p.milestones.find((m) => m.id === state.focus) : null;
+  // Is the live feed about the stage on screen? Unfocused, everything applies.
+  const live = !focused || focused.id === (state.running || state.lastRun);
   const heldCents = state.held.reduce((a, h) => a + (h.amountCents || 0), 0);
   const lockedCents = heldCents + (state.lockedNow || 0);
 
@@ -536,7 +538,7 @@ function viewDemo() {
     + closedHtml()
     + reviewHtml()
     + (focused ? '' : notificationsHtml())
-    + `<h3 class="sec">${focused ? 'The money for this stage' : 'The money'}</h3>`
+    + `<h3 class="sec">${focused ? 'The money — every stage, not just this one' : 'The money'}</h3>`
     + `<div class="wallets">
         ${walletCard('buyer', p.client, 'the owner — pays for the building')}
         <div class="wc lock ${state.lockedNow ? 'live' : ''}"><div class="lbl">In escrow</div>
@@ -549,20 +551,29 @@ function viewDemo() {
           <div class="addr">nobody can move this, not them, not us</div></div>
         ${walletCard('supplier', p.contractor, 'the builder — paid when a stage checks out')}
       </div>`
-    + `<p class="cap">Click either name to check the balance on the public explorer.</p>`
+    + `<p class="cap">These are the whole wallets, so they carry every stage paid so far.
+       The figure under each one is the change since this run started.
+       Click either name to check the balance on the public explorer.</p>`
     + (state.pending.length ? actionHtml() : '')
     + (focused
       ? ''
       : `<div class="stage2"><div><h3 class="sec">The building they agreed on</h3>`
         + elevationHtml() + `</div><div><h3 class="sec">Every stage</h3>`
         + milestoneListHtml() + `</div></div>`)
-    + `<h3 class="sec">What the agent did${state.running ? ' — running now' : ''}</h3>`
-    + pipelineHtml()
+    // The pipeline and the log describe one run. Showing them on a stage that
+    // run had nothing to do with is how the foundations page ends up narrating
+    // the fit-out's rework.
+    + (live
+      ? `<h3 class="sec">What the agent did${state.running ? ' — running now' : ''}</h3>`
+        + pipelineHtml()
+      : '')
     + questionsHtml()
-    + `<details class="rawlog"${state.running ? ' open' : ''}>
-        <summary>Every step the agent took, with the transaction hashes</summary>
-        <div class="feed" id="feed">${feedHtml()}</div>
-      </details>`;
+    + (live
+      ? `<details class="rawlog"${state.running ? ' open' : ''}>
+          <summary>Every step the agent took, with the transaction hashes</summary>
+          <div class="feed" id="feed">${feedHtml()}</div>
+        </details>`
+      : '');
 }
 
 function milestoneListHtml() {
@@ -790,7 +801,11 @@ function viewSystem() {
 
 // ---------------------------------------------------------------- action
 function actionHtml() {
-  const p = state.pending[0];
+  // Scoped to whatever stage you are looking at. A request to sign for the
+  // frame has no business appearing on the foundations page.
+  const p = state.focus
+    ? state.pending.find((x) => x.milestone === state.focus)
+    : state.pending[0];
   if (!p) return '';
   const a = p.authorisation;
   const wallets = [];
