@@ -11,7 +11,7 @@
     "apps/*"
   ],
   "scripts": {
-    "setup": "node --env-file-if-exists=.env scripts/setup-wallets.mjs",
+    "setup": "node scripts/init-env.mjs && node --env-file-if-exists=.env scripts/setup-wallets.mjs",
     "escrow:smoke": "node --env-file-if-exists=.env scripts/escrow-smoke.mjs",
     "ledger": "node --env-file-if-exists=.env services/ledger/src/index.mjs",
     "market": "node --env-file-if-exists=.env services/market/src/index.mjs",
@@ -22,7 +22,8 @@
     "credential:smoke": "node --env-file-if-exists=.env scripts/credential-smoke.mjs",
     "topup": "node --env-file-if-exists=.env scripts/topup.mjs",
     "authorise": "node --env-file-if-exists=.env scripts/authorise.mjs",
-    "credit:status": "node --env-file-if-exists=.env -e \"import(process.cwd()+\"/packages/mpp/src/credit.mjs\").then(m=>console.log(JSON.stringify(m.status(),null,2)))\""
+    "credit:status": "node --env-file-if-exists=.env -e \"import(process.cwd()+\"/packages/mpp/src/credit.mjs\").then(m=>console.log(JSON.stringify(m.status(),null,2)))\"",
+    "init": "node scripts/init-env.mjs"
   },
   "dependencies": {
     "mppx": "^0.8.19",
