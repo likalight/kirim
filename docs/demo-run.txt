@@ -7,7 +7,7 @@
   Sarah's Home Renovation  —  Sarah Lim / ABC Renovation Pte Ltd
   site: Blk 219 Bedok Central, Singapore
 ==============================================================================
-  track record before: 1 milestones on-ledger  (rhayr2jygcxFKDMN4ahdxkVHD4rwZXLvv3)
+  track record before: 2 milestones on-ledger  (rhayr2jygcxFKDMN4ahdxkVHD4rwZXLvv3)
 ==============================================================================
 
 ------------------------------------------------------------------------------
@@ -26,7 +26,7 @@ ESCROW        funded
               Pte Ltd. Released only against conforming evidence; returns to
               Sarah Lim automatically if nothing is presented before the
               cancel time.
-              https://testnet.xrpl.org/transactions/3954D4FD802CB6320D37DD8F7659554BEBC861B32517D50FE01675C6FD9F249D
+              https://testnet.xrpl.org/transactions/DB2C321D1C41C72440227725382A8C4390F2373B196E665259E47869C3A332C7
 
 ESCROW        note
               Testnet scaling: US$10000.00 settles as 2 XRP (divided by 5000)
@@ -39,24 +39,41 @@ SUBMISSION    received
               stripped to structure. Two skips removed Friday."
 
 DISCOVERY     surveyed
-              Evidence checks available: Independent site inspection US$0.30,
-              Photo forensics US$0.08, Materials delivery verification
-              US$0.10, Full commercial credit report US$4.50.
+              8 providers in the market: Sanctions & PEP screening US$0.05,
+              Bill of lading verification US$0.12, FX quote US$0.02,
+              Independent site inspection US$0.30, Independent site inspection
+              (express) US$0.55, Photo forensics US$0.08, Materials delivery
+              verification US$0.10, Full commercial credit report US$4.50.
+
+PLANNING      planned
+              3 check(s) to buy for US$0.48 of Sarah Lim's US$5.00 evidence
+              budget: photo-forensics — Establish that the 3 submitted
+              photograph(s) are original captures, so their timestamps and GPS
+              can be relied on against the 150m site boundary.
+              materials-registry — Confirm the 1 scheduled material line(s)
+              were delivered, against 1 delivery note(s) presented.
+              site-inspection — This milestone is inside its agreed date and
+              Sarah Lim leans to cost, so the slower survey costs nothing and
+              the difference stays with them.
 
 PURCHASE      bought
-              Photo forensics — US$0.08. Confirming the photographs are
-              original captures before their timestamps and GPS are relied on.
-              https://testnet.xrpl.org/transactions/EDA2C04409AA41618376126C460A0DE0B161934C6424176A0497082979ECC16B
+              Photo forensics — US$0.08 over MPP. Establish that the 3
+              submitted photograph(s) are original captures, so their
+              timestamps and GPS can be relied on against the 150m site
+              boundary.
+              https://testnet.xrpl.org/transactions/21EF14A8EBC9925E26AB013DBD7865FC30A9656D156E84B2F4B3802AA0F32D03
 
 PURCHASE      bought
-              Materials delivery verification — US$0.10. Checking the delivery
-              notes exist in the suppliers’ own records.
-              https://testnet.xrpl.org/transactions/EC4AEE5477D3096D77B8B0046A7AD4492ED93D54FAC69076A5FA0FA615F3E5EA
+              Materials delivery verification — US$0.10 over MPP. Confirm the
+              1 scheduled material line(s) were delivered, against 1 delivery
+              note(s) presented.
+              https://testnet.xrpl.org/transactions/717F00FCC0E1B8CDB7A4875FEDE6EAAC7BBF1A2CAFBD182633CE947DCCD4EE44
 
 PURCHASE      bought
-              Independent site inspection — US$0.30. An independent inspection
-              costs thirty cents here; a scheduled site visit costs a day.
-              https://testnet.xrpl.org/transactions/F94443312C498FC683044BBF76A24BF9AC186B99A129C1D0C9C3A05D3E43F7EE
+              Independent site inspection — US$0.30 over MPP. This milestone
+              is inside its agreed date and Sarah Lim leans to cost, so the
+              slower survey costs nothing and the difference stays with them.
+              https://testnet.xrpl.org/transactions/437708426FE38214C97A4B6C1C90E715DE2156AC2304FFE86B9BE40F9D2B51C4
 
 PURCHASE      declined
               Full commercial credit report quoted US$4.50. Single call
@@ -64,19 +81,34 @@ PURCHASE      declined
               without it.
 
 EXAMINATION   ready
-              Ready for approval. Evidence is consistent with the agreed scope
-              of Demolition and disposal. Release authorised. Nothing
-              inconsistent found.
+              The demolition and disposal work for Sarah's Home Renovation is
+              ready for approval based on the submitted photographs and
+              contractor's note. The submitted evidence shows that the wet
+              areas and kitchen have been stripped down to the structure,
+              consistent with the agreed schedule. Since nothing inconsistent
+              was found, you may proceed with the next phase of the project.
 
 SETTLEMENT    released
               Evidence conforms. US$10000.00 released to ABC Renovation Pte
               Ltd — paid on evidence, not on a promise and not in ninety days.
-              https://testnet.xrpl.org/transactions/C7C034D6C740452B353246A67FDA069C29EE9173C482198E266A72E750CC0288
+              https://testnet.xrpl.org/transactions/28F9F75CB532EFF8BBB95A50286CA5CA3196505E97B1C51F852B810162592EFA
+
+REVENUE       charged
+              Kirim charged US$80.00 — 0.8% of the milestone, taken at the
+              moment of release. An escrow agent charges 3–5% and takes days.
+              https://testnet.xrpl.org/transactions/AB172BC4FF2E188C4EE68C6947DB3BB5A4FB2A644A00BAE2B2E0753B502E6BA0
 
 RECORD        already recorded
               This milestone is already on ABC Renovation Pte Ltd's ledger
               record from an earlier run. A milestone credential is unique by
               construction, so it cannot be double-counted.
+
+OUTCOME       complete
+              Demolition and disposal settled in 48s. Evidence cost US$0.48
+              and Kirim charged US$80.00. The same assurance conventionally
+              means a site visit and an escrow agent at 3–5% — days, not
+              seconds, and roughly US$400.00 on this milestone. ABC Renovation
+              Pte Ltd was paid on presentation rather than on 30–60 day terms.
 
   → released
 
@@ -95,7 +127,7 @@ ESCROW        funded
               Pte Ltd. Released only against conforming evidence; returns to
               Sarah Lim automatically if nothing is presented before the
               cancel time.
-              https://testnet.xrpl.org/transactions/7A0E4EC247749F4F37C5304F8DB9FC6FE5F2EA5FF8883C79520782CDF8CECC39
+              https://testnet.xrpl.org/transactions/3E5861CC183D5319D9FC807C196392E21DAE86A04869D548398942EF8B377C0B
 
 ESCROW        note
               Testnet scaling: US$10000.00 settles as 2 XRP (divided by 5000)
@@ -108,24 +140,41 @@ SUBMISSION    received
               Pressure tested."
 
 DISCOVERY     surveyed
-              Evidence checks available: Independent site inspection US$0.30,
-              Photo forensics US$0.08, Materials delivery verification
-              US$0.10, Full commercial credit report US$4.50.
+              8 providers in the market: Sanctions & PEP screening US$0.05,
+              Bill of lading verification US$0.12, FX quote US$0.02,
+              Independent site inspection US$0.30, Independent site inspection
+              (express) US$0.55, Photo forensics US$0.08, Materials delivery
+              verification US$0.10, Full commercial credit report US$4.50.
+
+PLANNING      planned
+              3 check(s) to buy for US$0.48 of Sarah Lim's US$5.00 evidence
+              budget: photo-forensics — Establish that the 3 submitted
+              photograph(s) are original captures, so their timestamps and GPS
+              can be relied on against the 150m site boundary.
+              materials-registry — Confirm the 2 scheduled material line(s)
+              were delivered, against 2 delivery note(s) presented.
+              site-inspection — This milestone is inside its agreed date and
+              Sarah Lim leans to cost, so the slower survey costs nothing and
+              the difference stays with them.
 
 PURCHASE      bought
-              Photo forensics — US$0.08. Confirming the photographs are
-              original captures before their timestamps and GPS are relied on.
-              https://testnet.xrpl.org/transactions/1C50BE1B0EE322848B19BB11704A5F0A1B7E7087BFF33BEF45BCBA242F96A8D6
+              Photo forensics — US$0.08 over MPP. Establish that the 3
+              submitted photograph(s) are original captures, so their
+              timestamps and GPS can be relied on against the 150m site
+              boundary.
+              https://testnet.xrpl.org/transactions/D53DC6C404C655573405B5CD97E73E0C267E5DDE505FEA795D26CB9A802C4043
 
 PURCHASE      bought
-              Materials delivery verification — US$0.10. Checking the delivery
-              notes exist in the suppliers’ own records.
-              https://testnet.xrpl.org/transactions/382A46CD8291BDCDF91555B85653198A72DEFE618585403DE88583BE53F1577B
+              Materials delivery verification — US$0.10 over MPP. Confirm the
+              2 scheduled material line(s) were delivered, against 2 delivery
+              note(s) presented.
+              https://testnet.xrpl.org/transactions/E85E5B3FDE8F1E66644902963D47A47619212A253FA46C3F9305A5F41B7BD3D9
 
 PURCHASE      bought
-              Independent site inspection — US$0.30. An independent inspection
-              costs thirty cents here; a scheduled site visit costs a day.
-              https://testnet.xrpl.org/transactions/D653986E129CD93724EEFEEFE3FB67453AD89360D51C40452ADE23EEEAF721BD
+              Independent site inspection — US$0.30 over MPP. This milestone
+              is inside its agreed date and Sarah Lim leans to cost, so the
+              slower survey costs nothing and the difference stays with them.
+              https://testnet.xrpl.org/transactions/068CE5AF94AFD52EBA920C9282BFA3E61782321AF3840744E2FA74337AED77AB
 
 PURCHASE      declined
               Full commercial credit report quoted US$4.50. Single call
@@ -133,12 +182,11 @@ PURCHASE      declined
               without it.
 
 EXAMINATION   flagged
-              Flagged for review. Flagged for review: 2 inconsistencies
-              between the evidence and the agreed scope of Plumbing first fix.
-              Funds retained. PHOTO-GEO (blocking): plumb-kitchen-02.jpg was
-              taken 2.3km from the site, outside the 150m boundary.
-              DELIVERY-UNVERIFIED (blocking): Delivery note INV-77999 does not
-              appear in Hoe Seng Hardware's records.
+              The plumbing first fix cannot be verified due to a photograph
+              taken outside the site boundary and a missing delivery note. To
+              resolve this, please provide a new photograph taken within the
+              150m limit and a valid delivery note for the materials used.
+              This will help ensure compliance with the project requirements.
 
 SETTLEMENT    withheld
               US$10000.00 stays in escrow pending Sarah Lim's review. The
@@ -163,7 +211,7 @@ ESCROW        funded
               Pte Ltd. Released only against conforming evidence; returns to
               Sarah Lim automatically if nothing is presented before the
               cancel time.
-              https://testnet.xrpl.org/transactions/A4041F4B0BD6BBE67A99EAD06C823200A4A2915180D45F453474825FAFC33869
+              https://testnet.xrpl.org/transactions/7F4569A83FA61CC6FDC41C0D5063957C8FBE5FEDA530BF8259F47782EDB0745A
 
 ESCROW        note
               Testnet scaling: US$10000.00 settles as 2 XRP (divided by 5000)
@@ -176,19 +224,35 @@ SUBMISSION    received
               tomorrow."
 
 DISCOVERY     surveyed
-              Evidence checks available: Independent site inspection US$0.30,
-              Photo forensics US$0.08, Materials delivery verification
-              US$0.10, Full commercial credit report US$4.50.
+              8 providers in the market: Sanctions & PEP screening US$0.05,
+              Bill of lading verification US$0.12, FX quote US$0.02,
+              Independent site inspection US$0.30, Independent site inspection
+              (express) US$0.55, Photo forensics US$0.08, Materials delivery
+              verification US$0.10, Full commercial credit report US$4.50.
+
+PLANNING      planned
+              2 check(s) to buy for US$0.38 of Sarah Lim's US$5.00 evidence
+              budget: photo-forensics — Establish that the 1 submitted
+              photograph(s) are original captures, so their timestamps and GPS
+              can be relied on against the 150m site boundary. site-inspection
+              — This milestone is inside its agreed date and Sarah Lim leans
+              to cost, so the slower survey costs nothing and the difference
+              stays with them. Skipped: materials-delivered — No delivery
+              notes were presented, so there is nothing to verify against the
+              registry.
 
 PURCHASE      bought
-              Photo forensics — US$0.08. Confirming the photographs are
-              original captures before their timestamps and GPS are relied on.
-              https://testnet.xrpl.org/transactions/0F01C6205EF50C334DC858C4BF6D7EBC91F45132DA5CF676260F42352866A739
+              Photo forensics — US$0.08 over MPP. Establish that the 1
+              submitted photograph(s) are original captures, so their
+              timestamps and GPS can be relied on against the 150m site
+              boundary.
+              https://testnet.xrpl.org/transactions/D5FFA03100D25F9970D02C30D6CC17212363B87D302E735E74CD38FEE58AAEF4
 
 PURCHASE      bought
-              Independent site inspection — US$0.30. An independent inspection
-              costs thirty cents here; a scheduled site visit costs a day.
-              https://testnet.xrpl.org/transactions/16BB29B1B7558EC5B22B9C28CC7AAFF1DC8D648705318234093EB49D609652A7
+              Independent site inspection — US$0.30 over MPP. This milestone
+              is inside its agreed date and Sarah Lim leans to cost, so the
+              slower survey costs nothing and the difference stays with them.
+              https://testnet.xrpl.org/transactions/C8EFAA2DA606834B1E88B13BAC015429EF8F8519434AD213F48FEC1659B9E7ED
 
 PURCHASE      declined
               Full commercial credit report quoted US$4.50. Single call
@@ -196,14 +260,14 @@ PURCHASE      declined
               without it.
 
 EXAMINATION   more info
-              More information needed. More information needed: the submission
-              for Electrical first fix is incomplete. Nothing submitted
-              contradicts the scope. Funds retained pending the outstanding
-              evidence. EVIDENCE-THIN (missing): 1 photograph(s) submitted; 3
-              are required for Electrical first fix. MATERIALS-NONE (missing):
-              No delivery notes submitted for the materials scheduled in this
-              milestone. INSPECTION-NORESULT (missing): The independent
-              inspection returned no completion figure for this milestone.
+              The submission for the Electrical first fix indicates that more
+              information is needed to satisfy the milestone requirements. You
+              have provided only 1 photograph whereas 3 are required, and
+              there are no delivery notes for the materials scheduled for this
+              phase. Additionally, the independent inspection did not register
+              a completion figure for this milestone. Please provide the
+              additional photographs and the required delivery documentation
+              as soon as possible to support the completion of this stage.
 
 SETTLEMENT    held
               US$10000.00 stays in escrow. Nothing submitted contradicts the
@@ -228,7 +292,7 @@ ESCROW        funded
               Pte Ltd. Released only against conforming evidence; returns to
               Sarah Lim automatically if nothing is presented before the
               cancel time.
-              https://testnet.xrpl.org/transactions/2482B049AC3679F543D32CFD4C16B63D9F3A9B938B94A56B7EA80C5E4EBCEBF1
+              https://testnet.xrpl.org/transactions/89DFE56BEE185E8340D161D633F8E3F9EA9199E729D13D47B474017FF10F9361
 
 ESCROW        note
               Testnet scaling: US$10000.00 settles as 2 XRP (divided by 5000)
@@ -240,24 +304,47 @@ SUBMISSION    received
               note(s), no permit reference. "Finishing complete."
 
 DISCOVERY     surveyed
-              Evidence checks available: Independent site inspection US$0.30,
-              Photo forensics US$0.08, Materials delivery verification
-              US$0.10, Full commercial credit report US$4.50.
+              8 providers in the market: Sanctions & PEP screening US$0.05,
+              Bill of lading verification US$0.12, FX quote US$0.02,
+              Independent site inspection US$0.30, Independent site inspection
+              (express) US$0.55, Photo forensics US$0.08, Materials delivery
+              verification US$0.10, Full commercial credit report US$4.50.
+
+PLANNING      planned
+              3 check(s) to buy for US$0.73 of Sarah Lim's US$5.00 evidence
+              budget: photo-forensics — Establish that the 3 submitted
+              photograph(s) are original captures, so their timestamps and GPS
+              can be relied on against the 150m site boundary.
+              materials-registry — Confirm the 1 scheduled material line(s)
+              were delivered, against 1 delivery note(s) presented.
+              site-inspection-express — This milestone is 1 day(s) past its
+              agreed date, so the express survey's turnaround buys back real
+              time the contractor is already waiting through.
+
+PLANNING      corrected
+              site-inspection was suggested for completion;
+              site-inspection-express was bought because the deadline and the
+              client's own terms decide this one.
 
 PURCHASE      bought
-              Photo forensics — US$0.08. Confirming the photographs are
-              original captures before their timestamps and GPS are relied on.
-              https://testnet.xrpl.org/transactions/F8A97EDB0589C2A9B9108C20FFF8132024F47940564B355B2EDE6CD1FEC67446
+              Photo forensics — US$0.08 over MPP. Establish that the 3
+              submitted photograph(s) are original captures, so their
+              timestamps and GPS can be relied on against the 150m site
+              boundary.
+              https://testnet.xrpl.org/transactions/C48EE396A07F19676F84367C9AB6D18C9FB761EF362644015AFD80120A2B2EB0
 
 PURCHASE      bought
-              Materials delivery verification — US$0.10. Checking the delivery
-              notes exist in the suppliers’ own records.
-              https://testnet.xrpl.org/transactions/C5582695B36E7D57308A37216D51A5CC246740214D2138676F40169F881D4931
+              Materials delivery verification — US$0.10 over MPP. Confirm the
+              1 scheduled material line(s) were delivered, against 1 delivery
+              note(s) presented.
+              https://testnet.xrpl.org/transactions/E8940442F65A66FE4BFCF08706EF1EC37BC01A1BDBB90079CD48C0B028EC8ADC
 
 PURCHASE      bought
-              Independent site inspection — US$0.30. An independent inspection
-              costs thirty cents here; a scheduled site visit costs a day.
-              https://testnet.xrpl.org/transactions/C7EA460930FFD40B13DDD6EE084D4EC993B5BC82FA798CFEA7DB1FE03F0ABD4D
+              Independent site inspection (express) — US$0.55 over MPP. This
+              milestone is 1 day(s) past its agreed date, so the express
+              survey's turnaround buys back real time the contractor is
+              already waiting through.
+              https://testnet.xrpl.org/transactions/A291765E10E8C493EA6FEA60F6185DBE4910DB3A15C4E5FD011270019DAFCB91
 
 PURCHASE      declined
               Full commercial credit report quoted US$4.50. Single call
@@ -265,21 +352,13 @@ PURCHASE      declined
               without it.
 
 EXAMINATION   flagged
-              Flagged for review. Flagged for review: 4 inconsistencies
-              between the evidence and the agreed scope of Tiling and
-              finishing. Funds retained. PHOTO-REUSED (blocking):
-              tile-bath-02.jpg is byte-identical to a photograph already
-              submitted against an earlier milestone. PHOTO-TAMPERED
-              (blocking): tile-kitchen-03.jpg: EXIF software tag shows
-              re-encoding by an image editor after capture; original capture
-              data absent. INSPECT-INCOMPLETE (blocking): Independent
-              inspection assessed 72% complete against a 95% threshold for
-              release. DEFECT-CRITICAL (blocking): Critical defect: Bathroom
-              floor falls away from the drain; ponding observed across roughly
-              2 sqm. DEFECT-MINOR (advisory): Minor defect noted: Two skirting
-              joints require sealant. LATE (advisory): Submitted 2026-10-08,
-              after the agreed date of 2026-10-06. Recorded against the track
-              record; it does not block release.
+              The submission for the tiling and finishing milestone has been
+              flagged for review due to several issues. To proceed, please
+              address the critical defect of ponding in the bathroom, ensure
+              independent inspection confirms 95% completion, and provide
+              valid, unaltered photographs. Additionally, please rectify the
+              minor defect regarding the skirting joints and note the late
+              submission on record.
 
 SETTLEMENT    withheld
               US$10000.00 stays in escrow pending Sarah Lim's review. The
@@ -304,7 +383,7 @@ ESCROW        funded
               Pte Ltd. Released only against conforming evidence; returns to
               Sarah Lim automatically if nothing is presented before the
               cancel time.
-              https://testnet.xrpl.org/transactions/1E62FFB6BF361F777695ED8C2A830DA9EDD5913050B773809A2639061D214AD5
+              https://testnet.xrpl.org/transactions/B3D5A1E17DDF7B547238988FCCFEF7E09075BFF7223EF5E2DB743FA004AB853F
 
 ESCROW        note
               Testnet scaling: US$18000.00 settles as 3.6 XRP (divided by
@@ -317,24 +396,41 @@ SUBMISSION    received
               installed and certified by the PE."
 
 DISCOVERY     surveyed
-              Evidence checks available: Independent site inspection US$0.30,
-              Photo forensics US$0.08, Materials delivery verification
-              US$0.10, Full commercial credit report US$4.50.
+              8 providers in the market: Sanctions & PEP screening US$0.05,
+              Bill of lading verification US$0.12, FX quote US$0.02,
+              Independent site inspection US$0.30, Independent site inspection
+              (express) US$0.55, Photo forensics US$0.08, Materials delivery
+              verification US$0.10, Full commercial credit report US$4.50.
+
+PLANNING      planned
+              3 check(s) to buy for US$0.48 of Sarah Lim's US$5.00 evidence
+              budget: photo-forensics — Establish that the 3 submitted
+              photograph(s) are original captures, so their timestamps and GPS
+              can be relied on against the 150m site boundary.
+              materials-registry — Confirm the 1 scheduled material line(s)
+              were delivered, against 1 delivery note(s) presented.
+              site-inspection — This milestone is inside its agreed date and
+              Sarah Lim leans to cost, so the slower survey costs nothing and
+              the difference stays with them.
 
 PURCHASE      bought
-              Photo forensics — US$0.08. Confirming the photographs are
-              original captures before their timestamps and GPS are relied on.
-              https://testnet.xrpl.org/transactions/0B9E865A1EC8375AC393F160CFD61B18C608F1E5A8C17A851177E114BA840738
+              Photo forensics — US$0.08 over MPP. Establish that the 3
+              submitted photograph(s) are original captures, so their
+              timestamps and GPS can be relied on against the 150m site
+              boundary.
+              https://testnet.xrpl.org/transactions/3E9A1DF54ED9980E9E8FC13FFCA48C62C3AC472CD44C6BE90436640CBE6B6C2E
 
 PURCHASE      bought
-              Materials delivery verification — US$0.10. Checking the delivery
-              notes exist in the suppliers’ own records.
-              https://testnet.xrpl.org/transactions/C3E45BEA79FD5034AAEEE02B328475C6EE9BA369CB1CDBC2CB476460D1F10942
+              Materials delivery verification — US$0.10 over MPP. Confirm the
+              1 scheduled material line(s) were delivered, against 1 delivery
+              note(s) presented.
+              https://testnet.xrpl.org/transactions/698390B84325A4150F7E0CB39CEEBF94435187306C4A0CD2231AF0AD9BFB731F
 
 PURCHASE      bought
-              Independent site inspection — US$0.30. An independent inspection
-              costs thirty cents here; a scheduled site visit costs a day.
-              https://testnet.xrpl.org/transactions/7051A881390EF1C215ECEED7EAAA5FD0BEB7466A8A72F6874CE1C2D1C1A54B18
+              Independent site inspection — US$0.30 over MPP. This milestone
+              is inside its agreed date and Sarah Lim leans to cost, so the
+              slower survey costs nothing and the difference stays with them.
+              https://testnet.xrpl.org/transactions/850B2A69618C18B071EC1C55080820D0EC56E5EC621117A09BC77B2422C431BF
 
 PURCHASE      declined
               Full commercial credit report quoted US$4.50. Single call
@@ -342,13 +438,17 @@ PURCHASE      declined
               without it.
 
 EXAMINATION   ready
-              Ready for approval. Evidence is consistent with the agreed scope
-              of Variation order — structural wall opening. Release
-              authorised. Nothing inconsistent found.
+              The submitted variation order for the structural wall opening is
+              ready for approval. The photographs and the contractor’s note
+              confirm that the opening is formed and the lintel is installed,
+              with certification from the Professional Engineer. No
+              inconsistencies were found in the documentation provided. Please
+              proceed with the approval process.
 
 SETTLEMENT    awaiting client
               Release of 18000.00 exceeds the autonomous ceiling. The evidence
-              is in order; the client must authorise the payment.
+              is in order; the client must authorise the payment from their
+              own wallet.
 
   → awaiting client authorisation
 
@@ -367,7 +467,7 @@ ESCROW        funded
               Pte Ltd. Released only against conforming evidence; returns to
               Sarah Lim automatically if nothing is presented before the
               cancel time.
-              https://testnet.xrpl.org/transactions/92C2D9FB9CF2469BE6EE8609251A97B5D0213EF777B3EB4413D735BF84F20782
+              https://testnet.xrpl.org/transactions/5CA771A597B4BBE063F0902D7FAD53B3436467E091A6BFB99D24DF5A53D936F8
 
 ESCROW        note
               Testnet scaling: US$10000.00 settles as 2 XRP (divided by 5000)
@@ -381,7 +481,7 @@ SUBMISSION    none
 SETTLEMENT    returned
               Escrow cancelled. US$10000.00 returned to Sarah Lim. No dispute,
               no lawyer, no chasing.
-              https://testnet.xrpl.org/transactions/2CE81FFA49F7C09034274043499C32BA44AFB06ADD676CB3567077D6C1A6BE51
+              https://testnet.xrpl.org/transactions/D55A3E67A27B20E848E79A115569F361CF2D240AAD90A293F51F17480E24C2D5
 
   → timed out and returned
 
@@ -393,29 +493,30 @@ SETTLEMENT    returned
   M5  Variation order — structural wall openingawaiting client authorisation
   M6  Final completion and handover         timed out and returned
 ------------------------------------------------------------------------------
-  track record: 1 → 1 milestones on-ledger, 100% on time
-  22 XRPL transactions this run
+  track record: 2 → 2 milestones on-ledger, 100% on time
+  23 XRPL transactions this run
 ==============================================================================
 
-| M1 | escrow | 3954D4FD802CB6320D37DD8F7659554BEBC861B32517D50FE01675C6FD9F249D |
-| M1 | purchase | EDA2C04409AA41618376126C460A0DE0B161934C6424176A0497082979ECC16B |
-| M1 | purchase | EC4AEE5477D3096D77B8B0046A7AD4492ED93D54FAC69076A5FA0FA615F3E5EA |
-| M1 | purchase | F94443312C498FC683044BBF76A24BF9AC186B99A129C1D0C9C3A05D3E43F7EE |
-| M1 | settlement | C7C034D6C740452B353246A67FDA069C29EE9173C482198E266A72E750CC0288 |
-| M2 | escrow | 7A0E4EC247749F4F37C5304F8DB9FC6FE5F2EA5FF8883C79520782CDF8CECC39 |
-| M2 | purchase | 1C50BE1B0EE322848B19BB11704A5F0A1B7E7087BFF33BEF45BCBA242F96A8D6 |
-| M2 | purchase | 382A46CD8291BDCDF91555B85653198A72DEFE618585403DE88583BE53F1577B |
-| M2 | purchase | D653986E129CD93724EEFEEFE3FB67453AD89360D51C40452ADE23EEEAF721BD |
-| M3 | escrow | A4041F4B0BD6BBE67A99EAD06C823200A4A2915180D45F453474825FAFC33869 |
-| M3 | purchase | 0F01C6205EF50C334DC858C4BF6D7EBC91F45132DA5CF676260F42352866A739 |
-| M3 | purchase | 16BB29B1B7558EC5B22B9C28CC7AAFF1DC8D648705318234093EB49D609652A7 |
-| M4 | escrow | 2482B049AC3679F543D32CFD4C16B63D9F3A9B938B94A56B7EA80C5E4EBCEBF1 |
-| M4 | purchase | F8A97EDB0589C2A9B9108C20FFF8132024F47940564B355B2EDE6CD1FEC67446 |
-| M4 | purchase | C5582695B36E7D57308A37216D51A5CC246740214D2138676F40169F881D4931 |
-| M4 | purchase | C7EA460930FFD40B13DDD6EE084D4EC993B5BC82FA798CFEA7DB1FE03F0ABD4D |
-| M5 | escrow | 1E62FFB6BF361F777695ED8C2A830DA9EDD5913050B773809A2639061D214AD5 |
-| M5 | purchase | 0B9E865A1EC8375AC393F160CFD61B18C608F1E5A8C17A851177E114BA840738 |
-| M5 | purchase | C3E45BEA79FD5034AAEEE02B328475C6EE9BA369CB1CDBC2CB476460D1F10942 |
-| M5 | purchase | 7051A881390EF1C215ECEED7EAAA5FD0BEB7466A8A72F6874CE1C2D1C1A54B18 |
-| M6 | escrow | 92C2D9FB9CF2469BE6EE8609251A97B5D0213EF777B3EB4413D735BF84F20782 |
-| M6 | settlement | 2CE81FFA49F7C09034274043499C32BA44AFB06ADD676CB3567077D6C1A6BE51 |
+| M1 | escrow | DB2C321D1C41C72440227725382A8C4390F2373B196E665259E47869C3A332C7 |
+| M1 | purchase | 21EF14A8EBC9925E26AB013DBD7865FC30A9656D156E84B2F4B3802AA0F32D03 |
+| M1 | purchase | 717F00FCC0E1B8CDB7A4875FEDE6EAAC7BBF1A2CAFBD182633CE947DCCD4EE44 |
+| M1 | purchase | 437708426FE38214C97A4B6C1C90E715DE2156AC2304FFE86B9BE40F9D2B51C4 |
+| M1 | settlement | 28F9F75CB532EFF8BBB95A50286CA5CA3196505E97B1C51F852B810162592EFA |
+| M1 | revenue | AB172BC4FF2E188C4EE68C6947DB3BB5A4FB2A644A00BAE2B2E0753B502E6BA0 |
+| M2 | escrow | 3E5861CC183D5319D9FC807C196392E21DAE86A04869D548398942EF8B377C0B |
+| M2 | purchase | D53DC6C404C655573405B5CD97E73E0C267E5DDE505FEA795D26CB9A802C4043 |
+| M2 | purchase | E85E5B3FDE8F1E66644902963D47A47619212A253FA46C3F9305A5F41B7BD3D9 |
+| M2 | purchase | 068CE5AF94AFD52EBA920C9282BFA3E61782321AF3840744E2FA74337AED77AB |
+| M3 | escrow | 7F4569A83FA61CC6FDC41C0D5063957C8FBE5FEDA530BF8259F47782EDB0745A |
+| M3 | purchase | D5FFA03100D25F9970D02C30D6CC17212363B87D302E735E74CD38FEE58AAEF4 |
+| M3 | purchase | C8EFAA2DA606834B1E88B13BAC015429EF8F8519434AD213F48FEC1659B9E7ED |
+| M4 | escrow | 89DFE56BEE185E8340D161D633F8E3F9EA9199E729D13D47B474017FF10F9361 |
+| M4 | purchase | C48EE396A07F19676F84367C9AB6D18C9FB761EF362644015AFD80120A2B2EB0 |
+| M4 | purchase | E8940442F65A66FE4BFCF08706EF1EC37BC01A1BDBB90079CD48C0B028EC8ADC |
+| M4 | purchase | A291765E10E8C493EA6FEA60F6185DBE4910DB3A15C4E5FD011270019DAFCB91 |
+| M5 | escrow | B3D5A1E17DDF7B547238988FCCFEF7E09075BFF7223EF5E2DB743FA004AB853F |
+| M5 | purchase | 3E9A1DF54ED9980E9E8FC13FFCA48C62C3AC472CD44C6BE90436640CBE6B6C2E |
+| M5 | purchase | 698390B84325A4150F7E0CB39CEEBF94435187306C4A0CD2231AF0AD9BFB731F |
+| M5 | purchase | 850B2A69618C18B071EC1C55080820D0EC56E5EC621117A09BC77B2422C431BF |
+| M6 | escrow | 5CA771A597B4BBE063F0902D7FAD53B3436467E091A6BFB99D24DF5A53D936F8 |
+| M6 | settlement | D55A3E67A27B20E848E79A115569F361CF2D240AAD90A293F51F17480E24C2D5 |

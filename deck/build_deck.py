@@ -570,14 +570,16 @@ def build(hashes):
     heading(s, "Built and verified on XRPL testnet.", size=38)
 
     built = [
-        ("Escrow with crypto-conditions", "EscrowCreate / EscrowFinish / EscrowCancel, hand-encoded PREIMAGE-SHA-256", "done"),
-        ("x402, both sides", "402 challenge, payment, on-ledger verification before a byte is served", "done"),
-        ("Evidence examination", "Deterministic rules over photos, deliveries, permits, inspection", "done"),
-        ("Spend controls", "Per-call, per-milestone, per-run ceilings enforced server-side", "done"),
-        ("XLS-70 track record", "Credential issued and accepted on the contractor's account", "done"),
-        ("Live decision log", "Server-sent events, every decision with its reason and hash", "done"),
-        ("RLUSD settlement", "Issuer wired, trustlines placed — faucet funding outstanding", "partial"),
-        ("Agent credit, DEX leg", "Draw-down instead of pre-funding; FX executed on the XRPL DEX", "next"),
+        ("The agent plans", "Derives what must be established, proposes a plan, executes it", "done"),
+        ("Machine Payments Protocol", "xrpl-mpp-sdk — real 402 challenges, settled and verified on-ledger", "done"),
+        ("Escrow with crypto-conditions", "EscrowCreate / EscrowFinish / EscrowCancel, PREIMAGE-SHA-256", "done"),
+        ("XRPL AI Starter Kit", "Both skills, Docs MCP, SourceTag 20260530, simulate before signing", "done"),
+        ("Client signs above the ceiling", "An XRPL Payment from her own wallet, verified before release", "done"),
+        ("XLS-70 track record", "A credential on the contractor's own account, idempotent per milestone", "done"),
+        ("Kirim charges 0.8%", "A second leg on the ledger at the moment of release", "done"),
+        ("Outage fallback", "Providers publish availability; the plan routes around one that is down", "done"),
+        ("RLUSD settlement", "Issuer wired, trustlines placed — faucet claim outstanding", "partial"),
+        ("Agent credit, DEX leg", "Claw Credit written and gated; FX quoted but not executed", "next"),
     ]
     y = Inches(2.15)
     rule(s, M, y - Inches(0.12), CONTENT_W, color=PAPER_3)
@@ -597,14 +599,53 @@ def build(hashes):
 
     footer(s, "KIRIM", "10 / BUILT")
 
+    # ---------------------------------------------------------------- 11b signature
+    s = slide_base(prs)
+    eyebrow(s, "Above the ceiling")
+    heading(s, "“The client approved” is a signature, not a checkbox.", size=32)
+
+    tf = textbox(s, M, Inches(2.05), Inches(6.2), Inches(2.2))
+    write(tf, "Below Sarah's own ceiling the agent releases on its own. Above it, "
+              "the evidence is examined and the money waits for her — and approval "
+              "means an XRPL payment from her own wallet carrying a memo naming "
+              "the milestone.", font=SANS, size=15.5, color=INK_2, line=1.55,
+          space_after=14, first=True)
+    write(tf, "Crossmark and GemWallet are wired into the console. Any other wallet "
+              "produces the same authorisation, so the demo does not depend on an "
+              "extension being installed.",
+          font=SANS, size=15.5, color=INK_2, line=1.55)
+
+    rows2 = [("The real authorisation", "accepted", TRUSTED),
+             ("Replayed at another milestone", "refused", QUARANTINED),
+             ("Claimed from the contractor", "refused", QUARANTINED),
+             ("Addressed to another account", "refused", QUARANTINED),
+             ("A hash that does not exist", "refused", QUARANTINED)]
+    x = M + Inches(6.9)
+    y = Inches(2.0)
+    rule(s, x, y - Inches(0.12), Inches(4.7), color=PAPER_3)
+    for label, verdict, colour in rows2:
+        tf = textbox(s, x, y, Inches(3.3), Inches(0.4))
+        write(tf, label, font=SANS, size=13, color=INK_2, first=True)
+        tf = textbox(s, x + Inches(3.3), y, Inches(1.4), Inches(0.4), align=PP_ALIGN.RIGHT)
+        write(tf, verdict, font=MONO, size=11.5, color=colour, first=True, align=PP_ALIGN.RIGHT)
+        y += Inches(0.56)
+        rule(s, x, y - Inches(0.12), Inches(4.7), color=PAPER_2)
+
+    tf = textbox(s, x, y + Inches(0.16), Inches(4.7), Inches(0.8))
+    write(tf, "Measured against a real signature on testnet, not asserted.",
+          font=SANS, size=12.5, color=INK_4, line=1.45, first=True)
+
+    footer(s, "KIRIM", "11 / GOVERNANCE")
+
     # ---------------------------------------------------------------- 12 proof
     s = slide_base(prs, PANEL_0)
     eyebrow(s, "Proof", color=PANEL_FAINT)
     heading(s, "Every payment on this slide is real.", color=PANEL_INK, size=36)
 
     tf = textbox(s, M, Inches(1.95), Inches(11.6), Inches(0.5))
-    write(tf, "XRP Ledger Testnet. Supply is simulated — the contractor, the "
-              "photographs, the inspector. The ledger is not.",
+    write(tf, "XRP Ledger Testnet, from one run of all six milestones. Evidence is "
+              "bought over the Machine Payments Protocol. Supply is simulated — the "
+              "contractor, the photographs, the inspector. The ledger is not.",
           font=SANS, size=14, color=PANEL_MUTED, first=True)
 
     y = Inches(2.75)
@@ -621,7 +662,7 @@ def build(hashes):
     write(tf, "testnet.xrpl.org/transactions/<hash>", font=MONO, size=11,
           color=PANEL_FAINT, first=True)
 
-    footer(s, "KIRIM  ·  XRPL TESTNET", "11 / PROOF", color=PANEL_FAINT)
+    footer(s, "KIRIM  ·  XRPL TESTNET", "12 / PROOF", color=PANEL_FAINT)
 
     # ---------------------------------------------------------------- 13 model
     s = slide_base(prs)
@@ -657,7 +698,7 @@ def build(hashes):
         y += Inches(0.58)
         rule(s, x, y - Inches(0.12), Inches(4.7), color=PAPER_2)
 
-    footer(s, "KIRIM", "12 / BUSINESS")
+    footer(s, "KIRIM", "13 / BUSINESS")
 
     # ---------------------------------------------------------------- 14 close
     s = slide_base(prs, PANEL_0)
