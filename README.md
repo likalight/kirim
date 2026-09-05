@@ -6,7 +6,9 @@
 
 **Trust before you build.**
 
-Milestone payments for construction, released by an agent that examines the evidence, settled on the XRP Ledger.
+Construction escrow released by an agent that examines the evidence, settled on the XRP Ledger.
+
+Pre-sale money is already held. The question is who decides it may be released, and on what proof.
 
 <br>
 
@@ -35,17 +37,67 @@ Milestone payments for construction, released by an agent that examines the evid
 
 ## The problem
 
-A homeowner pays a large deposit before meaningful work exists. From that moment the contractor holds the money and the client holds the risk.
+**Someone pays for construction before it exists, and someone has to decide when
+that money is released.** That decision is the whole problem, and nowhere is it
+larger than China.
 
-The reliable contractor has the mirror problem. They finish the work, then wait — for a client who is slow, unhappy, or gone. Singapore has a Security of Payment Act precisely because this is endemic.
+More than 85% of new homes in China are sold before they are built. Buyers pay
+in full or carry a mortgage on an apartment that is a hole in the ground, and
+between **50% and 70% of those pre-sale funds sit in escrow accounts controlled
+by local government**, with the rules set city by city. The money is already
+escrowed. The question has never been *whether* to hold it — it is **who decides
+it may be released, and on what evidence.**
+
+That decision has failed in both directions inside five years:
+
+| | What happened |
+|---|---|
+| **Too tight** | In 2021 many cities curbed withdrawals from escrow. Developers ran out of cash mid-build and projects stopped. A February 2022 framework was issued explicitly to "correct over-tightening" |
+| **Too loose** | Evergrande collapsed with liabilities around **US$300 billion**, and buyers who had paid in full were left with unfinished flats — some withheld mortgage payments on homes that did not exist |
+| **The cost of fixing it** | By the end of 2025 roughly **7.5 million** previously undelivered homes had been handed over, supported by more than **7 trillion yuan (~US$1 trillion)** of whitelist financing |
+
+In August 2026 a new national standard tightened it again: pre-sale funds must
+stay in escrow until completion, and a building's main structural frame —
+foundation, floors, roof — must exist before sales can begin.
+
+**Every one of those interventions is a rule about releasing escrow against
+construction progress.** Today that release is a manual, discretionary,
+city-by-city administrative decision. It is slow when it should be fast, it was
+gamed when it should not have been, and it is made by people who cannot possibly
+inspect every project.
+
+### The same instrument, at every size
+
+This is not only a China problem, and it is not only a skyscraper problem. Any
+pre-sale or milestone construction contract has the same shape:
+
+- **Pre-sale housing** — China, Vietnam, Malaysia, Egypt, the Gulf
+- **Contractor progress claims** — endemic late payment; Singapore has a
+  Security of Payment Act precisely because of it
+- **A homeowner's renovation** — a deposit paid to a firm they cannot assess
+
+In each case money is committed before the work exists, and someone must decide
+when performance is good enough to release it. Get it wrong one way and honest
+builders starve mid-project. Get it wrong the other way and buyers lose homes
+they have already paid for.
 
 | | Today | With Kirim |
 |---|---|---|
-| Money at the start | 30–50% deposit, unsecured | Escrowed per milestone, nobody can spend it |
-| Basis for payment | A promise, then an invoice | Evidence reconciled against the agreed scope |
-| Time to payment | 30–60 days | ~4 seconds |
-| If nothing is delivered | Dispute, lawyer, or write-off | `CancelAfter` returns the funds automatically |
-| Contractor's reputation | A folder of photos and hearsay | Credentials on their own XRPL account |
+| Who releases the money | A local official, a developer's own accounts department, or nobody until it is too late | An agent that examines the evidence against the agreed scope |
+| Basis for release | Paperwork, discretion, and a site visit if you are lucky | Photographs with a verifiable time and place, delivery notes checked against the registry, an independent inspection |
+| Speed | Weeks, city by city | ~4 seconds |
+| If nothing is delivered | Dispute, protest, or write-off | The escrow returns the money automatically |
+| Builder's reputation | A folder of photos and hearsay | Credentials on their own ledger account, portable and verifiable |
+
+**The demo below is one renovation**, because a project you can hold in your
+head is easier to judge than a tower. The mechanism does not change with the
+number of zeroes — it is the same escrow, the same evidence rules, and the same
+release decision that China is currently making by hand, 113 cities at a time.
+
+**Sources:** [China gives property firms easier access to escrow funds](https://www.marketscreener.com/quote/stock/CHINA-EVERGRANDE-GROUP-6171025/news/China-gives-property-firms-easier-access-to-escrow-funds-report-37844197/) ·
+[Inside Evergrande's unfinished fairytale castle](https://www.straitstimes.com/asia/east-asia/inside-evergrandes-unfinished-fairytale-castle-and-the-long-shadow-of-chinas-property-boom-gone-bust) ·
+[Evergrande boss leads $627 billion in lost wealth for China's property tycoons](https://www.straitstimes.com/business/property/evergrande-boss-leads-627-billion-in-lost-wealth-for-chinas-property-tycoons) ·
+[China's property slump and the world's tallest empty building](https://www.taipeitimes.com/News/feat/archives/2026/07/16/2003860811)
 
 ## How it works
 
@@ -264,8 +316,16 @@ The line matters: simulated supply is normal, a simulated payment would not be.
 ## Commercial model — charged, not claimed
 
 Kirim takes **0.8% of each released milestone**, and it is a real second leg on
-the ledger rather than a line in this table. On a released US$10,000 milestone
-the decision log reads:
+the ledger rather than a line in this table.
+
+The fee scales with the instrument, not with our costs — which is the point. A
+release costs us the same handful of cents whether it frees US$10,000 of a
+renovation or a tranche of a tower's pre-sale escrow, because the evidence
+checks are priced per call rather than per site visit. That is why this can be
+0.8% where an escrow agent is 3–5%, and why it works at sizes where no human
+inspection regime is economic.
+
+On a released US$10,000 milestone the decision log reads:
 
 ```
 REVENUE  charged
