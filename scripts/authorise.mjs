@@ -41,7 +41,8 @@ if (client.address !== a.from) {
   process.exit(1);
 }
 
-const c = new Client(process.env.XRPL_ENDPOINT || 'wss://s.altnet.rippletest.net:51233');
+const c = new Client(process.env.XRPL_ENDPOINT || 'wss://s.altnet.rippletest.net:51233',
+  { connectionTimeout: 20000 });
 await c.connect();
 
 const prepared = await c.autofill({

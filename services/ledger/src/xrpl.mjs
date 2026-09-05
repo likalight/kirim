@@ -6,11 +6,29 @@ export const EXPLORER = process.env.XRPL_EXPLORER || 'https://testnet.xrpl.org';
 export const explorerTx = (h) => `${EXPLORER}/transactions/${h}`;
 
 let client;
-export async function xrpl() {
+
+/**
+ * Connect, with room for a bad network.
+ *
+ * xrpl.js defaults to a 5-second connect timeout, which is generous on a desk
+ * and short on conference wifi. A demo that dies because a websocket took six
+ * seconds to open is an avoidable way to lose.
+ */
+export async function xrpl(attempts = 3) {
   if (client?.isConnected()) return client;
-  client = new Client(ENDPOINT);
-  await client.connect();
-  return client;
+  let lastError;
+  for (let i = 1; i <= attempts; i += 1) {
+    try {
+      client = new Client(ENDPOINT, { connectionTimeout: 20000 });
+      await client.connect();
+      return client;
+    } catch (e) {
+      lastError = e;
+      console.warn(`[xrpl] connect attempt ${i}/${attempts} failed: ${e.message}`);
+      if (i < attempts) await new Promise((r) => setTimeout(r, 2000 * i));
+    }
+  }
+  throw lastError;
 }
 export async function disconnect() { if (client?.isConnected()) await client.disconnect(); }
 

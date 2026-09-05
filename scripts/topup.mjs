@@ -11,7 +11,8 @@ import fs from 'node:fs';
 const roles = process.argv.slice(2);
 const want = roles.length ? roles : ['buyer'];
 const w = JSON.parse(fs.readFileSync('wallets.json', 'utf8'));
-const c = new Client(process.env.XRPL_ENDPOINT || 'wss://s.altnet.rippletest.net:51233');
+const c = new Client(process.env.XRPL_ENDPOINT || 'wss://s.altnet.rippletest.net:51233',
+  { connectionTimeout: 20000 });
 await c.connect();
 
 for (const role of want) {

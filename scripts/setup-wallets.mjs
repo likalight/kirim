@@ -15,7 +15,7 @@ const ROLES = ['buyer', 'supplier', 'inspector', 'platform'];
 const FILE = path.join(process.cwd(), 'wallets.json');
 const ENDPOINT = process.env.XRPL_ENDPOINT || 'wss://s.altnet.rippletest.net:51233';
 
-const client = new Client(ENDPOINT);
+const client = new Client(ENDPOINT, { connectionTimeout: 20000 });
 await client.connect();
 console.log('connected to ' + ENDPOINT);
 
