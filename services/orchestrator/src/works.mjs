@@ -49,8 +49,32 @@ async function ledgerPost(path, body) {
  * Releases waiting on a client signature, keyed by project/milestone. Above the
  * ceiling the agent has done its work and stops; the money moves only once the
  * client's own wallet has authorised it on the ledger.
+ *
+ * This survives a restart. A pending release holds the escrow's fulfillment —
+ * the only thing that can unlock the principal — so losing it to a process
+ * restart would strand the client's money until CancelAfter expired, and their
+ * signature would arrive to find nothing waiting for it.
  */
+const PENDING_FILE = path.resolve('.pending-releases.json');
 export const pendingReleases = new Map();
+
+function loadPending() {
+  try {
+    const raw = JSON.parse(fs.readFileSync(PENDING_FILE, 'utf8'));
+    for (const [k, v] of Object.entries(raw)) pendingReleases.set(k, v);
+    if (pendingReleases.size) {
+      console.log(`[agent] recovered ${pendingReleases.size} release(s) awaiting a client signature`);
+    }
+  } catch { /* nothing pending, or first run */ }
+}
+
+function savePending() {
+  try {
+    fs.writeFileSync(PENDING_FILE, JSON.stringify(Object.fromEntries(pendingReleases), null, 2));
+  } catch { /* never let bookkeeping break a settlement */ }
+}
+
+loadPending();
 
 /**
  * The milestone agent.
@@ -281,6 +305,7 @@ async function release({ project, ms, sub, escrow, amountUsd, log, authorisation
 
   if (finished.refused) {
     pendingReleases.set(memo, { project, ms, sub, escrow, amountUsd, startedAt });
+    savePending();
     log.add('settlement', 'awaiting_client', finished.reason, {
       amountCents: ms.amountCents,
       authorisation: finished.authorisation
@@ -292,6 +317,7 @@ async function release({ project, ms, sub, escrow, amountUsd, log, authorisation
   }
 
   pendingReleases.delete(memo);
+  savePending();
 
   if (authorisationTxHash) {
     log.add('authorisation', 'verified',

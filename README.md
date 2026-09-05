@@ -436,6 +436,27 @@ rules have already decided.
 
 The challenge feedback hook is installed in `hook/` and registered project-scoped in `.claude/settings.json`. Findings submitted from this build include the undocumented RLUSD testnet issuer, the faucet's lack of an HTTP endpoint, and `EscrowCreate` returning `tecNO_PERMISSION` when `FinishAfter` is only seconds ahead of the next ledger close.
 
+## Beyond the prototype
+
+[docs/production.md](docs/production.md) answers the eight considerations the
+challenge asks for — security, scalability, performance, reliability,
+infrastructure, cost, integration and compliance — including where this would
+fall over and what it would cost to fix.
+
+Two of them are worth stating here.
+
+**XRPL only, verified.** Every on-chain path is XRPL Testnet. Two dependencies
+*offer* other chains and neither is used: `mppx` exports an `evm` method we
+never construct, and the Claw Credit SDK supports Base and Solana while we pin
+`{ chain: 'XRPL', asset: 'RLUSD' }`. A grep for EVM, Solana or hex addresses
+across our source returns only the comment explaining that.
+
+**A restart cannot strand the client's money.** A release waiting on a client
+signature holds the escrow's fulfillment — the only thing that can unlock the
+principal. Tested: with `M5` awaiting signature, all three services were killed
+and restarted; the release was recovered on boot, the client signed, and the
+contractor was paid.
+
 ## Ports
 
 `4000` console · `4010` ledger · `4020` market. If `npm run dev` reports `EADDRINUSE`, a previous run's children survived — kill whatever is listening on those ports first.

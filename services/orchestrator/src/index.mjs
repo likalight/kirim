@@ -33,7 +33,22 @@ let busy = false;
 
 const MIME = { '.html': 'text/html', '.css': 'text/css', '.js': 'text/javascript', '.svg': 'image/svg+xml' };
 
-const server = http.createServer(async (req, res) => {
+/**
+ * One handler, one guard. An unhandled rejection inside an async request
+ * handler takes the whole process down with it — which is how a console that
+ * merely asks the ledger a question ends up killing itself when the ledger is
+ * still connecting to XRPL.
+ */
+const server = http.createServer((req, res) => {
+  handle(req, res).catch((e) => {
+    console.error('[console] ' + req.method + ' ' + req.url + ': ' + e.message);
+    if (!res.headersSent) {
+      json(res, 503, { error: 'upstream_unavailable', detail: e.message });
+    }
+  });
+});
+
+async function handle(req, res) {
   const url = new URL(req.url, 'http://localhost:' + PORT);
 
   if (url.pathname === '/events') {
@@ -76,7 +91,10 @@ const server = http.createServer(async (req, res) => {
         },
       });
     }
-    const health = await fetch(LEDGER + '/health').then((r) => r.json());
+    const health = await fetch(LEDGER + '/health').then((r) => r.json()).catch(() => null);
+    if (!health) {
+      return json(res, 200, { pending: [], accounts: null, ledger: 'unreachable' });
+    }
     for (const o of out) o.authorisation.to = health.accounts.platform;
     return json(res, 200, { pending: out, accounts: health.accounts });
   }
@@ -111,7 +129,14 @@ const server = http.createServer(async (req, res) => {
   if (url.pathname === '/api/reasoner') return json(res, 200, reasonerProvider());
 
   if (url.pathname === '/api/record') {
-    const r = await fetch(LEDGER + '/credentials?role=supplier').then((x) => x.json());
+    const r = await fetch(LEDGER + '/credentials?role=supplier')
+      .then((x) => x.json()).catch(() => null);
+    if (!r) {
+      return json(res, 200, {
+        address: null, milestonesCompleted: 0, projectsCompleted: 0,
+        onTimeRate: null, latest: [], ledger: 'unreachable',
+      });
+    }
     return json(res, 200, { address: r.address, ...summarise(r.credentials) });
   }
 
@@ -153,7 +178,7 @@ const server = http.createServer(async (req, res) => {
   if (!file.startsWith(CONSOLE_DIR) || !fs.existsSync(file)) return json(res, 404, { error: 'not_found' });
   res.writeHead(200, { 'content-type': MIME[path.extname(file)] || 'application/octet-stream' });
   fs.createReadStream(file).pipe(res);
-});
+}
 
 function json(res, code, body) {
   res.writeHead(code, { 'content-type': 'application/json' });
