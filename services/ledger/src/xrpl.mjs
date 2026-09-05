@@ -34,12 +34,52 @@ export function memoField(text) {
   return [{ Memo: { MemoType: convertStringToHex('kirim/trade'), MemoData: convertStringToHex(text) } }];
 }
 
-const tag = () => Number(process.env.AGENT_SOURCE_TAG || 880402);
+/**
+ * SourceTag, per the XRPL Agent Wallet skill in the AI Starter Kit: every
+ * transaction that passes the signing ceremony is attributable on-chain, and
+ * the kit's default is used unless a domain sets its own. `0` is a valid value
+ * meaning "suppress tagging", not an absence — so it is respected.
+ */
+const XRPL_STARTER_KIT_SOURCE_TAG = 20260530;
+const tag = () => {
+  const v = process.env.AGENT_SOURCE_TAG;
+  if (v === undefined || v === '') return XRPL_STARTER_KIT_SOURCE_TAG;
+  return Number(v);
+};
+
+/**
+ * Simulate before signing, as the XRPL Payments skill prescribes.
+ *
+ * The ledger evaluates the transaction and reports what the result *would* be
+ * — malformed fields, a missing trust line, a reserve shortfall — without
+ * charging a fee or touching ledger state. Every failure this project spent
+ * time chasing (tecUNFUNDED on an over-large escrow, tecNO_PERMISSION on a
+ * racing FinishAfter) would have surfaced here, before a signature.
+ */
+async function simulate(c, prepared) {
+  if (process.env.KIRIM_SKIP_SIMULATE === '1') return null;
+  try {
+    const r = await c.request({ command: 'simulate', tx_json: prepared });
+    return r.result?.meta?.TransactionResult ?? null;
+  } catch {
+    // A node that does not offer `simulate` must not stop the build.
+    return null;
+  }
+}
 
 async function submit(wallet, tx) {
   const c = await xrpl();
   const prepared = await c.autofill(tx);
   if (tx.Fee) prepared.Fee = tx.Fee;
+
+  const simulated = await simulate(c, prepared);
+  if (simulated && simulated !== 'tesSUCCESS') {
+    const err = new Error(`${tx.TransactionType} would fail: ${simulated} (simulated, nothing signed)`);
+    err.result = simulated;
+    err.simulated = true;
+    throw err;
+  }
+
   const signed = wallet.sign(prepared);
   const r = await c.submitAndWait(signed.tx_blob);
   const result = r.result.meta?.TransactionResult;

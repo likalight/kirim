@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "xrpl-docs": {
+      "type": "http",
+      "url": "https://mcp.context7.com/mcp",
+      "description": "XRPL Docs MCP server from the XRPL AI Starter Kit — the full developer documentation as tool-callable context (context7.com/websites/xrpl)."
+    }
+  }
+}

@@ -15,6 +15,8 @@ Milestone payments for construction, released by an agent that examines the evid
 [![XLS-70](https://img.shields.io/badge/XLS--70-credentials-5E9B79?style=flat-square&labelColor=0F0D09)](https://github.com/XRPLF/XRPL-Standards)
 [![Escrow](https://img.shields.io/badge/escrow-crypto--conditions-2C5A4E?style=flat-square&labelColor=0F0D09)](https://xrpl.org/docs/concepts/payment-types/escrow)
 [![RLUSD](https://img.shields.io/badge/RLUSD-wired-B07A22?style=flat-square&labelColor=0F0D09)](https://tryrlusd.com)
+[![MPP](https://img.shields.io/badge/MPP-xrpl--mpp--sdk-5E9B79?style=flat-square&labelColor=0F0D09)](https://mpp.dev)
+[![Starter Kit](https://img.shields.io/badge/XRPL_AI_Starter_Kit-skills_%2B_MCP-2C5A4E?style=flat-square&labelColor=0F0D09)](https://ripple.com/insights/xrpl-ai-starter-kit/)
 <br>
 [![Node](https://img.shields.io/badge/node-%E2%89%A520-8C8467?style=flat-square&labelColor=0F0D09)](https://nodejs.org)
 [![Build step](https://img.shields.io/badge/build_step-none-8C8467?style=flat-square&labelColor=0F0D09)](#run-it)
@@ -146,6 +148,37 @@ The rules are deterministic and live in [`packages/works/src/examine.mjs`](packa
 | **Safeguards** | Providers verify payment **on-ledger** before serving a byte; the escrow condition means Kirim cannot pay for work that was never evidenced |
 
 The challenge brief names "requiring humans to approve each agent action" as an anti-pattern. A value ceiling is a safeguard, not an approval queue: small milestones settle themselves, large ones ask.
+
+## XRPL AI Starter Kit
+
+The Starter Kit is used, not cited.
+
+| Piece | How it is used here |
+|---|---|
+| **XRPL Agent Wallet skill** | `.claude/skills/xrpl-skills/xrpl-agent-wallet/` — the signing discipline this project follows: the seed never enters a transcript, one process owns signing, `submitAndWait` always, never bare `submit`. |
+| **XRPL Payments skill** | `.claude/skills/xrpl-skills/xrpl-payments/` — transaction construction, memos on every agent transaction, and the simulate-before-submit pattern. |
+| **XRPL Docs MCP server** | `.mcp.json` — Context7 (`context7.com/websites/xrpl`) exposes the full XRPL documentation as tool-callable context. |
+| **`SourceTag` 20260530** | The kit's default, applied to every transaction Kirim signs, so the whole run is attributable on-chain. Verified on a live `EscrowCreate`. |
+
+Two of those changed the code rather than the README:
+
+**Simulate before signing.** The Payments skill prescribes a dry run before
+spending a fee. Kirim now simulates every transaction and refuses to sign one
+that would fail:
+
+```
+$ curl -X POST /escrow/create -d '{"amount":"999999999.00", ...}'
+{"detail":"EscrowCreate would fail: tecUNFUNDED (simulated, nothing signed)"}
+```
+
+No fee charged, no ledger state touched. Both of the failures that cost this
+build the most time — `tecUNFUNDED` on an over-large escrow and
+`tecNO_PERMISSION` on a racing `FinishAfter` — would have surfaced here, before
+a signature.
+
+**The kit's SourceTag.** `AGENT_SOURCE_TAG` now defaults to the Starter Kit's
+`20260530` rather than a number we invented, and `0` is respected as "suppress
+tagging" rather than treated as absent.
 
 ## Client authorisation is a signature, not a flag
 
