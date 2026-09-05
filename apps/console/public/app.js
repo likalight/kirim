@@ -30,7 +30,6 @@ const state = {
   wallets: null,
   wallets0: null,
   held: [],
-  flows: null,
   reasoner: null,
   running: null,
   stage: null,
@@ -66,30 +65,19 @@ const PIPELINE = [
 
 const ICONS = {
   demo: 'M3 2 l10 6 l-10 6 z',
-  overview: 'M2 8 L8 2 L14 8 M4 7 v7 h8 v-7',
   milestones: 'M2 3 h12 M2 8 h12 M2 13 h7',
-  evidence: 'M2 4 h12 v9 H2 z M5 4 l1-2 h4 l1 2 M8 11 a2.2 2.2 0 1 0 0-4.4 a2.2 2.2 0 0 0 0 4.4',
-  payments: 'M2 5 h12 v7 H2 z M2 8 h12 M5 11 h3',
-  providers: 'M8 2 v12 M3 5 h10 M4 9 h8',
-  record: 'M8 2 L14 5 v4 c0 3-3 5-6 5 s-6-2-6-5 V5 z M5.5 8 L7.3 10 L10.7 6.2',
   system: 'M8 5.2 a2.8 2.8 0 1 0 0 5.6 a2.8 2.8 0 0 0 0-5.6 M8 1.5 v2 M8 12.5 v2 M1.5 8 h2 M12.5 8 h2',
 };
 
 const VIEWS = [
-  ['demo', 'Demo'],
-  ['overview', 'Overview'],
-  ['flows', 'Before / after'],
-  ['milestones', 'Milestones'],
-  ['evidence', 'Evidence'],
-  ['payments', 'Payments'],
-  ['providers', 'Providers'],
-  ['record', 'Track record'],
-  ['system', 'System'],
+  ['demo', 'Demo', 'watch the money move'],
+  ['milestones', 'Every stage', 'what passed, what did not'],
+  ['system', 'How it is built', 'wallets, limits, transactions'],
 ];
 
 // ---------------------------------------------------------------- data
 async function load() {
-  const [project, st, record, pending, providers, wallets, reasoner, flows, held] = await Promise.all([
+  const [project, st, record, pending, providers, wallets, reasoner, held] = await Promise.all([
     fetch('/api/project').then((r) => r.json()),
     fetch('/api/state').then((r) => r.json()).catch(() => ({ milestones: {} })),
     fetch('/api/record').then((r) => r.json()).catch(() => null),
@@ -97,13 +85,12 @@ async function load() {
     fetch('/api/providers').then((r) => r.json()).catch(() => ({ providers: [] })),
     fetch('/api/wallets').then((r) => r.json()).catch(() => null),
     fetch('/api/reasoner').then((r) => r.json()).catch(() => null),
-    fetch('/api/flows').then((r) => r.json()).catch(() => null),
     fetch('/api/held').then((r) => r.json()).catch(() => ({ held: [] })),
   ]);
   Object.assign(state, {
     project, milestones: st.milestones || {}, record,
     pending: pending.pending || [], providers: providers.providers || [],
-    wallets, reasoner, flows, held: held.held || [],
+    wallets, reasoner, held: held.held || [],
   });
   render();
 }
@@ -126,19 +113,21 @@ function totals() {
 
 // ---------------------------------------------------------------- shell
 function renderNav() {
-  $('nav-list').innerHTML = VIEWS.map(([k, label]) => `
+  $('nav-list').innerHTML = VIEWS.map(([k, label, hint]) => `
     <li><button data-view="${k}" aria-current="${state.view === k}">
       <svg class="ic" viewBox="0 0 16 16" fill="none" stroke="currentColor"
            stroke-width="1.3" stroke-linecap="square"><path d="${ICONS[k]}"/></svg>
-      ${label}</button></li>`).join('');
+      <span class="lab">${label}<span class="hint">${hint}</span></span></button></li>`).join('');
   for (const b of document.querySelectorAll('[data-view]')) {
     b.onclick = () => { state.view = b.dataset.view; render(); };
   }
   $('as-client').setAttribute('aria-pressed', state.role === 'client');
   $('as-contractor').setAttribute('aria-pressed', state.role === 'contractor');
   if (state.project) {
-    $('as-client').textContent = state.project.client + ' — ' + (state.project.clientRole || 'client').toLowerCase();
-    $('as-contractor').textContent = state.project.contractor + ' — ' + (state.project.contractorRole || 'contractor').toLowerCase();
+    $('as-client').textContent = state.project.clientRole || 'Client';
+    $('as-contractor').textContent = state.project.contractorRole || 'Contractor';
+    $('as-client').title = 'See this as ' + state.project.client;
+    $('as-contractor').title = 'See this as ' + state.project.contractor;
   }
 }
 
@@ -150,11 +139,8 @@ function head(title, sub, meta) {
 
 function render() {
   renderNav();
-  const fn = {
-    demo: viewDemo, overview: viewOverview, flows: viewFlows,
-    milestones: viewMilestones, evidence: viewEvidence,
-    payments: viewPayments, providers: viewProviders, record: viewRecord, system: viewSystem,
-  }[state.view];
+  const fn = { demo: viewDemo, milestones: viewMilestones, system: viewSystem }[state.view]
+    || viewDemo;
   $('main').innerHTML = fn();
   wire();
 }
@@ -192,20 +178,23 @@ function pipelineHtml() {
  * to change the parts that work would make the rest less believable.
  */
 /**
- * The presenter screen. One view, three acts, and the wallet balances that
- * prove the rest of the console is not a simulation.
+ * Three screens, in the order a stranger needs them.
  *
- * Everything here is already available in the seven working modules — this is
- * the same data with the crowding taken out, because three minutes is not
- * enough time to teach somebody a navigation bar.
+ *   Demo       what this is, and the money moving while you watch
+ *   Milestones every stage, and why each one passed or failed
+ *   System     the wallets, the providers, the limits, the proof
+ *
+ * There were eight. Everything the other five held is still here, folded into
+ * the screen it belonged to. Somebody seeing this for the first time should not
+ * have to learn a navigation bar before they can see what the product does.
  */
 const ACTS = [
-  { n: 1, id: 'M1', title: 'It pays',
-    line: 'Evidence conforms. Nobody approves anything. Watch the balances.' },
-  { n: 2, id: 'M4', title: 'It refuses',
-    line: 'Inspection reads 72%, a critical defect, and a photograph recycled from the foundation. Nothing moves.' },
-  { n: 3, id: 'M4', title: 'It closes the loop', rework: true,
-    line: 'The developer rectifies the defect and resubmits. Same escrow, no second payment.' },
+  { n: 1, id: 'M1', title: 'It pays on its own',
+    line: 'The foundation evidence is good. Nobody approves anything. Watch the two balances swap.' },
+  { n: 2, id: 'M4', title: 'It refuses to pay',
+    line: 'The fit-out claim is only 72% done, has a critical defect, and reuses a photo from the foundation. Her money leaves — and stops.' },
+  { n: 3, id: 'M4', title: 'It pays once the work is fixed', rework: true,
+    line: 'The builder repairs the defect and sends new evidence. The same locked money releases. She is not charged twice.' },
 ];
 
 function walletCard(role, label, sub) {
@@ -219,149 +208,100 @@ function walletCard(role, label, sub) {
   return `<div class="wc ${moved ? (d > 0 ? 'up' : 'down') : ''}">
     <div class="lbl">${esc(label)}</div>
     <div class="bal">${now != null ? now.toFixed(2) : '—'}<span class="ccy">XRP</span></div>
-    ${moved ? `<div class="delta">${d > 0 ? '+' : '−'}${Math.abs(d).toFixed(2)}</div>`
+    ${moved ? `<div class="delta">${d > 0 ? '+' : '−'}${Math.abs(d).toFixed(2)} this run</div>`
       : `<div class="sub">${esc(sub)}</div>`}
     ${w ? `<a class="addr" href="https://testnet.xrpl.org/accounts/${esc(w.address)}"
-      target="_blank" rel="noopener">${esc(w.address.slice(0, 14))}…</a>` : ''}
+      target="_blank" rel="noopener">${esc(w.address.slice(0, 16))}… &#8599;</a>` : ''}
   </div>`;
 }
 
 function viewDemo() {
   const p = state.project;
+  const t = totals();
   const lockedCents = state.held.reduce((a, h) => a + (h.amountCents || 0), 0);
   const heldIds = new Set(state.held.map((h) => h.milestone));
 
   const acts = ACTS.map((a) => {
     const st = state.milestones[a.id];
     const isHeld = heldIds.has(a.id);
-    // Act 3 only means anything once act 2 has actually held the money.
     const ready = a.rework ? isHeld : true;
-    const done = a.rework
-      ? (st?.status === 'released' && !isHeld)
+    const done = a.rework ? (st?.status === 'released' && !isHeld)
       : a.n === 2 ? isHeld : st?.status === 'released';
     return `<button class="act ${done ? 'done' : ''} ${ready ? '' : 'waiting'}"
         data-run="${a.id}" ${state.running || !ready ? 'disabled' : ''}>
       <span class="n">${a.n}</span>
       <span class="body"><span class="t">${esc(a.title)}</span>
         <span class="l">${esc(a.line)}</span></span>
-      <span class="go">${done ? 'done' : ready ? (a.rework ? 'resubmit' : 'run') : 'after 2'}</span>
+      <span class="go">${done ? 'done' : ready ? (a.rework ? 'resubmit' : 'run it') : 'do 2 first'}</span>
     </button>`;
   }).join('');
 
-  return head('Three minutes',
-    `${esc(p.client)} bought ${esc(p.name)} off-plan. ${esc(p.contractor)} is building it. `
-    + `Every figure below is a live XRPL testnet balance — click an address and check it.`,
-    state.running ? 'RUNNING' : 'IDLE')
+  return `<div class="explain">
+      <h2>${esc(p.client)} is paying for an apartment that does not exist yet.</h2>
+      <p>She bought <strong>${esc(p.name)}</strong> off-plan from ${esc(p.contractor)}.
+        Normally her bank hands the developer the entire mortgage on day one, and a local official
+        decides when each stage of construction has earned its share. That is the arrangement that
+        left millions of homes in China unfinished.</p>
+      <p class="big"><strong>Kirim locks her money on a public ledger instead — one construction
+        stage at a time — and releases each stage only when the evidence proves it was built.</strong>
+        An agent checks that evidence. No official, no site visit, no waiting.</p>
+    </div>`
+    + `<h3 class="sec">The money right now — these are live balances on the XRP Ledger</h3>`
     + `<div class="wallets">
-        ${walletCard('buyer', p.client + ' · buyer', 'her mortgage, before it is drawn')}
-        <div class="wc lock"><div class="lbl">Locked in escrow</div>
+        ${walletCard('buyer', p.client + ' · the buyer', 'her mortgage, waiting to be earned')}
+        <div class="wc lock"><div class="lbl">Locked, going nowhere</div>
           <div class="bal">${(lockedCents / 100).toLocaleString('en-US', { maximumFractionDigits: 0 })}<span class="ccy">${esc(cur())}</span></div>
           <div class="sub">${state.held.length
-            ? state.held.length + ' stage(s) held — evidence did not conform yet'
-            : 'nothing held right now'}</div>
-          <div class="addr">crypto-condition · nobody holds the key but the agent</div></div>
-        ${walletCard('supplier', p.contractor + ' · developer', 'paid only on conforming evidence')}
+            ? state.held.length + ' stage(s) held back — the evidence did not add up'
+            : 'nothing is being held back right now'}</div>
+          <div class="addr">nobody can move this — not her, not him, not us</div></div>
+        ${walletCard('supplier', p.contractor + ' · the builder', 'paid only when a stage checks out')}
       </div>`
-    + `<h3 class="sec">The demo</h3><div class="acts">${acts}</div>`
+    + `<p class="cap">Click either address and check the balance yourself. Every figure on this page is
+       a real transaction on a public ledger.</p>`
+    + `<h3 class="sec">Watch it happen — run these in order</h3><div class="acts">${acts}</div>`
+    + (state.pending.length && state.role === 'client' ? actionHtml() : '')
+    + `<h3 class="sec">What the agent is doing${state.running ? ' — running now' : ''}</h3>`
     + pipelineHtml()
-    + `<div class="split"><div>${feedHtml()}</div>
-        <div><div class="panel"><h4>What you are watching</h4>
-          <div class="row"><span>settles in</span><span>${esc(state.wallets?.payments ?? '—')}</span></div>
-          <div class="row"><span>principal escrowed in</span><span>${esc(state.wallets?.escrow ?? '—')}</span></div>
-          <div class="row"><span>review notes by</span><span>${esc(state.reasoner?.provider ?? '—')}</span></div>
-          <div class="row"><span>network</span><span>XRPL testnet</span></div>
-          <p class="pnote">The rules decide; the model only writes the note that explains them.
-            Every hash in the feed is clickable and resolves on the public explorer.</p>
-        </div></div></div>`;
-}
-
-function viewFlows() {
-  const f = state.flows;
-  if (!f) return head('Before / after', 'Flow comparison unavailable.') + `<div class="empty">Could not load fixtures/flows.json.</div>`;
-
-  const lane = (side, cls) => `<div class="lane ${cls}">
-    <div class="tag">${cls === 'now' ? 'before' : 'after'}</div>
-    <h3>${esc(side.label)}</h3>
-    <div class="sub">${esc(side.sub)}</div>
-    <ol class="steps">` + side.steps.map((st) => {
-      const k = st.bad ? 'bad' : st.changed ? 'changed' : st.same ? 'same' : '';
-      return `<li class="${k}"><span class="n">${st.n}</span>
-        <div class="who">${esc(st.who)}</div>
-        <div class="txt">${esc(st.text)}</div>
-        ${st.changed ? `<div class="why">${esc(st.changed)}</div>` : ''}
-        ${st.same ? `<div class="unchanged">unchanged</div>` : ''}</li>`;
-    }).join('') + `</ol></div>`;
-
-  const changed = f.after.steps.filter((s) => s.changed).length;
-
-  return head(f.title, f.note,
-    `${f.market} · ${changed} of ${f.after.steps.length} steps change`)
-    + `<div class="lanes">${lane(f.before, 'now')}${lane(f.after, 'kirim')}</div>`
-    + `<h3 class="sec">The same seven questions, answered both ways</h3>`
-    + `<table><tr><th style="width:26%">Question</th><th style="width:30%">Pre-sale today</th>
-        <th style="width:30%">With Kirim</th></tr>`
-    + f.comparison.map((c) => `<tr>
-        <td><strong>${esc(c.q)}</strong></td>
-        <td class="before">${esc(c.before)}</td>
-        <td class="after">${esc(c.after)}</td></tr>`
-      + (c.delta ? `<tr class="delta"><td colspan="3">${esc(c.delta)}</td></tr>` : '')).join('')
-    + `</table>`
-    + `<p class="note">Two of the seven answers are deliberately identical. Kirim does not try to end
-       off-plan sale or stop buyers paying early — those are how the market funds construction, and a
-       product that needed them to stop would never be adopted. What changes is the one row in the
-       middle: whether the money can leave.</p>`;
-}
-
-function viewOverview() {
-  const t = totals();
-  const p = state.project;
-  const isClient = state.role === 'client';
-  const needs = state.pending.length;
-
-  return head(
-    p.name,
-    isClient
-      ? `${esc(p.client)} · ${esc(p.contractor)} · ${esc(p.site.address)}`
-      : `Work for ${esc(p.client)} at ${esc(p.site.address)}`,
-    `${t.tx} ledger writes<br>${state.reasoner ? esc(state.reasoner.provider + ' / ' + state.reasoner.model) : ''}`)
-  + `<h3 class="sec">${isClient ? 'Your money' : 'Your money'}</h3>`
-  + `<dl class="tiles">
-      <div><dt>${isClient ? 'Protected in escrow' : 'Paid to you'}</dt>
-        <dd>${money(isClient ? t.committed : t.paid)}</dd>
-        <small>${isClient ? 'released only against evidence' : 'on presentation, not on terms'}</small></div>
-      <div><dt>Held back</dt><dd>${money(t.held)}</dd>
-        <small>${isClient ? 'evidence incomplete or contradicted' : 'send what is missing'}</small></div>
-      <div><dt>${isClient ? 'Cost of checking' : 'Milestones done'}</dt>
-        <dd>${isClient ? money2(t.evidence) : (state.record?.milestonesCompleted ?? 0)}</dd>
-        <small>${isClient ? 'paid to independent providers' : 'written to your ledger account'}</small></div>
-      <div><dt>${isClient ? 'Kirim fees' : 'On time'}</dt>
-        <dd>${isClient ? money2(t.fees) : (state.record?.onTimeRate == null ? '—' : state.record.onTimeRate + '%')}</dd>
-        <small>${isClient ? '0.8% of each release' : 'across every project'}</small></div>
-    </dl>`
-  + (needs && isClient ? actionHtml() : '')
-  + `<h3 class="sec">The pipeline${state.running ? ' — running ' + esc(state.running) : ''}</h3>`
-  + pipelineHtml()
-  + `<div class="split" style="margin-top:26px">
-      <div><h3 class="sec">Milestones</h3>${milestoneListHtml()}</div>
-      <div><h3 class="sec">${isClient ? 'What Kirim is doing with your money' : 'What Kirim checked'}</h3>
-        <div class="feed" id="feed">${feedHtml()}</div></div>
-    </div>`;
+    + `<div class="split"><div class="feed" id="feed">${feedHtml()}</div>
+        <div>
+          <dl class="tiles">
+            <div><dt>Released so far</dt><dd>${money(t.paid)}</dd>
+              <small>the evidence checked out</small></div>
+            <div><dt>Held back</dt><dd>${money(t.held)}</dd>
+              <small>the evidence did not</small></div>
+            <div><dt>Cost of checking</dt><dd>${money2(t.evidence)}</dd>
+              <small>paid to independent providers</small></div>
+            <div><dt>Kirim's fee</dt><dd>${money2(t.fees)}</dd>
+              <small>0.8%, and only on release</small></div>
+          </dl>
+          <div class="panel"><h4>What you are looking at</h4>
+            <div class="row"><span>network</span><span>XRP Ledger testnet</span></div>
+            <div class="row"><span>stages paid in</span><span>${esc(state.wallets?.escrow ?? '—')}</span></div>
+            <div class="row"><span>evidence paid in</span><span>${esc(state.wallets?.payments ?? '—')}</span></div>
+            <div class="row"><span>ledger writes</span><span>${t.tx}</span></div>
+            <p class="pnote">Fixed rules decide whether money moves. The language model only writes the
+              sentence explaining the decision — it never makes it.</p>
+          </div>
+        </div></div>`;
 }
 
 function milestoneListHtml() {
   const isClient = state.role === 'client';
+  const heldIds = new Set(state.held.map((h) => h.milestone));
   return state.project.milestones.map((m) => {
     const s = state.milestones[m.id] || { status: 'unknown' };
+    const canRedo = heldIds.has(m.id);
     const line = (isClient ? {
-      released: 'Evidence matched what you agreed. Paid in seconds.',
-      flagged: 'Something does not add up. Your money is still held.',
+      released: 'The evidence matched what was agreed. Paid in seconds.',
+      flagged: 'Something does not add up. Your money is still locked.',
       more_info: 'The {them} has not sent enough yet. Nothing is wrong.',
-      awaiting_client: 'Above the limit you set — Kirim will not release without you.',
-      returned: 'Nothing was delivered. Your money came back.',
+      awaiting_client: 'Above the limit you set — Kirim will not release it without you.',
+      returned: 'Nothing was ever delivered. Your money came back on its own.',
     } : {
       released: 'Paid on presentation.',
-      flagged: 'Held — the evidence contradicts the agreed scope.',
-      more_info: 'Send the missing items and it releases.',
+      flagged: 'Held — the evidence contradicts what was agreed.',
+      more_info: 'Send what is missing and it releases.',
       awaiting_client: 'Everything checked out. Waiting on the {them} to sign.',
       returned: 'Expired without a submission.',
     })[s.status] || m.scenario || '';
@@ -370,162 +310,144 @@ function milestoneListHtml() {
       <span class="bar"></span>
       <span class="body"><span class="top"><span class="id">${m.id}</span>
         <span class="nm">${esc(m.name)}</span></span>
-        <div class="sc">${esc(say)}</div></span>
+        <div class="sc">${esc(say)}</div>
+        ${canRedo ? '<div class="redo">the money is still locked — click to send corrected evidence</div>' : ''}</span>
       <span class="right"><div class="amt">${money(m.amountCents)}</div>
         <div class="pill ${s.status}">${esc((STATUS_WORDS[state.role][s.status] || s.status).replace('{them}', THEM()))}</div></span>
     </button>`;
   }).join('');
 }
 
+const RULES = [
+  ['PHOTO-GEO', 'blocking', 'Photograph taken outside the site boundary'],
+  ['PHOTO-TIME', 'blocking', 'Timestamp precedes the stage, or postdates the submission'],
+  ['PHOTO-REUSED', 'blocking', 'Byte-identical to a photograph already paid for'],
+  ['PHOTO-TAMPERED', 'blocking', 'Forensics found re-encoding after capture'],
+  ['MATERIALS-SHORT', 'blocking', 'Delivered quantity below the bill of quantities'],
+  ['DELIVERY-UNVERIFIED', 'blocking', "Delivery note absent from the supplier's own records"],
+  ['INSPECT-INCOMPLETE', 'blocking', 'Independent inspection below the release threshold'],
+  ['DEFECT-CRITICAL', 'blocking', 'Critical defect still open at inspection'],
+  ['PERMIT-MISSING', 'blocking', 'Required permit reference not provided'],
+  ['SEQ-INCOMPLETE', 'blocking', 'A stage this one depends on has not been released'],
+  ['EVIDENCE-THIN', 'missing', 'Fewer photographs than the stage requires'],
+  ['INSPECTION-NORESULT', 'missing', 'The inspection returned no completion figure'],
+  ['LATE', 'advisory', 'Submitted after the agreed date — recorded, not blocking'],
+];
+
+const sevPill = (sev) => sev === 'blocking' ? 'flagged' : sev === 'missing' ? 'more_info' : 'unknown';
+
 function viewMilestones() {
   const isClient = state.role === 'client';
-  return head('Milestones',
-    isClient
-      ? 'Each one holds its own money. Click any to run it — the agent plans, buys what it needs to check the evidence, and decides.'
-      : 'What you are being paid for, and exactly what each one needs before it releases.',
-    `${state.project.milestones.length} on this project`)
+  const found = [];
+  for (const m of state.project.milestones) {
+    for (const f of (state.milestones[m.id]?.findings || [])) found.push({ m: m.id, ...f });
+  }
+
+  return head('Every stage',
+    `The apartment is paid for in ${state.project.milestones.length} pieces. Each piece holds its own `
+    + 'money and releases on its own evidence. Click any stage to run it.',
+    `${money(state.project.totalCents)} in total`)
   + milestoneListHtml()
   + (state.pending.length && isClient ? actionHtml() : '')
+  + (found.length ? `<h3 class="sec">What the agent found, stage by stage</h3><table>
+      <tr><th>Stage</th><th>Code</th><th>Severity</th><th>What it found</th></tr>` +
+      found.map((f) => `<tr><td class="mono">${f.m}</td><td class="mono">${esc(f.code)}</td>
+        <td><span class="pill ${sevPill(f.severity)}">${esc(f.severity)}</span></td>
+        <td>${esc(f.text)}</td></tr>`).join('') + '</table>' : '')
+  + `<h3 class="sec">The thirteen checks it runs every time</h3>
+     <p class="cap">A photograph on its own proves nothing. One with a timestamp and a GPS fix can be
+     checked. Kirim never claims to have verified a building — it reconciles what was submitted
+     against what was agreed, and says where the two disagree.</p>
+     <table><tr><th>Code</th><th>Severity</th><th>Check</th></tr>` +
+    RULES.map(([c, sev, d]) => `<tr><td class="mono">${c}</td>
+      <td><span class="pill ${sevPill(sev)}">${sev}</span></td>
+      <td>${esc(d)}</td></tr>`).join('') + '</table>'
+  + `<p class="note"><strong>Blocking</strong> holds the money. <strong>Missing</strong> asks for more
+     and marks nothing against the ${esc(THEM())}. "You did not send enough" and "what you sent does
+     not add up" are different messages, and only the second should ever count against somebody.</p>`
   + `<h3 class="sec">Activity</h3><div class="feed" id="feed">${feedHtml()}</div>`;
 }
 
-function viewEvidence() {
-  const rules = [
-    ['PHOTO-GEO', 'blocking', 'Photograph taken outside the site boundary'],
-    ['PHOTO-TIME', 'blocking', 'Timestamp precedes the milestone, or postdates the submission'],
-    ['PHOTO-REUSED', 'blocking', 'Byte-identical to a photograph from an earlier milestone'],
-    ['PHOTO-TAMPERED', 'blocking', 'Forensics found re-encoding after capture'],
-    ['MATERIALS-SHORT', 'blocking', 'Delivered quantity below the bill of quantities'],
-    ['DELIVERY-UNVERIFIED', 'blocking', "Delivery note absent from the supplier's own records"],
-    ['INSPECT-INCOMPLETE', 'blocking', 'Independent inspection below the release threshold'],
-    ['DEFECT-CRITICAL', 'blocking', 'Critical defect open at inspection'],
-    ['PERMIT-MISSING', 'blocking', 'Required permit reference not provided'],
-    ['SEQ-INCOMPLETE', 'blocking', 'A milestone this one depends on has not been released'],
-    ['EVIDENCE-THIN', 'missing', 'Fewer photographs than the milestone requires'],
-    ['INSPECTION-NORESULT', 'missing', 'The inspection returned no completion figure'],
-    ['LATE', 'advisory', 'Submitted after the agreed date — recorded, not blocking'],
-  ];
-  const found = [];
-  for (const m of state.project.milestones) {
-    const s = state.milestones[m.id];
-    for (const f of (s?.findings || [])) found.push({ m: m.id, ...f });
-  }
-
-  return head('Evidence',
-    'A photograph on its own cannot be examined. One with a timestamp and a GPS fix can. Kirim does not claim to verify construction — it reconciles what was submitted against what was agreed.',
-    `${rules.length} rules`)
-  + (found.length ? `<h3 class="sec">Findings on this project</h3><table>
-      <tr><th>Milestone</th><th>Code</th><th>Severity</th><th>What it found</th></tr>` +
-      found.map((f) => `<tr><td class="mono">${f.m}</td><td class="mono">${esc(f.code)}</td>
-        <td><span class="pill ${f.severity === 'blocking' ? 'flagged' : f.severity === 'missing' ? 'more_info' : 'unknown'}">${esc(f.severity)}</span></td>
-        <td>${esc(f.text)}</td></tr>`).join('') + '</table>' : '')
-  + `<h3 class="sec">Every rule the agent applies</h3><table>
-      <tr><th>Code</th><th>Severity</th><th>Check</th></tr>` +
-    rules.map(([c, sev, d]) => `<tr><td class="mono">${c}</td>
-      <td><span class="pill ${sev === 'blocking' ? 'flagged' : sev === 'missing' ? 'more_info' : 'unknown'}">${sev}</span></td>
-      <td>${esc(d)}</td></tr>`).join('') + '</table>'
-  + `<p class="note">Any blocking finding holds the money. A missing one asks for more and marks nothing
-     against the ${esc(THEM())}. The rules decide; the model only writes the note that explains them.</p>`;
-}
-
-function viewPayments() {
+function viewSystem() {
   const w = state.wallets;
+  const pol = w?.policy;
+  const r = state.record;
   const rows = [];
   for (const m of state.project.milestones) {
     for (const h of (state.milestones[m.id]?.hashes || [])) rows.push({ m: m.id, ...h });
   }
-  return head('Payments',
-    'Every movement of money on this project, on the XRP Ledger. Evidence is bought over the Machine Payments Protocol and settles in RLUSD; the escrowed principal is in XRP.',
-    w ? `payments in ${esc(w.payments)}<br>escrow in ${esc(w.escrow)}` : '')
-  + (w?.escrowNote ? `<p class="note">${esc(w.escrowNote)}</p>` : '')
-  + `<h3 class="sec">Wallets</h3><table>
-      <tr><th>Role</th><th>Who</th><th class="mono">Address</th><th class="num">XRP</th><th class="num">RLUSD</th></tr>` +
-    (w?.wallets ?? []).map((x) => `<tr><td>${esc(x.role)}</td><td>${esc(x.who)}</td>
-      <td class="mono">${esc(x.address)}</td><td class="num">${esc(x.xrp ?? '—')}</td>
-      <td class="num">${esc(x.rlusd ?? '—')}</td></tr>`).join('') + '</table>'
-  + `<h3 class="sec">Ledger writes${rows.length ? ' — ' + rows.length : ''}</h3>` +
-    (rows.length ? `<table><tr><th>Milestone</th><th>Stage</th><th>Outcome</th><th class="mono">Transaction</th></tr>` +
-      rows.map((r) => `<tr><td class="mono">${r.m}</td><td>${esc(r.stage)}</td>
-        <td>${esc(String(r.decision || '').replace(/_/g, ' '))}</td>
-        <td class="mono"><a href="${esc(r.explorer)}" target="_blank" rel="noopener">${esc(r.txHash.slice(0, 30))}…</a></td></tr>`).join('')
-      + '</table>'
-      : `<div class="empty">No milestone has run yet in this project.</div>`);
-}
 
-function viewProviders() {
-  return head('Providers',
-    'Independent services the agent buys from, per call, over MPP. Each replies 402 with a price, verifies the payment on-ledger, and signs what it returns. No contract, no account, no subscription.',
-    `${state.providers.length} in the market`)
-  + `<table><tr><th>Provider</th><th class="num">Price</th><th class="num">Turnaround</th>
+  return head('How it is built',
+    'Everything below is checkable. The wallets are real testnet accounts, every transaction resolves '
+    + 'on the public explorer, and the limits are enforced inside the only process that holds a key.',
+    state.reasoner ? esc(state.reasoner.provider + ' / ' + state.reasoner.model) : '')
+
+  + `<h3 class="sec">The four wallets</h3><table>
+      <tr><th>Who</th><th class="mono">Address</th><th class="num">XRP</th><th class="num">RLUSD</th></tr>` +
+    (w?.wallets ?? []).map((x) => `<tr><td><strong>${esc(x.who)}</strong>
+      <div class="cap">${esc(x.role)}</div></td>
+      <td class="mono"><a href="https://testnet.xrpl.org/accounts/${esc(x.address)}"
+        target="_blank" rel="noopener">${esc(x.address)}</a></td>
+      <td class="num">${esc(x.xrp ?? '—')}</td>
+      <td class="num">${esc(x.rlusd ?? '—')}</td></tr>`).join('') + '</table>'
+  + (w?.escrowNote ? `<p class="note">${esc(w.escrowNote)}</p>` : '')
+
+  + `<h3 class="sec">What the agent may do without asking</h3><table>
+      <tr><th>Limit</th><th>Applies to</th><th class="num">Amount</th></tr>
+      <tr><td>Per call</td><td>one evidence check</td><td class="num">${pol ? money2(pol.perCallCents) : '—'}</td></tr>
+      <tr><td>Per stage</td><td>everything it buys to decide one stage</td><td class="num">${pol ? money2(pol.perTradeCents) : '—'}</td></tr>
+      <tr><td>Per run</td><td>the process as a whole</td><td class="num">${pol ? money2(pol.perRunCents) : '—'}</td></tr>
+      <tr><td><strong>Release ceiling</strong></td><td>above this the buyer signs from her own wallet</td>
+        <td class="num"><strong>${pol ? money(pol.approvalAboveCents) : '—'}</strong></td></tr>
+    </table>
+    <p class="note">The agent holds no key and can only ask. A separate process holds the keys, checks
+      every request against these limits, and refuses out loud — a refusal is a logged decision with a
+      reason, never a silent no-op. The buyer may set a stricter limit than ours; she cannot set a
+      looser one.</p>`
+
+  + `<h3 class="sec">Who the agent buys evidence from</h3><table>
+      <tr><th>Provider</th><th class="num">Price</th><th class="num">Speed</th>
       <th class="num">Reliability</th><th>Status</th></tr>` +
     state.providers.map((p) => `<tr>
-      <td><strong>${esc(p.name)}</strong><div class="sub" style="font-size:12.5px;color:var(--ink-3)">${esc(p.description)}</div></td>
+      <td><strong>${esc(p.name)}</strong><div class="cap">${esc(p.description)}</div></td>
       <td class="num">US$${esc(p.price)}</td>
       <td class="num">${p.turnaroundHours ? p.turnaroundHours + 'h' : '—'}</td>
       <td class="num">${p.reliability != null ? Math.round(p.reliability * 100) + '%' : '—'}</td>
       <td><span class="pill ${p.available === false ? 'down' : 'available'}">${p.available === false ? 'unavailable' : 'available'}</span></td>
     </tr>`).join('') + '</table>'
-  + `<p class="note">The US$4.50 credit report is deliberately above the per-call ceiling — the agent is
-     offered it on every milestone and refuses it every time. Two inspectors sell the same check at
-     different prices and turnarounds, and the deadline decides which one is bought.</p>`;
-}
+  + `<p class="note">No contracts and no accounts — each provider answers with a price, waits for the
+     payment to appear on the ledger, then serves the data. The US$4.50 credit report is deliberately
+     priced above the per-call limit: the agent is offered it on every single stage and refuses it
+     every single time. Two inspectors sell the same check at different prices, and the deadline
+     decides which one is worth buying.</p>`
 
-function viewRecord() {
-  const r = state.record;
-  const isClient = state.role === 'client';
-  return head(isClient ? 'Who you hired' : 'Your track record',
-    isClient
-      ? 'Held on the contractor’s own XRPL account as XLS-70 credentials. You can verify it without asking Kirim, and it survives us.'
-      : 'Yours, on your own account. Portable to any future client, verifiable without asking Kirim.',
-    'XLS-70 credentials')
-  + `<div class="split"><div>
-      <div class="panel"><h4>${esc(isClient ? state.project.contractor : 'On the ledger')}</h4>
-        <div class="row"><span>milestones completed</span><span>${r?.milestonesCompleted ?? 0}</span></div>
+  + `<h3 class="sec">The builder's record, on the builder's own account</h3>
+     <div class="split"><div>
+      <div class="panel"><h4>${esc(state.project.contractor)}</h4>
+        <div class="row"><span>stages completed</span><span>${r?.milestonesCompleted ?? 0}</span></div>
         <div class="row"><span>projects completed</span><span>${r?.projectsCompleted ?? 0}</span></div>
         <div class="row"><span>delivered on time</span><span>${r?.onTimeRate == null ? '—' : r.onTimeRate + '%'}</span></div>
         <div class="addr">${esc(r?.address || '')}</div></div>
-      <p class="note">A credential is keyed to the project and milestone, so it cannot be issued twice.
-        Re-running a demo cannot inflate a record.</p>
-    </div>
-    <div><h3 class="sec" style="margin-top:0">What a credential says</h3>
-      <div class="panel"><h4>on-ledger credential</h4>
-        <div class="row"><span>type</span><span>KIRIM:${esc(state.project.id)}:M1</span></div>
-        <div class="row"><span>subject</span><span>the ${esc(THEM())}</span></div>
-        <div class="row"><span>issuer</span><span>Kirim</span></div>
-        <div class="row"><span>accepted</span><span>true</span></div>
-      </div>
-      <p class="note">We do not claim a credential makes a contractor trustworthy. It makes their
-        history visible.</p>
-    </div></div>`;
-}
+      <p class="note">Written as XLS-70 credentials to the builder's <em>own</em> XRPL account, not to a
+        database we control. They keep it, they can show it to their next client, and it survives us
+        going out of business. A credential is keyed to the project and stage, so it cannot be issued
+        twice — re-running this demo cannot inflate anyone's record.</p>
+     </div><div>
+      <h3 class="sec" style="margin-top:0">Every transaction on this project${rows.length ? ' — ' + rows.length : ''}</h3>` +
+      (rows.length ? `<table><tr><th>Stage</th><th>What</th><th class="mono">Transaction</th></tr>` +
+        rows.map((x) => `<tr><td class="mono">${x.m}</td>
+          <td>${esc(x.stage)} · ${esc(String(x.decision || '').replace(/_/g, ' '))}</td>
+          <td class="mono"><a href="${esc(x.explorer)}" target="_blank" rel="noopener">${esc(x.txHash.slice(0, 18))}… &#8599;</a></td></tr>`).join('')
+        + '</table>'
+        : '<div class="empty">Nothing has run yet. Start on the Demo screen.</div>')
+     + '</div></div>'
 
-function viewSystem() {
-  const w = state.wallets;
-  const p = w?.policy;
-  return head('System',
-    'What is running, what it will do on its own, and where it stops.',
-    state.reasoner ? esc(state.reasoner.provider + ' / ' + state.reasoner.model) : '')
-  + `<h3 class="sec">Autonomy and ceilings</h3><table>
-      <tr><th>Control</th><th>Applies to</th><th class="num">Limit</th></tr>
-      <tr><td>Per call</td><td>one evidence check over MPP</td><td class="num">${p ? money2(p.perCallCents) : '—'}</td></tr>
-      <tr><td>Per milestone</td><td>everything the agent buys to decide</td><td class="num">${p ? money2(p.perTradeCents) : '—'}</td></tr>
-      <tr><td>Per run</td><td>the process as a whole</td><td class="num">${p ? money2(p.perRunCents) : '—'}</td></tr>
-      <tr><td><strong>Release ceiling</strong></td><td>above this the client signs, from their own wallet</td>
-        <td class="num"><strong>${p ? money(p.approvalAboveCents) : '—'}</strong></td></tr>
-    </table>
-    <p class="note">Ceilings are enforced inside the only process that holds a key. The agent may ask;
-      it cannot make that process send. A refusal is a logged decision with a reason.</p>`
-  + `<h3 class="sec">Settlement</h3><table>
-      <tr><th>Flow</th><th>Asset</th><th>Why</th></tr>
-      <tr><td>Evidence checks and fees</td><td>${esc(w?.payments ?? '—')}</td><td>dollar prices settled in a dollar stablecoin</td></tr>
-      <tr><td>Escrowed principal</td><td>${esc(w?.escrow ?? '—')}</td><td>${esc(w?.escrowNote ? 'the RLUSD issuer does not permit trustline locking, so TokenEscrow refuses it' : 'the token permits locking')}</td></tr>
-    </table>`
   + `<h3 class="sec">The stack</h3><table>
       <tr><th>Layer</th><th>What we use</th></tr>
       <tr><td>Ledger</td><td>XRP Ledger testnet — Escrow with crypto-conditions, Payment, Credentials (XLS-70), TrustSet</td></tr>
-      <tr><td>Agentic payments</td><td>Machine Payments Protocol via <span class="mono">xrpl-mpp-sdk</span></td></tr>
+      <tr><td>Agentic payments</td><td>Machine Payments Protocol via <span class="mono">xrpl-mpp-sdk</span>, an x402-style 402 challenge</td></tr>
       <tr><td>Starter Kit</td><td>agent-wallet and payments skills, XRPL Docs MCP, SourceTag 20260530, simulate before signing</td></tr>
-      <tr><td>Model</td><td>${state.reasoner ? esc(state.reasoner.provider + ' / ' + state.reasoner.model) : 'composed text'} — writes the advice, never decides whether money moves</td></tr>
+      <tr><td>Model</td><td>${state.reasoner ? esc(state.reasoner.provider + ' / ' + state.reasoner.model) : 'composed text'} — writes the explanation, never the decision</td></tr>
       <tr><td>Agent credit</td><td>Claw Credit — written and gated, blocked on an invite code</td></tr>
     </table>`;
 }
@@ -550,9 +472,9 @@ function actionHtml() {
 }
 
 function feedHtml() {
-  if (!state.feed.length) return '<div class="empty">Run a milestone and the agent’s decisions appear here, live.</div>';
+  if (!state.feed.length) return '<div class="empty">Press one of the buttons above. Every decision the agent makes appears here as it happens.</div>';
   return state.feed.map((e) => {
-    const cost = e.costCents ? `<span class="cost">S$${(e.costCents / 100).toFixed(2)}</span>` : '';
+    const cost = e.costCents ? `<span class="cost">US$${(e.costCents / 100).toFixed(2)}</span>` : '';
     const link = e.explorer
       ? `<a href="${esc(e.explorer)}" target="_blank" rel="noopener">${esc(e.txHash.slice(0, 26))}…</a>` : '';
     return `<div class="row ${e.stage} ${e.decision}"><div class="stage">${esc(e.stage)}</div>
@@ -631,7 +553,7 @@ async function refreshWallets() {
   const w = await fetch('/api/wallets').then((r) => r.json()).catch(() => null);
   if (!w) return;
   state.wallets = w;
-  if (state.view === 'demo' || state.view === 'payments') render();
+  if (state.view === 'demo' || state.view === 'system') render();
 }
 
 async function refreshHeld() {

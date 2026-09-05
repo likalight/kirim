@@ -19,35 +19,50 @@ body{margin:0;background:var(--paper-1);color:var(--ink-0);
 a{color:var(--trusted)}
 button{font:inherit}
 
-/* ---------- shell ---------- */
-.app{display:grid;grid-template-columns:var(--nav) 1fr;min-height:100vh}
-@media (max-width:900px){.app{grid-template-columns:1fr}.nav{position:static!important;height:auto!important}}
-
-.nav{background:var(--panel-0);color:var(--panel-ink);position:sticky;top:0;height:100vh;
-  display:flex;flex-direction:column;padding:20px 0}
-.nav .brand{padding:0 20px 18px;border-bottom:1px solid var(--panel-2)}
-.nav .brand h1{font-family:var(--font-display);font-size:24px;margin:0;font-weight:400}
-.nav .brand .sub{font-family:var(--font-mono);font-size:9.5px;letter-spacing:.16em;
-  color:var(--panel-faint);margin-top:3px}
-.nav ul{list-style:none;margin:14px 0 0;padding:0;flex:1}
-.nav li button{display:flex;align-items:center;gap:11px;width:100%;background:none;border:0;
-  color:var(--panel-muted);padding:9px 20px;cursor:pointer;text-align:left;font-size:14px}
-.nav li button:hover{color:var(--panel-ink);background:var(--panel-1)}
-.nav li button[aria-current="true"]{color:var(--panel-ink);background:var(--panel-1);
-  box-shadow:inset 3px 0 0 var(--sage)}
-.nav li button .ic{width:15px;height:15px;flex:0 0 15px;opacity:.85}
-.nav .who{padding:14px 20px 0;border-top:1px solid var(--panel-2);margin-top:10px}
-.nav .who .lbl{font-family:var(--font-mono);font-size:9px;letter-spacing:.16em;
-  color:var(--panel-faint);margin-bottom:7px}
-.nav .who button{display:block;width:100%;text-align:left;background:none;border:1px solid var(--panel-2);
-  color:var(--panel-muted);padding:7px 10px;margin-bottom:6px;cursor:pointer;font-size:13px}
-.nav .who button[aria-pressed="true"]{background:var(--panel-1);color:var(--panel-ink);border-color:var(--sage)}
-.nav .foot{padding:12px 20px 0;font-family:var(--font-mono);font-size:9.5px;color:var(--panel-faint)}
-.nav .foot .dot{display:inline-block;width:6px;height:6px;background:var(--panel-faint);margin-right:6px}
-.nav .foot .dot.on{background:var(--sage)}
+/* ---------- shell ----------
+   A top bar rather than a sidebar. Three destinations do not need a column of
+   their own, and the content is easier to read across the full width. */
+.top{display:flex;align-items:stretch;gap:0;background:var(--panel-0);color:var(--panel-ink);
+  position:sticky;top:0;z-index:20;border-bottom:1px solid var(--panel-2)}
+.top .brand{padding:13px 24px 12px;border-right:1px solid var(--panel-2);flex:0 0 auto}
+.top .brand h1{font-family:var(--font-display);font-size:22px;margin:0;font-weight:400;line-height:1.1}
+.top .brand .sub{font-family:var(--font-mono);font-size:8.5px;letter-spacing:.16em;
+  color:var(--panel-faint);margin-top:2px}
+.top nav{flex:1 1 auto;min-width:0}
+.top ul{list-style:none;margin:0;padding:0;display:flex;height:100%}
+.top li button{display:flex;align-items:center;gap:10px;height:100%;background:none;border:0;
+  color:var(--panel-muted);padding:0 20px;cursor:pointer;text-align:left;font-size:14px;
+  border-right:1px solid var(--panel-2)}
+.top li button:hover{color:var(--panel-ink);background:var(--panel-1)}
+.top li button[aria-current="true"]{color:var(--panel-ink);background:var(--panel-1);
+  box-shadow:inset 0 -3px 0 var(--sage)}
+.top li button .ic{width:15px;height:15px;flex:0 0 15px;opacity:.85}
+.top li button .lab{display:flex;flex-direction:column;line-height:1.2}
+.top li button .hint{font-family:var(--font-mono);font-size:8.5px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--panel-faint);margin-top:3px}
+.top .end{flex:0 0 auto;display:flex;align-items:center;gap:18px;padding:0 22px;
+  border-left:1px solid var(--panel-2)}
+.top .who{display:flex;align-items:center;gap:7px}
+.top .who .lbl{font-family:var(--font-mono);font-size:8.5px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--panel-faint)}
+.top .who button{background:none;border:1px solid var(--panel-2);color:var(--panel-muted);
+  padding:5px 11px;cursor:pointer;font-size:12.5px}
+.top .who button[aria-pressed="true"]{background:var(--panel-1);color:var(--panel-ink);
+  border-color:var(--sage)}
+.top .status{font-family:var(--font-mono);font-size:9px;color:var(--panel-faint);white-space:nowrap}
+.top .status .dot{display:inline-block;width:6px;height:6px;background:var(--panel-faint);
+  margin-right:6px}
+.top .status .dot.on{background:var(--sage)}
+@media (max-width:1000px){
+  .top{flex-wrap:wrap}
+  .top .brand,.top .end{flex:1 1 100%;border-right:0;border-left:0}
+  .top .end{border-top:1px solid var(--panel-2);padding:10px 22px;justify-content:space-between}
+  .top nav{flex:1 1 100%}
+  .top li button .hint{display:none}
+}
 
 /* ---------- main ---------- */
-main{padding:26px 30px 60px;max-width:1500px}
+main{padding:26px 30px 70px;max-width:1180px;margin:0 auto}
 .head{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end;justify-content:space-between;
   border-bottom:1px solid var(--paper-3);padding-bottom:14px;margin-bottom:22px}
 .head h2{font-family:var(--font-display);font-size:27px;margin:0;font-weight:400;letter-spacing:-.01em}
@@ -272,3 +287,14 @@ td.after{color:var(--trusted);font-weight:600}
 .act.done .go{color:var(--trusted);border-color:var(--trusted);background:var(--trusted-tint)}
 .act.waiting .go{color:var(--ink-4)}
 .panel .pnote{color:var(--panel-muted);font-size:12px;line-height:1.5;margin:12px 0 0}
+
+/* ---------- plain-language opener ---------- */
+.explain{border-left:3px solid var(--sage);padding:2px 0 2px 20px;margin:4px 0 30px;max-width:74ch}
+.explain h2{font-family:var(--font-display);font-size:30px;font-weight:400;margin:0 0 12px;
+  line-height:1.2;letter-spacing:-.01em;text-wrap:balance}
+.explain p{margin:0 0 11px;font-size:15px;line-height:1.6;color:var(--ink-2)}
+.explain p.big{font-size:16px;color:var(--ink-0)}
+.explain p:last-child{margin-bottom:0}
+.cap{font-size:12px;color:var(--ink-4);margin:8px 0 0;line-height:1.5;max-width:78ch}
+td .cap{margin-top:2px}
+.ms .redo{font-family:var(--font-mono);font-size:10.5px;color:var(--contested);margin-top:5px}

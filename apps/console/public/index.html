@@ -10,23 +10,23 @@
 <link rel="stylesheet" href="/app.css">
 </head>
 <body>
-<div class="app">
-  <nav class="nav">
-    <div class="brand">
-      <h1>KIRIM</h1>
-      <div class="sub">TRUST BEFORE YOU BUILD</div>
-    </div>
-    <ul id="nav-list"></ul>
+<header class="top">
+  <div class="brand">
+    <h1>KIRIM</h1>
+    <div class="sub">TRUST BEFORE YOU BUILD</div>
+  </div>
+  <nav><ul id="nav-list"></ul></nav>
+  <div class="end">
     <div class="who">
-      <div class="lbl">VIEWING AS</div>
+      <span class="lbl">Seen by</span>
       <button id="as-client" aria-pressed="true">Buyer</button>
-      <button id="as-contractor" aria-pressed="false">Developer</button>
+      <button id="as-contractor" aria-pressed="false">Builder</button>
     </div>
-    <div class="foot"><span class="dot" id="live"></span><span id="livetext">connecting</span>
+    <div class="status"><span class="dot" id="live"></span><span id="livetext">connecting</span>
       &nbsp;·&nbsp; XRPL TESTNET</div>
-  </nav>
-  <main id="main"></main>
-</div>
+  </div>
+</header>
+<main id="main"></main>
 <script src="/app.js"></script>
 </body>
 </html>
