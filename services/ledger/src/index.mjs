@@ -156,10 +156,40 @@ const routes = {
       wallet: wallets[b.by ?? 'platform'], owner: b.owner,
       offerSequence: b.offerSequence, condition: b.condition, fulfillment: b.fulfillment,
     });
+
+    // Kirim charges at the moment of release, because that is where the risk
+    // is. The fee is a second leg on the ledger, not a line in a spreadsheet:
+    // an escrow agent charging 3–5% cannot be undercut by a business that only
+    // claims to cost less.
+    let fee = null;
+    const bps = Number(process.env.PLATFORM_FEE_BPS ?? 80);
+    if (bps > 0 && b.amount !== undefined) {
+      const feeUsd = (Number(b.amount) * bps) / 10000;
+      const scaled = scalePrincipal(feeUsd.toFixed(2));
+      try {
+        const paid = await pay({
+          wallet: wallets.buyer,
+          to: wallets.platform.address,
+          value: scaled.value,
+          asset,
+          memo: (b.memo ?? 'kirim') + '/fee',
+        });
+        fee = {
+          bps, amountUsd: feeUsd.toFixed(2), ledgerAmount: scaled.value,
+          txHash: paid.hash, explorer: paid.explorer,
+        };
+      } catch (e) {
+        // A fee that cannot be collected must never unwind a release that has
+        // already happened. Report it and move on.
+        fee = { bps, amountUsd: feeUsd.toFixed(2), failed: e.message };
+      }
+    }
+
     return {
       refused: false, txHash: out.hash, explorer: out.explorer,
       authorisedBy: b.authorisationTxHash ? wallets.buyer.address : undefined,
       authorisationTxHash: b.authorisationTxHash,
+      fee,
     };
   },
 

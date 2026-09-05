@@ -132,8 +132,41 @@ export async function runMilestone(project, ms0, {
       'Checking the delivery notes exist in the suppliers’ own records.')
     : null;
 
-  const inspection = await buy('site-inspection', { milestone: ms.id },
-    'An independent inspection costs thirty cents here; a scheduled site visit costs a day.');
+  // --- compare, then choose ------------------------------------------------
+  // Two providers sell the same inspection at different prices and turnarounds.
+  // The agent picks on the milestone's own deadline pressure rather than always
+  // taking the cheapest, and records why — this is the decision the brief means
+  // by "compare".
+  const inspectors = catalog.providers
+    .filter((p) => p.id.startsWith('site-inspection'))
+    .sort((a, b) => Number(a.price) - Number(b.price));
+
+  const daysLate = Math.round(
+    (Date.parse(sub.submittedAt) - Date.parse(ms.dueOn + 'T23:59:59+08:00')) / 86400000,
+  );
+  const urgent = daysLate >= 0;
+  const cheapest = inspectors[0];
+  const fastest = inspectors.reduce((a, b) => (a.turnaroundHours <= b.turnaroundHours ? a : b));
+  const chosen = urgent ? fastest : cheapest;
+  const rejected = inspectors.find((p) => p.id !== chosen.id);
+
+  log.add('comparison', 'chose', rejected
+    ? `Two providers sell this inspection: ${cheapest.name} at US$${cheapest.price} in ` +
+      `${cheapest.turnaroundHours}h, and ${fastest.name} at US$${fastest.price} in ` +
+      `${fastest.turnaroundHours}h. ` +
+      (urgent
+        ? `This milestone was due ${ms.dueOn} and the submission is ${daysLate} day(s) past it, so the ` +
+          `extra US$${(Number(fastest.price) - Number(cheapest.price)).toFixed(2)} buys back ` +
+          `${cheapest.turnaroundHours - fastest.turnaroundHours} hours. Taking the express survey.`
+        : `The milestone is inside its agreed date, so the wait costs nothing. Taking the cheaper survey ` +
+          `and keeping US$${(Number(fastest.price) - Number(cheapest.price)).toFixed(2)}.`)
+    : `Only ${chosen.name} offers this inspection.`,
+    { chose: chosen.id, rejected: rejected?.id, urgent, daysLate });
+
+  const inspection = await buy(chosen.id, { milestone: ms.id },
+    urgent
+      ? 'The milestone is already past its date; the express survey is worth the difference.'
+      : 'An independent inspection costs thirty cents here; a scheduled site visit costs a day.');
 
   // The expensive one, over the ceiling. The agent must be seen to refuse it.
   await buy('credit-report', { name: project.contractor }, 'Considered for a deeper contractor file.');
@@ -205,6 +238,17 @@ async function release({ project, ms, sub, escrow, amountUsd, log, authorisation
     `Evidence conforms. ${fmt(ms.amountCents)} released to ${project.contractor} — paid on ` +
     `evidence, not on a promise and not in ninety days.`,
     { txHash: finished.txHash, explorer: finished.explorer });
+
+  if (finished.fee && !finished.fee.failed) {
+    log.add('revenue', 'charged',
+      `Kirim charged US$${finished.fee.amountUsd} — ${finished.fee.bps / 100}% of the milestone, ` +
+      `taken at the moment of release. An escrow agent charges 3–5% and takes days.`,
+      { txHash: finished.fee.txHash, explorer: finished.fee.explorer,
+        feeCents: Math.round(Number(finished.fee.amountUsd) * 100) });
+  } else if (finished.fee?.failed) {
+    log.add('revenue', 'uncollected',
+      `The release stands; the ${finished.fee.bps / 100}% fee could not be collected: ${finished.fee.failed}`);
+  }
 
   const onTime = sub.submittedAt.slice(0, 10) <= ms.dueOn;
   const cred = await ledgerPost('/credential/issue', {

@@ -259,18 +259,51 @@ We do not claim a credential makes a contractor trustworthy. It makes their hist
 
 The line matters: simulated supply is normal, a simulated payment would not be.
 
-## Commercial model
+## Commercial model — charged, not claimed
 
-Kirim takes **0.8% of each released milestone**, charged at the moment of release. A licensed escrow agent charges 3–5% and takes days; a lawyer's stakeholder account costs more than the milestone is worth.
+Kirim takes **0.8% of each released milestone**, and it is a real second leg on
+the ledger rather than a line in this table. On a released US$10,000 milestone
+the decision log reads:
+
+```
+REVENUE  charged
+         Kirim charged US$80.00 — 0.8% of the milestone, taken at the moment of
+         release. An escrow agent charges 3–5% and takes days.
+         https://testnet.xrpl.org/transactions/38B69E5464E4B1…
+```
 
 | | Cost | Time |
 |---|---|---|
 | Escrow agent today | 3–5% | days |
-| Kirim | 0.8% | ~4 seconds |
-| Evidence checks bought per milestone | US$0.48 | seconds |
+| Kirim | **0.8%** | ~4 seconds |
+| Evidence checks bought per milestone | US$0.48–0.73 | seconds |
 | On a S$50,000 renovation | ~S$400 total | per milestone |
 
-The evidence checks are the part that could not exist before: an independent inspection at thirty cents, priced per milestone, against a site visit that costs a day.
+`PLATFORM_FEE_BPS` sets it; `0` turns it off. A fee that cannot be collected
+never unwinds a release that has already happened — it is reported as
+uncollected and the money stays where the evidence said it should.
+
+The evidence checks are the part that could not exist before: an independent
+inspection at thirty cents, priced per milestone, against a site visit that
+costs a day.
+
+## The agent compares before it buys
+
+Two providers sell the same inspection — US$0.30 in 48 hours, or US$0.55 within
+the hour — and the agent chooses on the milestone's own deadline pressure rather
+than always taking the cheapest.
+
+Inside the agreed date:
+
+> Two providers sell this inspection: … The milestone is inside its agreed date,
+> so the wait costs nothing. **Taking the cheaper survey and keeping US$0.25.**
+
+Past the agreed date:
+
+> … This milestone was due 2026-10-06 and the submission is 1 day(s) past it, so
+> the extra US$0.25 buys back 47 hours. **Taking the express survey.**
+
+Same evidence, different purchase, and the reason is on the record either way.
 
 ## Settlement currency
 

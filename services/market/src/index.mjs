@@ -68,6 +68,15 @@ const CATALOG = [
     name: 'Independent site inspection',
     description: 'Automated inspection of a construction milestone: percent complete and defects.',
     price: '0.30',
+    turnaroundHours: 48,
+  },
+  {
+    id: 'site-inspection-express',
+    path: '/v1/site-inspection-express',
+    name: 'Independent site inspection (express)',
+    description: 'The same inspection, surveyed within the hour. Priced for deadline pressure.',
+    price: '0.55',
+    turnaroundHours: 1,
   },
   {
     id: 'photo-forensics',
@@ -140,6 +149,21 @@ const HANDLERS = {
       defects: i ? i.defects : [],
       inspectedAt: new Date().toISOString(),
       method: 'automated survey, unattended',
+    });
+  },
+
+  'site-inspection-express': (q) => {
+    const ms = PROJECT.milestones.find((m) => m.id === q.get('milestone'));
+    const i = ms?.inspection;
+    return attest({
+      claim: 'site_inspection',
+      projectId: PROJECT.id,
+      milestoneId: q.get('milestone'),
+      percentComplete: i ? i.percentComplete : null,
+      defects: i ? i.defects : [],
+      inspectedAt: new Date().toISOString(),
+      method: 'automated survey, express',
+      turnaroundHours: 1,
     });
   },
 
