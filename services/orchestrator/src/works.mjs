@@ -1,6 +1,8 @@
 import { DecisionLog, toCents, fmt } from '@kirim/trade';
-import { milestone, submission, examineMilestone, credentialUri } from '@kirim/works';
-import { explainMilestone } from './reasoner.mjs';
+import {
+  milestone, submission, examineMilestone, credentialUri, requirements, validatePlan,
+} from '@kirim/works';
+import { explainMilestone, planEvidence } from './reasoner.mjs';
 
 const LEDGER = () => 'http://localhost:' + (process.env.LEDGER_PORT || 4010);
 const MARKET = () => 'http://localhost:' + (process.env.MARKET_PORT || 4020);
@@ -42,6 +44,7 @@ export async function runMilestone(project, ms0, {
 } = {}) {
   const ms = milestone({ ...ms0, projectId: project.id, site: project.site });
   const log = new DecisionLog(`${project.id}/${ms.id}`, emit);
+  const startedAt = Date.now();
   const amountUsd = (ms.amountCents / 100).toFixed(2);
 
   log.add('milestone', 'opened',
@@ -118,58 +121,56 @@ export async function runMilestone(project, ms0, {
   };
 
   log.add('discovery', 'surveyed',
-    `Evidence checks available: ` +
-    catalog.providers.filter((p) => ['photo-forensics', 'materials-registry', 'site-inspection', 'credit-report'].includes(p.id))
-      .map((p) => `${p.name} US$${p.price}`).join(', ') + '.');
+    `${catalog.providers.length} providers in the market: ` +
+    catalog.providers.map((p) => `${p.name} US$${p.price}`).join(', ') + '.');
 
-  const photoForensics = sub.photos.length
-    ? await buy('photo-forensics', { files: sub.photos.map((p) => p.file).join(',') },
-      'Confirming the photographs are original captures before their timestamps and GPS are relied on.')
-    : null;
-
-  const materials = sub.deliveries.length
-    ? await buy('materials-registry', { refs: sub.deliveries.map((d) => `${d.ref}|${d.supplier}`).join(',') },
-      'Checking the delivery notes exist in the suppliers’ own records.')
-    : null;
-
-  // --- compare, then choose ------------------------------------------------
-  // Two providers sell the same inspection at different prices and turnarounds.
-  // The agent picks on the milestone's own deadline pressure rather than always
-  // taking the cheapest, and records why — this is the decision the brief means
-  // by "compare".
-  const inspectors = catalog.providers
-    .filter((p) => p.id.startsWith('site-inspection'))
-    .sort((a, b) => Number(a.price) - Number(b.price));
-
+  // --- plan ------------------------------------------------------------------
+  // What has to be established before this milestone can be released, given its
+  // own terms and what was actually presented? The agent decides what to buy;
+  // the validator holds it to providers that exist, a budget it can afford, and
+  // requirements the release rules will block without.
   const daysLate = Math.round(
     (Date.parse(sub.submittedAt) - Date.parse(ms.dueOn + 'T23:59:59+08:00')) / 86400000,
   );
-  const urgent = daysLate >= 0;
-  const cheapest = inspectors[0];
-  const fastest = inspectors.reduce((a, b) => (a.turnaroundHours <= b.turnaroundHours ? a : b));
-  const chosen = urgent ? fastest : cheapest;
-  const rejected = inspectors.find((p) => p.id !== chosen.id);
+  const reqs = requirements({ ms, sub, daysLate });
+  const budgetUsd = Number(process.env.MAX_PER_TRADE_USD ?? 5);
 
-  log.add('comparison', 'chose', rejected
-    ? `Two providers sell this inspection: ${cheapest.name} at US$${cheapest.price} in ` +
-      `${cheapest.turnaroundHours}h, and ${fastest.name} at US$${fastest.price} in ` +
-      `${fastest.turnaroundHours}h. ` +
-      (urgent
-        ? `This milestone was due ${ms.dueOn} and the submission is ${daysLate} day(s) past it, so the ` +
-          `extra US$${(Number(fastest.price) - Number(cheapest.price)).toFixed(2)} buys back ` +
-          `${cheapest.turnaroundHours - fastest.turnaroundHours} hours. Taking the express survey.`
-        : `The milestone is inside its agreed date, so the wait costs nothing. Taking the cheaper survey ` +
-          `and keeping US$${(Number(fastest.price) - Number(cheapest.price)).toFixed(2)}.`)
-    : `Only ${chosen.name} offers this inspection.`,
-    { chose: chosen.id, rejected: rejected?.id, urgent, daysLate });
+  const proposed = await planEvidence({
+    project, ms, sub, reqs, catalog: catalog.providers, budgetUsd, daysLate,
+  });
+  const plan = validatePlan({ proposed, reqs, catalog: catalog.providers, budgetUsd });
 
-  const inspection = await buy(chosen.id, { milestone: ms.id },
-    urgent
-      ? 'The milestone is already past its date; the express survey is worth the difference.'
-      : 'An independent inspection costs thirty cents here; a scheduled site visit costs a day.');
+  log.add('planning', proposed ? 'planned' : 'planned_by_rule',
+    `${plan.steps.length} check(s) to buy for US$${plan.estimatedUsd} of a US$${budgetUsd.toFixed(2)} budget: ` +
+    plan.steps.map((st) => `${st.provider} — ${st.why}`).join(' ') +
+    (plan.skipped.length
+      ? ' Skipped: ' + plan.skipped.map((sk) => `${sk.requirement} — ${sk.why}`).join(' ')
+      : '') +
+    (proposed ? '' : ' The model did not return a usable plan, so the requirements were taken as written.'),
+    { plan: plan.steps, skipped: plan.skipped, estimatedUsd: plan.estimatedUsd });
 
-  // The expensive one, over the ceiling. The agent must be seen to refuse it.
+  for (const c of plan.corrections) {
+    log.add('planning', 'corrected', c);
+  }
+
+  // --- execute the plan ------------------------------------------------------
+  const bought = {};
+  for (const step of plan.steps) {
+    const query = step.provider.startsWith('site-inspection')
+      ? { milestone: ms.id }
+      : step.provider === 'photo-forensics'
+        ? { files: sub.photos.map((p) => p.file).join(',') }
+        : { refs: sub.deliveries.map((d) => `${d.ref}|${d.supplier}`).join(',') };
+    bought[step.requirement] = await buy(step.provider, query, step.why);
+  }
+
+  // Deliberately over the per-call ceiling, and offered on every milestone. The
+  // agent has to be seen refusing something it could buy.
   await buy('credit-report', { name: project.contractor }, 'Considered for a deeper contractor file.');
+
+  const photoForensics = bought['photo-integrity'] ?? null;
+  const materials = bought['materials-delivered'] ?? null;
+  const inspection = bought['completion'] ?? null;
 
   // --- examination ----------------------------------------------------------
   const result = examineMilestone({
@@ -198,14 +199,14 @@ export async function runMilestone(project, ms0, {
   }
 
   // --- release --------------------------------------------------------------
-  return release({ project, ms, sub, escrow, amountUsd, log });
+  return release({ project, ms, sub, escrow, amountUsd, log, startedAt });
 }
 
 /**
  * Finish the escrow and write the track record. Split out because a release
  * above the ceiling happens later, after the client has signed.
  */
-async function release({ project, ms, sub, escrow, amountUsd, log, authorisationTxHash }) {
+async function release({ project, ms, sub, escrow, amountUsd, log, authorisationTxHash, startedAt = Date.now() }) {
   const memo = `${project.id}/${ms.id}`;
   const finished = await ledgerPost('/escrow/finish', {
     by: 'platform', owner: escrow.owner, offerSequence: escrow.offerSequence,
@@ -214,7 +215,7 @@ async function release({ project, ms, sub, escrow, amountUsd, log, authorisation
   });
 
   if (finished.refused) {
-    pendingReleases.set(memo, { project, ms, sub, escrow, amountUsd });
+    pendingReleases.set(memo, { project, ms, sub, escrow, amountUsd, startedAt });
     log.add('settlement', 'awaiting_client', finished.reason, {
       amountCents: ms.amountCents,
       authorisation: finished.authorisation
@@ -265,6 +266,17 @@ async function release({ project, ms, sub, escrow, amountUsd, log, authorisation
         `It lives on their XRPL account, not in Kirim's database — any future client can verify it ` +
         `without asking us.`,
     { txHash: cred.issueTxHash, explorer: cred.issueExplorer, acceptTxHash: cred.acceptTxHash });
+
+  const elapsedS = ((Date.now() - startedAt) / 1000).toFixed(0);
+  const spentCents = log.spentCents();
+  log.add('outcome', 'complete',
+    `${ms.name} settled in ${elapsedS}s. Evidence cost ${fmt(spentCents)} and Kirim charged ` +
+    `${finished.fee && !finished.fee.failed ? 'US$' + finished.fee.amountUsd : 'nothing'}. ` +
+    `The same assurance conventionally means a site visit and an escrow agent at 3–5% — ` +
+    `days, not seconds, and roughly ${fmt(Math.round(ms.amountCents * 0.04))} on this milestone. ` +
+    `${project.contractor} was paid on presentation rather than on 30–60 day terms.`,
+    { elapsedSeconds: Number(elapsedS), evidenceCents: spentCents,
+      feeUsd: finished.fee?.amountUsd, principalCents: ms.amountCents });
 
   return { log, outcome: 'released', escrow, credential: cred };
 }

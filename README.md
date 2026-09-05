@@ -289,6 +289,28 @@ The evidence checks are the part that could not exist before: an independent
 inspection at thirty cents, priced per milestone, against a site visit that
 costs a day.
 
+## The agent plans, then buys
+
+It does not run a fixed pipeline. It reads the milestone's own terms — how many
+photographs were agreed, whether materials were scheduled, what completion
+threshold was set — works out what still has to be *established* given what the
+contractor actually presented, and decides what to buy within the budget.
+
+On a milestone with no delivery notes:
+
+> 2 check(s) to buy for US$0.38 of a US$5.00 budget … **Skipped:
+> materials-delivered — no delivery notes were presented, so there is nothing to
+> verify against the registry.**
+
+The model proposes the plan; `packages/works/src/plan.mjs` validates it before a
+cent is committed. It may not invent a provider, exceed the budget, or drop a
+requirement the release rules will block on — each correction is logged rather
+than hidden. One decision is deliberately **not** the model's: where the
+deadline settles which inspector to buy, the deadline settles it, and a
+differing suggestion is recorded as considered rather than acted on. A small
+model should not get to spend more of the client's money against a rule that
+crisp.
+
 ## The agent compares before it buys
 
 Two providers sell the same inspection — US$0.30 in 48 hours, or US$0.55 within
@@ -306,6 +328,20 @@ Past the agreed date:
 > the extra US$0.25 buys back 47 hours. **Taking the express survey.**
 
 Same evidence, different purchase, and the reason is on the record either way.
+
+## Every milestone ends with what it cost
+
+```
+OUTCOME  complete
+         Demolition and disposal settled in 47s. Evidence cost US$0.48 and Kirim
+         charged US$80.00. The same assurance conventionally means a site visit
+         and an escrow agent at 3–5% — days, not seconds, and roughly US$400.00
+         on this milestone. ABC Renovation Pte Ltd was paid on presentation
+         rather than on 30–60 day terms.
+```
+
+Measured from the run, not asserted in a table: elapsed seconds, evidence spend,
+fee charged, and the human baseline it replaced.
 
 ## Settlement currency
 

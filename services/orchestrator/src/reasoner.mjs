@@ -194,3 +194,51 @@ export async function explainMilestone({ project, ms, sub, result }) {
     `needed, be clear that nothing is wrong yet and name what is outstanding.`,
     fallback);
 }
+
+const PLAN_SYSTEM = [
+  'You plan which paid evidence checks a construction milestone needs.',
+  'Reply with JSON only: {"plan":[{"requirement":"<id>","provider":"<id>|null",',
+  '"skip":true|false,"why":"<one sentence>"}]}.',
+  'One entry per requirement you were given, using its exact id.',
+  'Choose a provider only from that requirement\'s own list.',
+  'Where a requirement lists two providers, choose on value: the dearer one is',
+  'worth it only when the milestone is late and its turnaround buys real time.',
+  'You may skip a requirement that is not mandatory when spending on it would',
+  'establish nothing. Never skip a mandatory one.',
+  'The "why" is read by a homeowner — plain English, no jargon, no markdown.',
+].join(' ');
+
+/**
+ * Ask the agent what to buy. The answer is a proposal: @kirim/works validates
+ * it against the catalogue, the budget and the release rules before a cent is
+ * committed.
+ */
+export async function planEvidence({ project, ms, sub, reqs, catalog, budgetUsd, daysLate }) {
+  const providerLines = catalog
+    .map((p) => `  ${p.id} — ${p.name}, US$${p.price}`
+      + (p.turnaroundHours ? `, ${p.turnaroundHours}h turnaround` : ''))
+    .join('\n');
+
+  const reqLines = reqs
+    .map((r) => `  ${r.id} — ${r.need} `
+      + `[providers: ${r.providers.join(', ')}] `
+      + `[${r.mandatory ? 'mandatory' : 'discretionary'}]`
+      + (r.moot ? ` [moot: ${r.mootReason}]` : ''))
+    .join('\n');
+
+  const user =
+    `Milestone: ${ms.name} on ${project.name}, ${(ms.amountCents / 100).toFixed(2)} USD.\n` +
+    `Agreed ${ms.startsOn} to ${ms.dueOn}; the submission arrived ${sub.submittedAt}` +
+    (daysLate >= 0 ? `, ${daysLate} day(s) past the agreed date.\n` : `, inside the agreed date.\n`) +
+    `Evidence budget for this milestone: US$${budgetUsd.toFixed(2)}.\n\n` +
+    `Requirements:\n${reqLines}\n\nProviders available:\n${providerLines}`;
+
+  const text = await ask(PLAN_SYSTEM, user, null);
+  if (!text) return null;
+  try {
+    const json = JSON.parse(text.replace(/^```(?:json)?|```$/gm, '').trim());
+    return Array.isArray(json.plan) ? json.plan : null;
+  } catch {
+    return null; // a plan we cannot parse is no plan; the validator fills in
+  }
+}
