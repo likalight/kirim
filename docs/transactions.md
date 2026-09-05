@@ -3,7 +3,7 @@
 Every transaction below is real, on the **XRP Ledger Testnet**, produced by one run
 of `npm run milestone all` plus the client signature on `M5`. Explorer base: `https://testnet.xrpl.org/transactions/`
 
-Roles: `buyer` (Sarah Lim, the client), `supplier` (ABC Renovation, the contractor),
+Roles: `buyer` (Mrs Chen, the apartment buyer), `supplier` (Hengrui Properties, the developer),
 `inspector` (the MPP provider payee), `platform` (Kirim — holds the escrow fulfillment,
 issues credentials, receives the fee).
 
@@ -13,13 +13,20 @@ The full transcript is in [demo-run.txt](demo-run.txt).
 
 ## One run, six milestones
 
+> These hashes are from a run of the **earlier renovation fixture** — six
+> US$10,000–18,000 milestones on a Singapore flat. They are left exactly as the
+> ledger recorded them rather than rewritten to match the current pre-sale
+> fixture, which would make this file a claim instead of a record. Re-running
+> `npm run milestone all` against `fixtures/project.json` produces the same six
+> outcomes at pre-sale amounts, and new hashes.
+
 | Milestone | Amount | Outcome | Why |
 |---|---|---|---|
 | `M1` Demolition and disposal | US$10,000 | **released** | Evidence conformed. Released autonomously; fee charged; milestone written to the contractor’s ledger record. |
 | `M2` Plumbing first fix | US$10,000 | **flagged for review** | A photograph taken 2.3km from site, and a delivery note absent from the supplier registry. |
 | `M3` Electrical first fix | US$10,000 | **more information needed** | One photograph of three and no delivery notes. Nothing contradicts the scope, so nothing is marked against the contractor. |
 | `M4` Tiling and finishing | US$10,000 | **flagged for review** | Inspection at 72% against a 95% threshold, a critical defect, a recycled photograph and a re-encoded file. One day late, so the express survey was bought. |
-| `M5` Variation order | US$18,000 | **awaiting client authorisation → released** | Evidence in order but above Sarah’s US$12,000 ceiling. Released only after she signed from her own wallet. |
+| `M5` Variation order | US$18,000 | **awaiting client authorisation → released** | Evidence in order but above the client’s US$12,000 ceiling. Released only after she signed from her own wallet. |
 | `M6` Final completion | US$10,000 | **timed out and returned** | Nothing was ever presented. The escrow cancelled itself and the funds went back to the client. |
 
 **Three of the six end with no payment to the contractor.** The challenge’s flow
@@ -61,7 +68,7 @@ autonomous payment system credible.
 
 ### The client’s signature on `M5`
 
-Above her ceiling, Sarah authorises from her own wallet — an ordinary Payment
+Above her ceiling, the client authorises from her own wallet — an ordinary Payment
 carrying a memo naming the milestone. Kirim verifies it on-ledger before the escrow
 is finished.
 

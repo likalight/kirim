@@ -51,7 +51,7 @@ export function requirements({ ms, sub, daysLate = -1, prefs = {} }) {
   // a language model's discretion. The agent may still override it, and the
   // override is recorded.
   // The deadline decides first. Where it does not, the client's own leaning
-  // does — this is Sarah's money and her stated preference, not a global
+  // does — this is the buyer's money and her stated preference, not a global
   // default someone set in an env file.
   const urgent = daysLate >= 0;
   const leaning = prefs.leaning ?? 'cost';

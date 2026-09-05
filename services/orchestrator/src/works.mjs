@@ -196,7 +196,7 @@ export async function runMilestone(project, ms0, {
   const daysLate = Math.round(
     (Date.parse(sub.submittedAt) - Date.parse(ms.dueOn + 'T23:59:59+08:00')) / 86400000,
   );
-  // The client's own terms. Kirim's platform ceilings still apply — Sarah may
+  // The client's own terms. Kirim's platform ceilings still apply — the buyer may
   // be stricter than the platform, never looser.
   const prefs = { ...(project.preferences ?? {}), clientName: project.client };
   const reqs = requirements({ ms, sub, daysLate, prefs });

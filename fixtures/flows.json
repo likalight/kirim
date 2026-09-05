@@ -1,0 +1,80 @@
+{
+  "title": "The pre-sale model, before and after",
+  "market": "China",
+  "note": "The before column is the mainland pre-sale (期房) model as it actually operates. The after column is the same model with Kirim between the bank and the developer. Nothing about selling off-plan changes — only what the money is allowed to do while the buyer waits.",
+  "before": {
+    "label": "China pre-sale today",
+    "sub": "期房 · off-plan sale, money released by approval",
+    "steps": [
+      { "n": 1, "who": "Developer", "text": "Obtains a pre-sale permit and sells the tower off-plan, years before it exists." },
+      { "n": 2, "who": "Buyer", "text": "Pays a deposit — commonly 20–30% of the price — against a flat that is a drawing." },
+      { "n": 3, "who": "Bank", "text": "Disburses the entire mortgage to the developer up front, in one payment." },
+      { "n": 4, "who": "Supervision account", "text": "The money nominally sits in a local pre-sale supervision account at a designated bank." },
+      { "n": 5, "who": "Housing bureau", "text": "A local official approves each draw. The rules differ city by city and enforcement is uneven." },
+      { "n": 6, "who": "Developer", "text": "In practice, cash is moved to land purchases, other projects, and group debt.", "bad": true },
+      { "n": 7, "who": "Site", "text": "Funding runs out. Work slows, then stops. The tower stands unfinished.", "bad": true },
+      { "n": 8, "who": "Buyer", "text": "Keeps repaying a mortgage on a home that does not exist, with no way to stop.", "bad": true },
+      { "n": 9, "who": "Recovery", "text": "Litigation, a mortgage payment strike, or a state rescue fund — years, not weeks.", "bad": true }
+    ]
+  },
+  "after": {
+    "label": "The same sale, with Kirim",
+    "sub": "off-plan sale, money released by evidence",
+    "steps": [
+      { "n": 1, "who": "Developer", "text": "Obtains a pre-sale permit and sells the tower off-plan.", "same": true },
+      { "n": 2, "who": "Buyer", "text": "Pays a deposit against a flat that is still a drawing.", "same": true },
+      { "n": 3, "who": "Bank", "text": "Disburses the entire mortgage on day one — into escrow, not to the developer.", "changed": "The developer is no longer the recipient. Same money, same day, different destination." },
+      { "n": 4, "who": "XRPL", "text": "One escrow per construction stage, each locked under a PREIMAGE-SHA-256 condition.", "changed": "There is no approver to lobby. Without the preimage, nobody can move it — Kirim included." },
+      { "n": 5, "who": "Developer", "text": "Reaches a stage and submits evidence: geotagged photographs, delivery notes, permits.", "changed": "A draw is now a claim that has to survive examination, not a form to be stamped." },
+      { "n": 6, "who": "Agent", "text": "Buys the verification it needs — inspection, carrier, supplier registry — paying per call over x402.", "changed": "The agent pays for its own facts. Nobody has to send a person to site to move US$40,000." },
+      { "n": 7, "who": "Agent", "text": "Runs thirteen deterministic checks. Conforming evidence releases that stage in about four seconds.", "changed": "Release is a rule, not a relationship. The same evidence gets the same answer every time." },
+      { "n": 8, "who": "XRPL", "text": "Non-conforming evidence releases nothing, and the buyer is shown the check that failed.", "changed": "The failure is legible on the day it happens, not two years later when the crane leaves." },
+      { "n": 9, "who": "XRPL", "text": "A stage never reached expires: CancelAfter returns that stage's money to the buyer.", "changed": "Refund without litigation. The unbuilt half was never the developer's to lose." },
+      { "n": 10, "who": "Record", "text": "Every completed stage is written to the developer's own XRPL account as a credential.", "changed": "A developer who builds carries the proof with them to the next project." }
+    ]
+  },
+  "comparison": [
+    {
+      "q": "Can the developer sell before completion?",
+      "before": "Yes — off-plan sale is the norm.",
+      "after": "Yes. Unchanged.",
+      "delta": null
+    },
+    {
+      "q": "Does the buyer start paying before completion?",
+      "before": "Yes — deposit, then mortgage instalments begin.",
+      "after": "Yes. Unchanged.",
+      "delta": null
+    },
+    {
+      "q": "Where does the mortgage money go?",
+      "before": "Straight to the developer, in full, on day one.",
+      "after": "Into per-stage XRPL escrow, in full, on day one.",
+      "delta": "The bank still pays immediately. The developer just is not who receives it."
+    },
+    {
+      "q": "Where does the buyer's money sit?",
+      "before": "A local pre-sale supervision account, drawn down on an official's approval.",
+      "after": "An escrow object on a public ledger, drawn down on a crypto-condition.",
+      "delta": "Discretion is replaced by a condition. Anyone can read the balance; nobody can lobby it."
+    },
+    {
+      "q": "Can the developer use the money elsewhere?",
+      "before": "In practice, yes — diversion to other projects and group debt is routine.",
+      "after": "No. Not for one stage, not for one hour.",
+      "delta": "This is the whole change. Everything else follows from it."
+    },
+    {
+      "q": "Who carries construction-failure risk?",
+      "before": "The buyer — a mortgage on a flat that may never be built.",
+      "after": "Nobody carries it, because unbuilt stages are never released.",
+      "delta": "Risk is not transferred to an insurer. It is removed from the transaction."
+    },
+    {
+      "q": "What happens if the developer runs out of cash?",
+      "before": "Work stops, buyers keep paying, recovery takes years of litigation.",
+      "after": "Remaining stages expire and return to the buyer automatically.",
+      "delta": "The buyer's downside stops at the stages that were actually built."
+    }
+  ]
+}

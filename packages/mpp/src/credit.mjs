@@ -10,7 +10,7 @@ const require = createRequire(import.meta.url);
 /**
  * Claw Credit — buying evidence on credit instead of pre-funding it.
  *
- * The idea is the right one for this product. Today Sarah's wallet must hold
+ * The idea is the right one for this product. Today the buyer's wallet must hold
  * XRP before her agent can buy a thirty-cent inspection; with agent credit it
  * does not, and the checks are settled by a credit line and repaid later. That
  * is what turns a prototype into something a homeowner would actually use.

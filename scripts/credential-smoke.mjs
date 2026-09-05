@@ -18,7 +18,7 @@ const subject = Wallet.fromSeed(w.supplier.seed);   // the contractor holds
 const c = await xrpl();
 
 const CREDENTIAL_TYPE = convertStringToHex('KIRIM-MILESTONE');
-const uri = convertStringToHex('kirim:milestone/PRJ-2026-014/M1/demolition');
+const uri = convertStringToHex('kirim:milestone/PRJ-2026-SMOKE/M1/foundation');
 
 async function send(wallet, tx, label) {
   const prepared = await c.autofill(tx);

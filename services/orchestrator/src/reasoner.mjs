@@ -158,12 +158,17 @@ export async function explainDiscrepancies({ po, bl, result }) {
     fallback);
 }
 
-const MS_SYSTEM = [
-  'You write the milestone review note itself, addressed to the client and the',
-  'contractor. Do not describe the note or refer to "the review" — just write it.',
+// The two sides are named by the project fixture, so the note reads correctly
+// whether the scenario is a renovation (client / contractor) or a pre-sold
+// apartment (buyer / developer).
+const msSystem = (project) => [
+  `You write the milestone review note itself, addressed to the`,
+  `${(project.clientRole || 'client').toLowerCase()} and the`,
+  `${(project.contractorRole || 'contractor').toLowerCase()}.`,
+  'Do not describe the note or refer to "the review" — just write it.',
   'Open with the finding, never with a phrase like "the notes indicate".',
   'Two to four sentences. No preamble, no bullets, no markdown, no headings.',
-  'Plain English a homeowner and a contractor both understand.',
+  'Plain English both sides understand, with no jargon either would have to look up.',
   'State the recommendation and the specific reason. Never invent findings.',
   'Never claim to have verified the construction itself — you reconcile submitted',
   'evidence against an agreed scope and report where they disagree.',
@@ -182,15 +187,19 @@ export async function explainMilestone({ project, ms, sub, result }) {
 
   const fallback = `${headline}. ${result.verdict} ${listed}`;
 
-  return ask(MS_SYSTEM,
-    `Write the milestone review note.\n` +
+  const them = (project.contractorRole || 'contractor').toLowerCase();
+
+  return ask(msSystem(project),
+    `Write the stage review note.\n` +
     `Recommendation: ${headline}\n` +
-    `Project: ${project.name} (${project.client} / ${project.contractor})\n` +
-    `Milestone: ${ms.name}, agreed ${ms.startsOn} to ${ms.dueOn}\n` +
+    `Project: ${project.name}${project.kind ? ' — a ' + project.kind : ''} ` +
+      `(${project.client}, the ${(project.clientRole || 'client').toLowerCase()} / ` +
+      `${project.contractor}, the ${them})\n` +
+    `Stage: ${ms.name}, agreed ${ms.startsOn} to ${ms.dueOn}\n` +
     `Submitted: ${sub.submittedAt} with ${sub.photos.length} photograph(s)\n` +
-    `Contractor's note: "${sub.note}"\n` +
+    `The ${them}'s note: "${sub.note}"\n` +
     `Findings: ${listed}\n` +
-    `If flagged, say what the contractor should do next. If more information is ` +
+    `If flagged, say what the ${them} should do next. If more information is ` +
     `needed, be clear that nothing is wrong yet and name what is outstanding.`,
     fallback);
 }

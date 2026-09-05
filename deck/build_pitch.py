@@ -292,42 +292,78 @@ def build(hashes):
           font=DISPLAY, size=19, color=INK_2, italic=True, line=1.35, first=True)
     footer(s, "KIRIM", "01 / PROBLEM")
 
-    # ============================================================ 3 — current
+    # ============================================================ 3 — before/after
     s = slide_base(prs, PANEL_0)
-    eyebrow(s, "How it works today", color=PANEL_FAINT)
-    tf = textbox(s, M, Inches(0.95), Inches(10.5), Inches(1.0))
-    write(tf, "A person decides, city by city. It fails in both directions.",
+    eyebrow(s, "Before  /  after", color=PANEL_FAINT)
+    tf = textbox(s, M, Inches(0.9), Inches(11.0), Inches(0.9))
+    write(tf, "The same sale. One thing changes.",
           font=DISPLAY, size=34, color=PANEL_INK, line=1.1, first=True)
+    tf = textbox(s, M, Inches(1.62), Inches(10.6), Inches(0.5))
+    write(tf, "China pre-sale (期房). Kirim sits between the bank and the developer — "
+              "it does not stop anyone selling off-plan.",
+          font=SANS, size=13, color=PANEL_MUTED, line=1.4, first=True)
 
-    left = [("TOO TIGHT", CONTESTED,
-             "2021 — cities froze withdrawals from escrow. Developers ran out of cash "
-             "mid-build and construction stopped. A February 2022 framework was issued "
-             "explicitly to “correct over-tightening”."),
-            ("TOO LOOSE", QUARANTINED,
-             "Evergrande collapsed owing around US$300bn. Buyers who had paid in full "
-             "were left with unfinished flats, and some stopped paying mortgages on "
-             "homes that did not exist.")]
-    y = Inches(2.3)
-    colw2 = (CW - Inches(0.6)) / 2
-    for i, (title, colour, body) in enumerate(left):
-        x = M + i * (colw2 + Inches(0.6))
-        box(s, x, y, colw2, Inches(2.15), fill=PANEL_1, line_color=PANEL_2)
-        box(s, x, y, Inches(0.05), Inches(2.15), fill=colour)
-        tf = textbox(s, x + Inches(0.3), y + Inches(0.26), colw2 - Inches(0.6), Inches(1.7))
-        write(tf, title, font=MONO, size=11, color=colour, spacing=0.14, bold=True,
-              first=True, space_after=10)
-        write(tf, body, font=SANS, size=13.5, color=PANEL_MUTED, line=1.45)
+    lanes = [
+        ("BEFORE  ·  PRE-SALE TODAY", QUARANTINED, [
+            ("Developer", "Sells the tower off-plan, years before it exists.", None),
+            ("Buyer", "Pays a 20–30% deposit against a drawing.", None),
+            ("Bank", "Pays the whole mortgage to the developer, day one.", None),
+            ("Bureau", "A local official approves each draw. Rules differ by city.", None),
+            ("Developer", "Cash is moved to land, other projects, group debt.", "bad"),
+            ("Buyer", "Work stops. She keeps paying for a home that does not exist.", "bad"),
+        ]),
+        ("AFTER  ·  THE SAME SALE, WITH KIRIM", SAGE, [
+            ("Developer", "Sells the tower off-plan, years before it exists.", "same"),
+            ("Buyer", "Pays a 20–30% deposit against a drawing.", "same"),
+            ("Bank", "Pays the whole mortgage day one — into escrow.", "new"),
+            ("XRPL", "A crypto-condition approves each draw. No official to lobby.", "new"),
+            ("Agent", "Examines the evidence. Releases in ~4s, or holds and says why.", "new"),
+            ("XRPL", "A stage never built expires back to her. No lawsuit.", "new"),
+        ]),
+    ]
 
-    icon_clock(s, M, Inches(4.85), Inches(1.1), PANEL_2)
-    tf = textbox(s, M + Inches(1.4), Inches(4.95), Inches(10.2), Inches(1.4))
-    write(tf, "Release is a manual, discretionary decision, taken by officials who cannot "
-              "possibly inspect every project, under rules that differ in every city.",
-          font=SANS, size=15.5, color=PANEL_MUTED, line=1.5, first=True, space_after=8)
-    write(tf, "Too slow and honest builders starve. Too loose and buyers lose homes "
-              "they have already paid for.",
-          font=DISPLAY, size=17, color=CONTESTED, italic=True, line=1.4)
+    colw3 = (CW - Inches(0.5)) / 2
+    top = Inches(2.35)
+    for li, (title, colour, steps) in enumerate(lanes):
+        x = M + li * (colw3 + Inches(0.5))
+        box(s, x, top, colw3, Inches(3.72), fill=PANEL_1, line_color=PANEL_2)
+        box(s, x, top, colw3, Inches(0.05), fill=colour)
+        tf = textbox(s, x + Inches(0.28), top + Inches(0.24), colw3 - Inches(0.56), Inches(0.35))
+        write(tf, title, font=MONO, size=9.5, color=colour, spacing=0.14, bold=True, first=True)
 
-    footer(s, "KIRIM · CURRENT STATE", "02 / TODAY", color=PANEL_FAINT, line=PANEL_2)
+        yy = top + Inches(0.72)
+        for n, (who, text, mark) in enumerate(steps, 1):
+            if mark == "bad":
+                num_c, txt_c = QUARANTINED, RESTRICTED
+            elif mark == "new":
+                num_c, txt_c = SAGE, PANEL_INK
+            elif mark == "same":
+                num_c, txt_c = PANEL_FAINT, PANEL_FAINT
+            else:
+                num_c, txt_c = PANEL_MUTED, PANEL_MUTED
+
+            tfn = textbox(s, x + Inches(0.28), yy - Inches(0.02), Inches(0.3), Inches(0.3))
+            write(tfn, str(n), font=MONO, size=11, color=num_c, first=True)
+            tfw = textbox(s, x + Inches(0.62), yy - Inches(0.03), Inches(1.05), Inches(0.3))
+            write(tfw, who.upper(), font=MONO, size=8, color=PANEL_FAINT, spacing=0.12, first=True)
+            tft = textbox(s, x + Inches(1.72), yy - Inches(0.05), colw3 - Inches(2.15), Inches(0.55))
+            write(tft, text, font=SANS, size=12, color=txt_c, line=1.32, first=True)
+
+            if mark == "same":
+                tfm = textbox(s, x + colw3 - Inches(1.0), yy - Inches(0.02), Inches(0.85),
+                              Inches(0.3), align=PP_ALIGN.RIGHT)
+                write(tfm, "unchanged", font=MONO, size=7.5, color=PANEL_FAINT,
+                      first=True, align=PP_ALIGN.RIGHT)
+            yy += Inches(0.49)
+
+    box(s, M, Inches(6.3), CW, Inches(0.62), fill=PANEL_1, line_color=PANEL_2)
+    box(s, M, Inches(6.3), Inches(0.05), Inches(0.62), fill=SAGE)
+    tf = textbox(s, M + Inches(0.32), Inches(6.42), CW - Inches(0.64), Inches(0.45))
+    write(tf, "Two of the six steps are identical. The one that changes is whether "
+              "the money can leave — and everything else follows from that.",
+          font=DISPLAY, size=15.5, color=PANEL_INK, italic=True, line=1.3, first=True)
+
+    footer(s, "KIRIM · BEFORE / AFTER", "02 / THE CHANGE", color=PANEL_FAINT, line=PANEL_2)
 
     # ============================================================ 4 — solution
     s = slide_base(prs)
@@ -371,7 +407,7 @@ def build(hashes):
           font=DISPLAY, size=34, color=INK_0, line=1.1, first=True)
 
     rows = [
-        ("Time to release a milestone", "weeks, city by city", "~4 seconds", TRUSTED),
+        ("Time to release a stage draw", "weeks, city by city", "~4 seconds", TRUSTED),
         ("Cost of holding the money", "3–5% to an escrow agent", "0.8%", TRUSTED),
         ("Cost of checking the work", "a site visit, a day of someone's time", "US$0.48", TRUSTED),
         ("Builder paid after evidence", "30–60 day terms", "on presentation", TRUSTED),
@@ -394,7 +430,7 @@ def build(hashes):
 
     box(s, M, Inches(5.5), CW, Inches(1.05), fill=TRUSTED_TINT)
     tf = textbox(s, M + Inches(0.3), Inches(5.72), CW - Inches(0.6), Inches(0.8))
-    write(tf, "Three of six milestones in our demo end with no payment at all — held, "
+    write(tf, "Three of six stages in our demo end with no payment at all — held, "
               "flagged, or returned.", font=DISPLAY, size=17, color=TRUSTED, italic=True,
           line=1.35, first=True, space_after=4)
     write(tf, "A payment that correctly does not happen is what makes an autonomous "
@@ -405,15 +441,15 @@ def build(hashes):
     s = slide_base(prs, PANEL_0)
     eyebrow(s, "The demo", color=PANEL_FAINT)
     tf = textbox(s, M, Inches(0.95), Inches(10.4), Inches(1.0))
-    write(tf, "Watch a milestone pay itself. Then watch one refuse to.",
+    write(tf, "Watch a stage pay itself. Then watch one refuse to.",
           font=DISPLAY, size=34, color=PANEL_INK, line=1.1, first=True)
 
     beats = [
         ("M1", "Evidence conforms", "released in 58s · fee charged · credential written", SAGE),
-        ("M2", "A photo taken 2.3km off site", "flagged — the money stays put", CONTESTED),
+        ("M2", "A photo taken 2.4km off site", "flagged — the money stays put", CONTESTED),
         ("M3", "One photo of three", "more information needed — no mark on the builder", CONTESTED),
-        ("M5", "Above the client's ceiling", "she signs from her own wallet, then it releases", SAGE),
-        ("M6", "Nothing ever submitted", "escrow times out, the money goes home", QUARANTINED),
+        ("M5", "Above the buyer's ceiling", "she signs from her own wallet, then it releases", SAGE),
+        ("M6", "Completion never presented", "escrow times out, the money goes home", QUARANTINED),
     ]
     y = Inches(2.2)
     for mid, what, outcome, colour in beats:

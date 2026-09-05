@@ -232,12 +232,12 @@ def build(hashes):
     # ---------------------------------------------------------------- 2 problem
     s = slide_base(prs)
     eyebrow(s, "The problem")
-    heading(s, "Renovation runs on a deposit and a hope.")
+    heading(s, "Pre-sale runs on a deposit and a hope.")
 
     tf = textbox(s, M, Inches(2.05), Inches(6.4), Inches(2.4))
-    write(tf, "A homeowner pays a large deposit before meaningful work exists. "
-              "From that moment the contractor holds the money and the client "
-              "holds the risk.", font=SANS, size=16, color=INK_2, line=1.55,
+    write(tf, "A buyer pays a deposit, and a bank pays the whole mortgage, before "
+              "meaningful work exists. From that moment the developer holds the "
+              "money and the buyer holds the risk.", font=SANS, size=16, color=INK_2, line=1.55,
           space_after=14, first=True)
     write(tf, "The reliable contractor has the mirror problem. They finish the "
               "work and then wait — for a client who is slow, unhappy, or gone.",
@@ -602,10 +602,10 @@ def build(hashes):
     # ---------------------------------------------------------------- 11b signature
     s = slide_base(prs)
     eyebrow(s, "Above the ceiling")
-    heading(s, "“The client approved” is a signature, not a checkbox.", size=32)
+    heading(s, "“The buyer approved” is a signature, not a checkbox.", size=32)
 
     tf = textbox(s, M, Inches(2.05), Inches(6.2), Inches(2.2))
-    write(tf, "Below Sarah's own ceiling the agent releases on its own. Above it, "
+    write(tf, "Below the buyer's own ceiling the agent releases on its own. Above it, "
               "the evidence is examined and the money waits for her — and approval "
               "means an XRPL payment from her own wallet carrying a memo naming "
               "the milestone.", font=SANS, size=15.5, color=INK_2, line=1.55,
@@ -683,8 +683,8 @@ def build(hashes):
     x = M + Inches(6.9)
     rows = [("Escrow agent, today", "3–5%", "days"),
             ("Kirim", "0.8%", "~4 seconds"),
-            ("Evidence checks", "US$0.48", "per milestone"),
-            ("On a S$50,000 renovation", "S$400", "total fee")]
+            ("Evidence checks", "US$0.48", "per stage"),
+            ("On a US$280,000 apartment", "US$2,240", "across six stages")]
     y = Inches(2.05)
     rule(s, x, y - Inches(0.12), Inches(4.7), color=PAPER_3)
     for a, b, c in rows:

@@ -18,6 +18,7 @@ const LEDGER = 'http://localhost:' + (process.env.LEDGER_PORT || 4010);
 const MARKET = 'http://localhost:' + (process.env.MARKET_PORT || 4020);
 const PROJECT = JSON.parse(fs.readFileSync('fixtures/project.json', 'utf8'));
 const TRADES = JSON.parse(fs.readFileSync('fixtures/trades.json', 'utf8'));
+const FLOWS = JSON.parse(fs.readFileSync('fixtures/flows.json', 'utf8'));
 const CONSOLE_DIR = path.resolve('apps/console/public');
 
 const clients = new Set();
@@ -66,9 +67,12 @@ async function handle(req, res) {
 
   if (url.pathname === '/api/project') {
     return json(res, 200, {
-      id: PROJECT.id, name: PROJECT.name, client: PROJECT.client,
-      contractor: PROJECT.contractor, site: PROJECT.site,
-      totalCents: PROJECT.totalCents,
+      id: PROJECT.id, name: PROJECT.name, kind: PROJECT.kind,
+      currency: PROJECT.currency, narrative: PROJECT.narrative,
+      client: PROJECT.client, clientRole: PROJECT.clientRole,
+      contractor: PROJECT.contractor, contractorRole: PROJECT.contractorRole,
+      site: PROJECT.site, totalCents: PROJECT.totalCents,
+      preferences: PROJECT.preferences,
       milestones: PROJECT.milestones.map((m) => ({
         id: m.id, name: m.name, amountCents: m.amountCents,
         dueOn: m.dueOn, scenario: m.scenario,
@@ -128,6 +132,9 @@ async function handle(req, res) {
   }
 
   if (url.pathname === '/api/reasoner') return json(res, 200, reasonerProvider());
+
+  // The before/after the whole product argues with.
+  if (url.pathname === '/api/flows') return json(res, 200, FLOWS);
 
   // Per-milestone state, rebuilt from the persisted decision logs so both
   // views mean something on a cold page load rather than only during a run.

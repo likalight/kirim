@@ -1,5 +1,14 @@
 # Kirim — architecture
 
+> **A note on names.** The ledger service knows four roles: `buyer`, `supplier`,
+> `inspector`, `platform`. This document calls the first two *client* and
+> *contractor*, because those are the generic names for the two sides of a
+> milestone contract. In the demo scenario — a pre-sold apartment in Zhengzhou —
+> they are the **buyer** (Mrs Chen, whose mortgage is escrowed) and the
+> **developer** (Hengrui Properties, drawing against construction stages). The
+> mechanism is the same either way; `fixtures/project.json` sets the wording.
+> The before/after this design argues with is in `fixtures/flows.json`.
+
 ## Against the challenge's commercial flow
 
 The challenge draws the loop as seven steps. Kirim runs all of them, and runs

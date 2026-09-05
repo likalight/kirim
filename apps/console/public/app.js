@@ -8,8 +8,16 @@
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-const money = (c) => 'S$' + (c / 100).toLocaleString('en-SG', { maximumFractionDigits: 0 });
-const money2 = (c) => 'S$' + (c / 100).toLocaleString('en-SG', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const cur = () => state.project?.currency || 'US$';
+const money = (c) => cur() + (c / 100).toLocaleString('en-US', { maximumFractionDigits: 0 });
+const money2 = (c) => cur() + (c / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+// The two sides are named by the project, not by this file. A renovation has a
+// client and a contractor; a pre-sale apartment has a buyer and a developer.
+const ME = () => (state.role === 'client' ? state.project?.clientRole : state.project?.contractorRole)
+  || (state.role === 'client' ? 'Client' : 'Contractor');
+const THEM = () => ((state.role === 'client' ? state.project?.contractorRole : state.project?.clientRole)
+  || (state.role === 'client' ? 'Contractor' : 'Client')).toLowerCase();
 
 const state = {
   view: 'overview',
@@ -20,6 +28,7 @@ const state = {
   pending: [],
   providers: [],
   wallets: null,
+  flows: null,
   reasoner: null,
   running: null,
   stage: null,
@@ -28,7 +37,7 @@ const state = {
 
 const STATUS_WORDS = {
   client: {
-    released: 'paid', flagged: 'needs your review', more_info: 'waiting on contractor',
+    released: 'paid', flagged: 'needs your review', more_info: 'waiting on {them}',
     awaiting_client: 'needs your signature', returned: 'refunded to you',
     in_progress: 'in progress', unknown: 'not started',
   },
@@ -65,6 +74,7 @@ const ICONS = {
 
 const VIEWS = [
   ['overview', 'Overview'],
+  ['flows', 'Before / after'],
   ['milestones', 'Milestones'],
   ['evidence', 'Evidence'],
   ['payments', 'Payments'],
@@ -75,7 +85,7 @@ const VIEWS = [
 
 // ---------------------------------------------------------------- data
 async function load() {
-  const [project, st, record, pending, providers, wallets, reasoner] = await Promise.all([
+  const [project, st, record, pending, providers, wallets, reasoner, flows] = await Promise.all([
     fetch('/api/project').then((r) => r.json()),
     fetch('/api/state').then((r) => r.json()).catch(() => ({ milestones: {} })),
     fetch('/api/record').then((r) => r.json()).catch(() => null),
@@ -83,11 +93,12 @@ async function load() {
     fetch('/api/providers').then((r) => r.json()).catch(() => ({ providers: [] })),
     fetch('/api/wallets').then((r) => r.json()).catch(() => null),
     fetch('/api/reasoner').then((r) => r.json()).catch(() => null),
+    fetch('/api/flows').then((r) => r.json()).catch(() => null),
   ]);
   Object.assign(state, {
     project, milestones: st.milestones || {}, record,
     pending: pending.pending || [], providers: providers.providers || [],
-    wallets, reasoner,
+    wallets, reasoner, flows,
   });
   render();
 }
@@ -120,6 +131,10 @@ function renderNav() {
   }
   $('as-client').setAttribute('aria-pressed', state.role === 'client');
   $('as-contractor').setAttribute('aria-pressed', state.role === 'contractor');
+  if (state.project) {
+    $('as-client').textContent = state.project.client + ' — ' + (state.project.clientRole || 'client').toLowerCase();
+    $('as-contractor').textContent = state.project.contractor + ' — ' + (state.project.contractorRole || 'contractor').toLowerCase();
+  }
 }
 
 function head(title, sub, meta) {
@@ -131,7 +146,7 @@ function head(title, sub, meta) {
 function render() {
   renderNav();
   const fn = {
-    overview: viewOverview, milestones: viewMilestones, evidence: viewEvidence,
+    overview: viewOverview, flows: viewFlows, milestones: viewMilestones, evidence: viewEvidence,
     payments: viewPayments, providers: viewProviders, record: viewRecord, system: viewSystem,
   }[state.view];
   $('main').innerHTML = fn();
@@ -163,6 +178,50 @@ function pipelineHtml() {
 }
 
 // ---------------------------------------------------------------- views
+
+/**
+ * The argument, in one screen. The left lane is the mainland pre-sale model as
+ * it runs today; the right lane is the same sale with Kirim between the bank
+ * and the developer. Only the steps that actually change are marked — claiming
+ * to change the parts that work would make the rest less believable.
+ */
+function viewFlows() {
+  const f = state.flows;
+  if (!f) return head('Before / after', 'Flow comparison unavailable.') + `<div class="empty">Could not load fixtures/flows.json.</div>`;
+
+  const lane = (side, cls) => `<div class="lane ${cls}">
+    <div class="tag">${cls === 'now' ? 'before' : 'after'}</div>
+    <h3>${esc(side.label)}</h3>
+    <div class="sub">${esc(side.sub)}</div>
+    <ol class="steps">` + side.steps.map((st) => {
+      const k = st.bad ? 'bad' : st.changed ? 'changed' : st.same ? 'same' : '';
+      return `<li class="${k}"><span class="n">${st.n}</span>
+        <div class="who">${esc(st.who)}</div>
+        <div class="txt">${esc(st.text)}</div>
+        ${st.changed ? `<div class="why">${esc(st.changed)}</div>` : ''}
+        ${st.same ? `<div class="unchanged">unchanged</div>` : ''}</li>`;
+    }).join('') + `</ol></div>`;
+
+  const changed = f.after.steps.filter((s) => s.changed).length;
+
+  return head(f.title, f.note,
+    `${f.market} · ${changed} of ${f.after.steps.length} steps change`)
+    + `<div class="lanes">${lane(f.before, 'now')}${lane(f.after, 'kirim')}</div>`
+    + `<h3 class="sec">The same seven questions, answered both ways</h3>`
+    + `<table><tr><th style="width:26%">Question</th><th style="width:30%">Pre-sale today</th>
+        <th style="width:30%">With Kirim</th></tr>`
+    + f.comparison.map((c) => `<tr>
+        <td><strong>${esc(c.q)}</strong></td>
+        <td class="before">${esc(c.before)}</td>
+        <td class="after">${esc(c.after)}</td></tr>`
+      + (c.delta ? `<tr class="delta"><td colspan="3">${esc(c.delta)}</td></tr>` : '')).join('')
+    + `</table>`
+    + `<p class="note">Two of the seven answers are deliberately identical. Kirim does not try to end
+       off-plan sale or stop buyers paying early — those are how the market funds construction, and a
+       product that needed them to stop would never be adopted. What changes is the one row in the
+       middle: whether the money can leave.</p>`;
+}
+
 function viewOverview() {
   const t = totals();
   const p = state.project;
@@ -206,23 +265,24 @@ function milestoneListHtml() {
     const line = (isClient ? {
       released: 'Evidence matched what you agreed. Paid in seconds.',
       flagged: 'Something does not add up. Your money is still held.',
-      more_info: 'The contractor has not sent enough yet. Nothing is wrong.',
+      more_info: 'The {them} has not sent enough yet. Nothing is wrong.',
       awaiting_client: 'Above the limit you set — Kirim will not release without you.',
       returned: 'Nothing was delivered. Your money came back.',
     } : {
       released: 'Paid on presentation.',
       flagged: 'Held — the evidence contradicts the agreed scope.',
       more_info: 'Send the missing items and it releases.',
-      awaiting_client: 'Everything checked out. Waiting on the client to sign.',
+      awaiting_client: 'Everything checked out. Waiting on the {them} to sign.',
       returned: 'Expired without a submission.',
     })[s.status] || m.scenario || '';
+    const say = line.replace('{them}', THEM());
     return `<button class="ms ${s.status}" data-run="${m.id}" ${state.running ? 'disabled' : ''}>
       <span class="bar"></span>
       <span class="body"><span class="top"><span class="id">${m.id}</span>
         <span class="nm">${esc(m.name)}</span></span>
-        <div class="sc">${esc(line)}</div></span>
+        <div class="sc">${esc(say)}</div></span>
       <span class="right"><div class="amt">${money(m.amountCents)}</div>
-        <div class="pill ${s.status}">${esc(STATUS_WORDS[state.role][s.status] || s.status)}</div></span>
+        <div class="pill ${s.status}">${esc((STATUS_WORDS[state.role][s.status] || s.status).replace('{them}', THEM()))}</div></span>
     </button>`;
   }).join('');
 }
@@ -275,7 +335,7 @@ function viewEvidence() {
       <td><span class="pill ${sev === 'blocking' ? 'flagged' : sev === 'missing' ? 'more_info' : 'unknown'}">${sev}</span></td>
       <td>${esc(d)}</td></tr>`).join('') + '</table>'
   + `<p class="note">Any blocking finding holds the money. A missing one asks for more and marks nothing
-     against the contractor. The rules decide; the model only writes the note that explains them.</p>`;
+     against the ${esc(THEM())}. The rules decide; the model only writes the note that explains them.</p>`;
 }
 
 function viewPayments() {
@@ -340,7 +400,7 @@ function viewRecord() {
     <div><h3 class="sec" style="margin-top:0">What a credential says</h3>
       <div class="panel"><h4>on-ledger credential</h4>
         <div class="row"><span>type</span><span>KIRIM:${esc(state.project.id)}:M1</span></div>
-        <div class="row"><span>subject</span><span>the contractor</span></div>
+        <div class="row"><span>subject</span><span>the ${esc(THEM())}</span></div>
         <div class="row"><span>issuer</span><span>Kirim</span></div>
         <div class="row"><span>accepted</span><span>true</span></div>
       </div>
@@ -390,7 +450,7 @@ function actionHtml() {
   if (window.gemWallet || window.GemWalletApi) wallets.push('<button class="btn" id="w-gem">Approve with GemWallet</button>');
   return `<div class="action"><h4>${esc(p.name)} is ready — it needs you</h4>
     <p>${money(p.amountCents)} is above the limit you set, so Kirim will not release it on its own.
-       The evidence is in order. Approve from your own wallet and the contractor is paid in seconds.</p>
+       The evidence is in order. Approve from your own wallet and the ${esc(THEM())} is paid in seconds.</p>
     <dl><dt>to</dt><dd>${esc(a.to)}</dd><dt>reference</dt><dd>${esc(a.memo)}</dd></dl>
     ${wallets.length ? `<div class="row2">${wallets.join('')}</div>` : ''}
     <div class="row2" style="margin-top:10px">

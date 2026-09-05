@@ -1,6 +1,6 @@
 {
-  "SKP-88213": { "supplier": "Eastern Waste Services", "sku": "SKIP-6YD", "qty": 2, "issuedOn": "2026-09-04" },
-  "INV-77120": { "supplier": "Hoe Seng Hardware", "sku": "PPR-20MM", "qty": 60, "issuedOn": "2026-09-10" },
-  "INV-80442": { "supplier": "Soon Lee Tiles", "sku": "TIL-600X600", "qty": 48, "issuedOn": "2026-09-28" },
-  "INV-81003": { "supplier": "Wah Lee Steel", "sku": "STL-LINTEL", "qty": 1, "issuedOn": "2026-10-14" }
+  "CON-88213": { "supplier": "Zhengzhou Jianye Ready-Mix", "sku": "CON-C40", "qty": 1400, "issuedOn": "2026-05-20" },
+  "REB-77120": { "supplier": "Henan Steel Trading", "sku": "REB-HRB400", "qty": 620, "issuedOn": "2026-08-02" },
+  "TIL-80442": { "supplier": "Foshan Ceramics Group", "sku": "TIL-600X600", "qty": 1800, "issuedOn": "2027-01-14" },
+  "CON-81003": { "supplier": "Zhengzhou Jianye Ready-Mix", "sku": "CON-C40", "qty": 900, "issuedOn": "2027-05-14" }
 }
