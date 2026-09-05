@@ -1,5 +1,5 @@
 import { Client, xrpToDrops, dropsToXrp, convertStringToHex, isoTimeToRippleTime } from 'xrpl';
-import { makeCondition, finishFee } from './conditions.mjs';
+import { makeCondition } from './conditions.mjs';
 
 const ENDPOINT = process.env.XRPL_ENDPOINT || 'wss://s.altnet.rippletest.net:51233';
 export const EXPLORER = process.env.XRPL_EXPLORER || 'https://testnet.xrpl.org';
@@ -144,6 +144,10 @@ export async function escrowCreate({ wallet, to, value, asset, memo, cancelAfter
 }
 
 export async function escrowFinish({ wallet, owner, offerSequence, condition, fulfillment }) {
+  // No manual Fee. EscrowFinish carries a surcharge for the fulfillment, and
+  // xrpl.js's autofill already applies the base fee x (33 + bytes/16) formula
+  // (sugar/autofill.js). We were overriding a correct calculation with our own
+  // and overpaying for it.
   return submit(wallet, {
     TransactionType: 'EscrowFinish',
     Account: wallet.address,
@@ -151,7 +155,6 @@ export async function escrowFinish({ wallet, owner, offerSequence, condition, fu
     OfferSequence: offerSequence,
     Condition: condition,
     Fulfillment: fulfillment,
-    Fee: finishFee(fulfillment),
   });
 }
 

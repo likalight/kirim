@@ -18,8 +18,15 @@ export function makeCondition() {
   };
 }
 
-/** EscrowFinish costs base fee x (33 + fulfillment_bytes/16). Generous, in drops. */
+/**
+ * Kept for reference only, and deliberately unused.
+ *
+ * EscrowFinish carries a surcharge for the fulfillment — base fee x
+ * (33 + fulfillment_bytes/16). We hand-computed it before checking, then found
+ * xrpl.js's autofill already does exactly this (sugar/autofill.js). Setting Fee
+ * manually overrode a correct calculation with a rounder, dearer one.
+ */
 export function finishFee(fulfillmentHex) {
   const bytes = Buffer.from(fulfillmentHex, 'hex').length;
-  return String(10 * (33 + Math.ceil(bytes / 16)) + 100);
+  return String(10 * (33 + Math.ceil(bytes / 16)));
 }
